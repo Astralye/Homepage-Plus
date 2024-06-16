@@ -1,0 +1,50 @@
+2024-06-16 14:16:43 - Starting E:\NodeJs\node.exe  --harmony "E:\Desktop\Full stack demo\node_modules\node-windows\lib\wrapper.js" --file "E:\Desktop\Full stack demo\server\server.js" --scriptoptions= --log "testing service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2024-06-16 14:16:43 - Started 11984
+2024-06-16 14:18:14 - Stopping testingservice.exe
+2024-06-16 14:18:14 - ProcessKill 11984
+2024-06-16 14:18:14 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2024-06-16 14:18:51 - Starting E:\NodeJs\node.exe  --harmony "E:\Desktop\Full stack demo\node_modules\node-windows\lib\wrapper.js" --file "E:\Desktop\Full stack demo\server\server.js" --scriptoptions= --log "testing service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2024-06-16 14:18:51 - Started 5960
+2024-06-16 14:38:44 - Stopping testingservice.exe
+2024-06-16 14:38:44 - ProcessKill 5960
+2024-06-16 14:38:44 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2024-06-16 14:39:18 - Starting E:\NodeJs\node.exe  --harmony "E:\Desktop\Full stack demo\node_modules\node-windows\lib\wrapper.js" --file "E:\Desktop\Full stack demo\server\server.js" --scriptoptions= --log "testing service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2024-06-16 14:39:18 - Started 5372
+2024-06-16 14:51:14 - Stopping testingservice.exe
+2024-06-16 14:51:14 - ProcessKill 5372
+2024-06-16 14:51:14 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2024-06-16 14:51:50 - Starting E:\NodeJs\node.exe  --harmony "E:\Desktop\Full stack demo\node_modules\node-windows\lib\wrapper.js" --file "E:\Desktop\Full stack demo\server\server.js" --scriptoptions= --log "testing service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2024-06-16 14:51:50 - Started 4620
