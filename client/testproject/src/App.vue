@@ -1,47 +1,91 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+
+<script>
+
+import ModifyButtons from './components/MainButton.vue'
+import Window from './components/Window.vue'
+
+export default{
+    name: "App",
+    components: {
+        ModifyButtons,
+        Window
+    },
+    data() {
+        return{
+            editIcon: "editing.png",
+            settingIcon: "settings.png",
+
+            rawHTML: [],
+            toggleTab: [
+                { type: "edit", toggle: false},
+                { type: "settings", toggle: false},
+            ]
+        }
+    },
+    methods: {
+
+        // imageLocation(fileName) {
+        //     return new URL(`./assets/${fileName}`, import.meta.url).href; 
+        // }
+
+        // This opens a blank window with no content.
+        openWindowTab(type){
+            switch (type){
+                case "edit":
+                {
+                    this.toggleTab[0].toggle = !this.toggleTab[0].toggle; 
+                    return;
+                }
+                case "settings":
+                {
+                    this.toggleTab[1].toggle = !this.toggleTab[1].toggle; 
+                    return;
+                }
+            }
+        }
+    }
+}
+
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    
+    <!-- icon div 
+        Make this a loop later-->
+    <div class="btnContainer"> 
+        <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
     </div>
-  </header>
 
-  <main>
-    <TheWelcome />
-  </main>
+    <!-- Windows -->
+
+    <!-- Maybe put window in its own component  -->
+    <Window v-if="this.toggleTab[0].toggle" title="Edit"> </Window>
+    <Window v-if="this.toggleTab[1].toggle" title="Settings"> </Window>
+    
+    <footer> 
+        This is a footer
+    </footer>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<!-- 'scoped' means css only applies to this file -->
+<style>
+    .btnContainer{
+        position: absolute;
+        right: 0;
+        display: flex;
+        flex-direction: row ;
+        margin: 10px;
+        background-color: aliceblue;
+        border-radius: 5px;
+        border-color: black
+    }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+    .iconSize{
+        width: 4rem;
+    }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
+    footer {
+        position: absolute;
+        bottom: 0;
+    }
 </style>
