@@ -7,6 +7,9 @@ export default{
     components: {
         IconButton
     },
+    emits: [
+        'openWindowTab'
+    ],
     data() {
         return{
             editIcon: "editing.png",
