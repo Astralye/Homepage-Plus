@@ -15,7 +15,6 @@ export default{
             editIcon: "editing.png",
             settingIcon: "settings.png",
 
-            rawHTML: [],
             toggleTab: [
                 { type: "edit", toggle: false},
                 { type: "settings", toggle: false},
@@ -30,7 +29,7 @@ export default{
 
         // This opens a blank window with no content.
         openWindowTab(type){
-            switch (type){
+            switch (type.toLowerCase()){
                 case "edit":
                 {
                     this.toggleTab[0].toggle = !this.toggleTab[0].toggle; 
@@ -43,7 +42,8 @@ export default{
                 }
             }
         }
-    }
+    },
+
 }
 
 </script>
@@ -59,8 +59,16 @@ export default{
     <!-- Windows -->
 
     <!-- Maybe put window in its own component  -->
-    <Window v-if="this.toggleTab[0].toggle" title="Edit"> </Window>
-    <Window v-if="this.toggleTab[1].toggle" title="Settings"> </Window>
+    <Window 
+        v-if="this.toggleTab[0].toggle"
+        title="Edit"
+        @close-window="openWindowTab">
+    </Window>
+    <Window 
+        v-if="this.toggleTab[1].toggle"
+        title="Settings"
+        @close-window="openWindowTab"> 
+    </Window>
     
     <footer> 
         This is a footer
