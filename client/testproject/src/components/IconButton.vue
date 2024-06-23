@@ -2,15 +2,14 @@
 export default{
     props: {
         message: String,
-        icon: { String, required: true },
-        fnc: { Function, required: true}
+        icon: { String, required: true }
     }
 }
 </script>
 
 <template>
     <div class="container left-margin">
-        <button class="center" @click="fnc">
+        <button class="center">
             <img class="iconSize" :src="icon" alt="Image not found">
             <p> {{ message }} </p>
         </button>

@@ -37,14 +37,14 @@ export default{
 <IconButton
     message="Edit"
     :icon="imageLocation(editIcon)"
-    :fnc="helloBtn"
-    > 
+    @click="helloBtn"
+    >
 </IconButton>
 
 <IconButton
     message="Settings"
     :icon="imageLocation(settingIcon)"
-    :fnc="helloBtn2"
+    @click="helloBtn2"
     > 
 </IconButton>
 
