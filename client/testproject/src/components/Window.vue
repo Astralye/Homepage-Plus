@@ -46,15 +46,18 @@
                 document.onmouseup = null;
                 document.onmousemove = null;
             }
-        },
+        }
     }
 </script>
 
 <template>
+    <!-- main container -->
     <div
         ref="draggableContainer" 
         class="window" 
         >
+
+        <!-- Header -->
         <div 
             class="header" 
             
@@ -75,12 +78,11 @@
                 </button>
             </div>
         </div>
-        <div
-        class="container noselect">
 
-            <!-- WindowContent, this would be a 
-                component using a forloop. -->
-            Hello world!
+        <!-- Main content -->
+        <div
+        class="wind-container noselect">
+            <slot name="window-content"></slot>
         </div>
     </div>
     
@@ -88,11 +90,10 @@
 
 <style scoped>
 
-.container{
+.wind-container{
     background-color: beige;
-    height: 100px;
+    height: auto;
     
-    padding: 4px;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
 
@@ -103,8 +104,6 @@
         -> Set shadow width + height
         -> Set header width 
     */
-    resize: both;
-    overflow: auto;
 }
 
 .headerContent{
