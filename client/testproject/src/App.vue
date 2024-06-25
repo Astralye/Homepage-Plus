@@ -3,12 +3,16 @@
 
 import ModifyButtons from './components/MainButton.vue'
 import Window from './components/Window.vue'
+import WindowButton from './components/WindowButton.vue'
+import PageContainer from './components/Container.vue'
 
 export default{
     name: "App",
     components: {
         ModifyButtons,
-        Window
+        Window,
+        WindowButton,
+        PageContainer
     },
     data() {
         return{
@@ -18,6 +22,13 @@ export default{
             toggleTab: [
                 { type: "edit", toggle: false},
                 { type: "settings", toggle: false},
+            ],
+
+            EditBtns: [
+                { name: "Layout"},
+                { name: "Containers"},
+                { name: "Folder"},
+                { name: "Widgets"}
             ]
         }
     },
@@ -63,16 +74,29 @@ export default{
         v-if="this.toggleTab[0].toggle"
         title="Edit"
         @close-window="openWindowTab">
+        
+        <template v-slot:window-content>
+            <WindowButton v-for="btn in EditBtns"> {{ btn.name }} </WindowButton>
+        </template>
     </Window>
+
     <Window 
         v-if="this.toggleTab[1].toggle"
         title="Settings"
         @close-window="openWindowTab"> 
+
+        <template v-slot:window-content>
+            <div> Hello world but settings</div>
+        </template>
     </Window>
-    
-    <footer> 
+
+    <PageContainer :nestLevel="0">
+
+    </PageContainer>
+
+    <!-- <footer> 
         This is a footer
-    </footer>
+    </footer> -->
 </template>
 
 <!-- 'scoped' means css only applies to this file -->
