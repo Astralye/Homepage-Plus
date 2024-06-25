@@ -4,13 +4,15 @@
 import ModifyButtons from './components/MainButton.vue'
 import Window from './components/Window.vue'
 import WindowButton from './components/WindowButton.vue'
+import PageContainer from './components/Container.vue'
 
 export default{
     name: "App",
     components: {
         ModifyButtons,
         Window,
-        WindowButton
+        WindowButton,
+        PageContainer
     },
     data() {
         return{
@@ -87,10 +89,11 @@ export default{
             <div> Hello world but settings</div>
         </template>
     </Window>
-    
-    <body>
-        This is the body
-    </body>
+
+    <PageContainer :nestLevel="0">
+
+    </PageContainer>
+
     <!-- <footer> 
         This is a footer
     </footer> -->
