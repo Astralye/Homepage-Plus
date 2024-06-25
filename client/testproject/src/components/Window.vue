@@ -67,7 +67,7 @@
             >
             <div class="flex">
                 <div class="headerContent headerText">
-                    {{ title }}
+                    <h1> {{ title }} </h1>
                 </div>
                 <button 
                     class="headerContent exitBtn noselect"
@@ -99,6 +99,8 @@
 
     color: black;
 
+    padding-top: 5px;
+
     /* Todo:
         Window width and height variable
         -> Set shadow width + height
@@ -113,7 +115,6 @@
 
 .headerText{
     margin-left: 4px;
-    font-size: 16px;
 }
 
 .exitBtn{
@@ -129,7 +130,7 @@
 .header{
     background-color: grey;
     width: 100%;
-    height: 2em;
+    height: 3em;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
 }
@@ -147,7 +148,7 @@
 }
 
 .window{
-    width: 200px;
+    width: 300px;
     height: auto;
     box-shadow: 4px 4px 10px grey;
     position: absolute;

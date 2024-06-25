@@ -1,6 +1,11 @@
 <script>
     export default {
-        
+        props: {
+            btnFunction: {
+                type: Function,
+                required: true
+            }
+        }
     }
 </script>
 
