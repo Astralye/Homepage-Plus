@@ -5,6 +5,7 @@ import ModifyButtons from './components/MainButton.vue'
 import Window from './components/Window.vue'
 import WindowButton from './components/WindowButton.vue'
 import PageContainer from './components/Container.vue'
+import PageSubDivision from './components/PageSubDivision.vue'
 
 export default{
     name: "App",
@@ -12,7 +13,8 @@ export default{
         ModifyButtons,
         Window,
         WindowButton,
-        PageContainer
+        PageContainer,
+        PageSubDivision
     },
     data() {
         return{
@@ -25,10 +27,9 @@ export default{
             ],
 
             EditBtns: [
-                { name: "Layout"},
-                { name: "Containers"},
-                { name: "Folder"},
-                { name: "Widgets"}
+                { name: "Layout", toggle: false },
+                { name: "Containers", toggle: false },
+                { name: "Widgets", toggle: false}
             ]
         }
     },
@@ -49,6 +50,26 @@ export default{
                 case "settings":
                 {
                     this.toggleTab[1].toggle = !this.toggleTab[1].toggle; 
+                    return;
+                }
+            }
+        },
+
+        test(btnType) {
+            switch (btnType.toLowerCase()){
+                case "layout":
+                {
+                    this.EditBtns[0].toggle = !this.EditBtns[0].toggle; 
+                    return;
+                }
+                case "containers":
+                {
+                    this.EditBtns[1].toggle = !this.EditBtns[1].toggle; 
+                    return;
+                }                
+                case "widgets":
+                {
+                    this.EditBtns[2].toggle = !this.EditBtns[2].toggle; 
                     return;
                 }
             }
@@ -76,7 +97,7 @@ export default{
         @close-window="openWindowTab">
         
         <template v-slot:window-content>
-            <WindowButton v-for="btn in EditBtns"> {{ btn.name }} </WindowButton>
+            <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
         </template>
     </Window>
 
@@ -90,13 +111,41 @@ export default{
         </template>
     </Window>
 
+    <!-- Edit btn windows -->
+    <!-- Layout button -->
+    <Window
+        v-if="this.EditBtns[0].toggle"
+        title="Layout"
+        @close-window="test">
+        <template v-slot:window-content>
+            <PageSubDivision>
+            </PageSubDivision>
+        </template>
+    </Window>
+
+    <!-- Container button -->
+    <Window
+        v-if="this.EditBtns[1].toggle"
+        title="Containers"
+        @close-window="test">
+        <template v-slot:window-content>
+            <div> Containers!</div>
+        </template>
+    </Window>
+
+    <Window
+        v-if="this.EditBtns[2].toggle"
+        title="Widgets"
+        @close-window="test">
+        <template v-slot:window-content>
+            <div> Widgets!</div>
+        </template>
+    </Window>
+
+    <!-- This has to go last -->
     <PageContainer :nestLevel="0">
 
     </PageContainer>
-
-    <!-- <footer> 
-        This is a footer
-    </footer> -->
 </template>
 
 <!-- 'scoped' means css only applies to this file -->
