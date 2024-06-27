@@ -59,13 +59,12 @@
 
         <!-- Header -->
         <div 
-            class="header" 
+            class="header flex" 
             
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
-            <div class="flex">
                 <div class="headerContent headerText">
                     <h1> {{ title }} </h1>
                 </div>
@@ -76,7 +75,6 @@
                     >
                     X
                 </button>
-            </div>
         </div>
 
         <!-- Main content -->
