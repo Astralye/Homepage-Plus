@@ -5,6 +5,29 @@ import Window from './Window.vue'
 import WindowButton from './WindowButton.vue'
 
 export default {
+    data() {
+        return{
+            ContainerDivision: [
+                { id: "One" },
+                { id: "Two" },
+                { id: "Three" },
+                { id: "Four" }
+            ],
+            DivisionType: [
+                { id: "Vertical" },
+                { id: "Horizontal" },
+            ],
+            States: {
+                isSelectingContainer: false,
+                selectedContainer: null
+            }
+        }
+    },
+    methods: {
+        fnc() {
+            console.log("hello world");
+        }
+    }
     
 }
 </script>
@@ -16,70 +39,51 @@ export default {
 <template>
     <div class="wind-cont">
 
-        <h2>
-            Vertical Divisions
-        </h2>
+        <button class="select-Container">
+            <h2 class="label-text-container">
+                Select Container
+            </h2>
+        </button>
+
+        <div class="window-content">
+            <h2>
+                Division type
+            </h2>
+
+            <div class="grid">
+                <div v-for="type in DivisionType">
+                    <input type="radio" :id="type.id" name="division-type" :value="type.id" checked>
+                    <label class="radio-btn division-type" :for="type.id">
+
+                        <div class="label-text-container">
+                            <h3> {{ type.id }} </h3>
+                        </div>
+                    </label>
+                </div> 
+            </div>
+        </div>
+
+        <hr>
 
         <h3>
-            Container Divisons
+            Container Divisions
         </h3>
-        <div class="divisionType">
+        <div class="container-division-number">
 
-                <!-- Maybe make this into a for loop? -->
-            <label for="One" class="selectionContainer division-item"> 
+            <div v-for="container in ContainerDivision">
+                <input type="radio" :id="container.id" name="no-divisions" :value="container.id" checked>
+                <label class="radio-btn no-divisions" :for="container.id">
 
-                <div class="selection">
-                    <!-- Image --> 
-                    <div class="tmpSquare"></div> 
-                    <input class="inputSelect" type="radio" id="One" name="Divisions" value="one">
-                </div>
+                    <div class="bnt-content">
 
-                <!-- TODO:
-                    Align text with image -->
-                <h4 class="Text">
-                    One
-                </h4>
-            </label>
-                
-            <label for="Two" class="selectionContainer division-item"> 
+                        <div class="tmpSquare"> </div> 
 
-                <div class="selection">
-                    <!-- Image --> 
-                    <div class="tmpSquare"></div> 
-                    <input class="inputSelect" type="radio" id="Two" name="Divisions" value="two">
-                </div>
-
-                <h4 class="Text">
-
-                    Two
-                </h4>
-            </label>
-
-            <label for="Three" class="selectionContainer division-item"> 
-
-                <div class="selection">
-                    <!-- Image --> 
-                    <div class="tmpSquare"></div> 
-                    <input class="inputSelect" type="radio" id="Three" name="Divisions" value="three">
-                </div>
-
-                <h4 class="Text">
-                    Three
-                </h4>
-            </label>
-
-            <label for="Four" class="selectionContainer division-item"> 
-
-                <div class="selection">
-                    <!-- Image --> 
-                    <div class="tmpSquare"></div> 
-                    <input class="inputSelect" type="radio" id="Four" name="Divisions" value="four">
-                </div>
-
-                <h4 class="Text">
-                    Four
-                </h4>
-            </label>        
+                        <div class="label-text-container"> 
+                            <h3> {{ container.id }} </h3>
+                        </div>
+                    </div>
+                </label>
+            </div>
 
         </div>
 
@@ -108,6 +112,69 @@ export default {
 
 <style scoped>
 
+.bnt-content{
+    margin: 5px;
+    box-sizing: border-box;
+}
+
+.tmpSquare{
+    background-color: black;
+    height: 80px;
+    width: 80px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.select-Container{
+    width: 100%;
+}
+
+button.select-Container{
+    background-color: silver;
+}
+
+button.select-Container:hover{
+    background-color: grey;
+}
+
+.label-text{
+    margin: auto;
+}
+
+input[type="radio"]{
+    display: none;
+}
+
+label{
+    margin: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+label:hover{
+    background-color: grey;
+}
+
+input[type="radio"]:checked + label{
+    border: 2px solid green;
+    background-color: green;
+}
+
+.division-type{
+    height: 40px;
+}
+
+.no-divisions{
+    height: auto;
+}
+
+.radio-btn{
+    display: block;
+    background-color: silver;
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
 .EvenSpacing{
     margin-right: 10px;
 }
@@ -116,17 +183,13 @@ export default {
     padding: 5px;
 }
 
-.fullWidth{
-    width: 100%;
-}
-
-h4.Text{
-    margin-left: 25px;
-    font-size: 14px;
-}
-
 .division-item{
     margin: 5px;
+}
+
+.grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
 
 .selection{
@@ -137,26 +200,17 @@ h4.Text{
     margin-left: 10px;
 }
 
-.selectionContainer{
-    display: grid;
-    padding-left: 10px;
-    padding-right: 10px;
+.label-text-container{
+    text-align: center;    
+    margin: auto;
 }
 
-.selectionContainer:nth-last-child(-n+2){
-    margin-top: 0;
-}
-
-.tmpSquare{
-    width: 80px;
-    height: 80px;
-    background-color: black;
-}
-
-.divisionType{
+.container-division-number{
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
+    
     height: auto;
     width: 90%;
 
