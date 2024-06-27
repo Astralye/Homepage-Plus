@@ -30,7 +30,12 @@ export default{
                 { name: "Layout", toggle: false },
                 { name: "Containers", toggle: false },
                 { name: "Widgets", toggle: false}
-            ]
+            ],
+
+            containerData: {
+                isSelectionContainer: false,
+                containerData: null
+            }
         }
     },
     methods: {
@@ -73,6 +78,10 @@ export default{
                     return;
                 }
             }
+        },
+
+        selectContainer(){
+            this.containerData.isSelectionContainer = true;
         }
     },
 
@@ -118,7 +127,8 @@ export default{
         title="Layout"
         @close-window="test">
         <template v-slot:window-content>
-            <PageSubDivision>
+            <PageSubDivision
+            @Container-Select="selectContainer">
             </PageSubDivision>
         </template>
     </Window>
@@ -143,13 +153,29 @@ export default{
     </Window>
 
     <!-- This has to go last -->
-    <PageContainer :nestLevel="0">
+    <div class="main-body">
+        <PageContainer :nestLevel="0">
+            <template v-slot:container-content> 
 
-    </PageContainer>
+                <PageContainer :nestLevel="1">
+                    
+                </PageContainer>
+
+                <PageContainer :nestLevel="1"></PageContainer>
+
+            </template>
+        </PageContainer>
+    </div> 
 </template>
 
 <!-- 'scoped' means css only applies to this file -->
 <style>
+
+.main-body{
+    height: 100vh;
+    width: 100vw;
+}
+
     .btnContainer{
         position: absolute;
         right: 0;

@@ -119,8 +119,8 @@
     background-color: rgb(228, 69, 69);
     margin-right: 4px;
     color: white;
-    height: 25px;
-    width: 25px;
+    height: 30px;
+    width: 30px;
     font-size: 12px;
     border-radius: 5px;
 }
