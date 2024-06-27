@@ -8,14 +8,14 @@ export default {
     data() {
         return{
             ContainerDivision: [
-                { id: "One" },
-                { id: "Two" },
-                { id: "Three" },
-                { id: "Four" }
+                { index: 0, id: "One" },
+                { index: 1, id: "Two" },
+                { index: 2, id: "Three" },
+                { index: 3, id: "Four" }
             ],
             DivisionType: [
-                { id: "Vertical" },
-                { id: "Horizontal" },
+                { index: 0, id: "Vertical" },
+                { index: 1, id: "Horizontal" },
             ],
             States: {
                 isSelectingContainer: false,
@@ -25,7 +25,8 @@ export default {
     },
     methods: {
         fnc() {
-            console.log("hello world");
+            this.States.isSelectingContainer = !this.States.isSelectingContainer;
+            this.$emit('Container-Select');
         }
     }
     
@@ -39,7 +40,9 @@ export default {
 <template>
     <div class="wind-cont">
 
-        <button class="select-Container">
+        <button
+            class="select-Container"
+            @click="fnc()">
             <h2 class="label-text-container">
                 Select Container
             </h2>
@@ -52,7 +55,7 @@ export default {
 
             <div class="grid">
                 <div v-for="type in DivisionType">
-                    <input type="radio" :id="type.id" name="division-type" :value="type.id" checked>
+                    <input type="radio" :id="type.id" name="division-type" :value="type.id" :checked="type.index == 0 ? true : false">
                     <label class="radio-btn division-type" :for="type.id">
 
                         <div class="label-text-container">
@@ -71,7 +74,7 @@ export default {
         <div class="container-division-number">
 
             <div v-for="container in ContainerDivision">
-                <input type="radio" :id="container.id" name="no-divisions" :value="container.id" checked>
+                <input type="radio" :id="container.id" name="no-divisions" :value="container.id" :checked="container.index == 0 ? true : false">
                 <label class="radio-btn no-divisions" :for="container.id">
 
                     <div class="bnt-content">
@@ -112,9 +115,12 @@ export default {
 
 <style scoped>
 
+.btnActive{
+    background-color: green;
+}
+
 .bnt-content{
     margin: 5px;
-    box-sizing: border-box;
 }
 
 .tmpSquare{
