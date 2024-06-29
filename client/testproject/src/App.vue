@@ -154,16 +154,11 @@ export default{
 
     <!-- This has to go last -->
     <div class="main-body">
-        <PageContainer :nestLevel="0">
-            <template v-slot:container-content> 
-
-                <PageContainer :nestLevel="1">
-                    
-                </PageContainer>
-
-                <PageContainer :nestLevel="1"></PageContainer>
-
-            </template>
+        <PageContainer 
+            :nestLevel="0"
+            :division_number="2"
+            divisionType="Horizontal"
+            >
         </PageContainer>
     </div> 
 </template>
