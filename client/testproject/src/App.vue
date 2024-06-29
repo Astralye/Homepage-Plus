@@ -1,93 +1,3 @@
-
-<script>
-
-import ModifyButtons from './components/MainButton.vue'
-import Window from './components/Window.vue'
-import WindowButton from './components/WindowButton.vue'
-import PageContainer from './components/Container.vue'
-import PageSubDivision from './components/PageSubDivision.vue'
-
-export default{
-    name: "App",
-    components: {
-        ModifyButtons,
-        Window,
-        WindowButton,
-        PageContainer,
-        PageSubDivision
-    },
-    data() {
-        return{
-            editIcon: "editing.png",
-            settingIcon: "settings.png",
-
-            toggleTab: [
-                { type: "edit", toggle: false},
-                { type: "settings", toggle: false},
-            ],
-
-            EditBtns: [
-                { name: "Layout", toggle: false },
-                { name: "Containers", toggle: false },
-                { name: "Widgets", toggle: false}
-            ],
-
-            containerData: {
-                isSelectionContainer: false,
-                containerData: null
-            }
-        }
-    },
-    methods: {
-
-        // imageLocation(fileName) {
-        //     return new URL(`./assets/${fileName}`, import.meta.url).href; 
-        // }
-
-        // This opens a blank window with no content.
-        openWindowTab(type){
-            switch (type.toLowerCase()){
-                case "edit":
-                {
-                    this.toggleTab[0].toggle = !this.toggleTab[0].toggle; 
-                    return;
-                }
-                case "settings":
-                {
-                    this.toggleTab[1].toggle = !this.toggleTab[1].toggle; 
-                    return;
-                }
-            }
-        },
-
-        test(btnType) {
-            switch (btnType.toLowerCase()){
-                case "layout":
-                {
-                    this.EditBtns[0].toggle = !this.EditBtns[0].toggle; 
-                    return;
-                }
-                case "containers":
-                {
-                    this.EditBtns[1].toggle = !this.EditBtns[1].toggle; 
-                    return;
-                }                
-                case "widgets":
-                {
-                    this.EditBtns[2].toggle = !this.EditBtns[2].toggle; 
-                    return;
-                }
-            }
-        },
-
-        selectContainer(){
-            this.containerData.isSelectionContainer = true;
-        }
-    },
-
-}
-
-
 <script>
 
 import ModifyButtons from './components/MainButton.vue'
@@ -184,6 +94,7 @@ export default{
         Make this a loop later-->
     <div class="btnContainer"> 
         <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
+    </div>
     
     <!-- icon div 
         Make this a loop later-->
@@ -249,10 +160,9 @@ export default{
     <!-- This has to go last -->
     <div class="main-body">
         <PageContainer 
-            :nestLevel="0"
+            :nest_level="0"
             :division_number="2"
-            divisionType="Horizontal"
-            >
+            division_type="Horizontal">
         </PageContainer>
     </div> 
 </template>
@@ -265,50 +175,23 @@ export default{
     width: 100vw;
 }
 
-    .btnContainer{
-        position: absolute;
-        right: 0;
-        display: flex;
-        flex-direction: row ;
-        margin: 10px;
-        background-color: aliceblue;
-        border-radius: 5px;
-        border-color: black
-    }
-
-    .iconSize{
-        width: 4rem;
-    }
-
-    footer {
-        position: absolute;
-        bottom: 0;
-    }
-<!-- 'scoped' means css only applies to this file -->
-<style>
-
-.main-body{
-    height: 100vh;
-    width: 100vw;
+.btnContainer{
+    position: absolute;
+    right: 0;
+    display: flex;
+    flex-direction: row ;
+    margin: 10px;
+    background-color: aliceblue;
+    border-radius: 5px;
+    border-color: black
 }
 
-    .btnContainer{
-        position: absolute;
-        right: 0;
-        display: flex;
-        flex-direction: row ;
-        margin: 10px;
-        background-color: aliceblue;
-        border-radius: 5px;
-        border-color: black
-    }
+.iconSize{
+    width: 4rem;
+}
 
-    .iconSize{
-        width: 4rem;
-    }
-
-    footer {
-        position: absolute;
-        bottom: 0;
-    }
+footer {
+    position: absolute;
+    bottom: 0;
+}
 </style>

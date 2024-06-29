@@ -2,13 +2,13 @@
     export default {
         name: "recursive-container",
         props: {
-            nestLevel: {
+            nest_level: {
                 type: Number,
                 default: 0,
                 required: true
             },
 
-            divisionType: {
+            division_type: {
                 type: String,
                 default: "Vertical",
                 required: true
@@ -26,120 +26,137 @@
             }
         },
 
+        // x_Y -> props
+        // m_xY -> member values
+        // xY -> local variables
+
         // Initializer
         // Sets variables from props
-        beforeMount() {
+        created(){
 
+            // Sets component variables to props
+            this.m_level = this.nest_level;
+            this.m_divisionNumber = this.division_number;
 
-            // TODO
-            // Refactor code
-            // Currently it is a mess and works via code but needs to be 
-            // refactored to make sure it can work with the other components
+            // Sets child component values to props
+            let childDivisionType = this.division_type; 
+            // I assume this depends not on the parent but what the user choses
+            // Gets overridden only for the first layer
             
-            this.level = this.nestLevel;
-            let nextLevel = this.level + 1;
-            
-            var childDivisionType = this.divisionType;
-            
-            this.divisionNumber = this.division_number;
-            var newDivisionNumber = 1;
+            let childLevel = this.m_level + 1;
+            let childDivisionNumber = 1; // Base case, 1 stops the recurrsion
+            this.configureDivisionType();
 
+            // NEST TEST
+            // DELETE LATER
 
-            if(this.nestLevel === 0){
-                console.log("root");
-
+            if(this.nest_level === 0){ // Root layer
                 childDivisionType = "Vertical";
             }
             else if(this.id === "10"){
-                this.divisionNumber = 3; 
+                this.m_divisionNumber = 3; // Changes current division number.
+                childDivisionType = "Vertical";
+            }
+            else if(this.id === "22"){
+                this.m_divisionNumber = 3; // Changes current division number.
                 childDivisionType = "Horizontal";
-
-                console.log("a");
             }
 
-            console.log(`level: ${this.level}, id: ${this.id}, type: ${this.divisionType}, child_type: ${childDivisionType}, divisions: ${this.divisionNumber}`);
-            
+            // NEST TEST
+        
+            // Initializes containers
+            // Need a way of removing containers
+            for(let i = 0; i < this.m_divisionNumber; i++){
 
-            if(this.divisionType === "Vertical") {
-                this.containerDivision.Vertical = true;
-                this.containerDivision.Horizontal = false;
-            }
-            else{
-                this.containerDivision.Horizontal = true;
-                this.containerDivision.Vertical = false;
-            }
-            
-            // Create child nodes
-            for(let i = 0; i < this.divisionNumber; i++){
-
-                this.childNodes.push(
+                this.m_childNodes.push(
                     { 
-                    Level: nextLevel,
+                    Level: childLevel,
                     DivisionType: childDivisionType,
-                    DivisionNumber: newDivisionNumber,
-                    id : nextLevel.toString() + i.toString()
+                    DivisionNumber: childDivisionNumber,
+                    id : childLevel.toString() + i.toString()
                     }
                 );
             }
-        },
-        mounted() {
 
-            let children = 2;
-            let evenSplit = true;
-            if(evenSplit){
-                if(this.containerDivision.Vertical){                  
-                 this.columnData = "1fr ".repeat(this.divisionNumber);
+            this.configureGridData();
 
-                }
-                else if(this.containerDivision.Horizontal){
-                 this.rowData = "1fr ".repeat(this.divisionNumber);
-
-                }
-            }
-
-            // Todo
-            // Implement generic algorithm
-            // for calculating non-even widths.
-            // Sum -> 1fr * children.
-            // Any division means sum is always the same.
-
-            else{
-                if(this.containerDivision.Vertical){
-                    this.columnData = "1fr 1fr";
-                }
-                else if(this.containerDivision.Horizontal){
-                    this.rowData = "1fr ".repeat(children);
-                }
-            }
-            
+            // Logging
+            console.log(`level: ${this.m_level}, id: ${this.id}, type: ${this.division_type}, child_type: ${childDivisionType}, divisions: ${this.m_divisionNumber}`);
+            console.log(this.gridColumnStyle, this.gridRowStyle);
         },
         data(){
             return{
 
-                edit: true,
-                isHover: false,
-                isClick: false,         
-                divisionNumber: 0,
-                level: 0,
+                m_edit: true,
+                m_isHover: false,
+                m_isClick: false,         
+                m_divisionNumber: 0,
+                m_level: 0,
 
 
                 // This is temporary code
                 // Will need to link with buttons later
-                containerDivision: {
-                    Horizontal: true,
-                    Vertical: false
-                },
+                m_horizontalDivision: false,
                 
-                columnData: null,
-                rowData: null,
+                m_columnData: null,
+                m_rowData: null,
 
                 // Array of child templates
-                childNodes: []
+                m_childNodes: [],
 
+                m_gridStyle: null
             }
         },
         methods:{
+
+            // Sets local division based on prop
+            configureDivisionType(){
+                this.m_horizontalDivision = (this.division_type === "Vertical") ? false : true ;
+            },
+
+            // Sets css grids
+            configureGridData(){
+
+                let children = 2;
+                let evenSplit = true;
+
+                // Todo
+                // Implement generic algorithm
+                // for calculating non-even widths.
+                // Sum -> 1fr * children.
+                // Any division means sum is always the same.
+
+                if(evenSplit){
+                    if(this.m_horizontalDivision){                  
+                        this.rowData = "1fr ".repeat(this.m_divisionNumber);
+                    }
+                    else{
+                        this.columnData = "1fr ".repeat(this.m_divisionNumber);
+                    }
+                }
+                else{
+                    if(this.m_horizontalDivision){
+                        this.rowData = "1fr ".repeat(children);
+                    }
+                    else{
+                        this.columnData = "1fr";
+                    }
+                }
+
+                // Sets grid style of component independently of each other
+                this.m_gridStyle = {
+                    'grid-template-columns' : this.columnData,
+                    'grid-template-rows' : this.rowData
+                }
+            },
+
+
             flipDivisionType(){
+
+                // Shortened. Havent tested if this works.
+                // this.divisionType = (this.divisionType === "Vertical") ? "Horizontal" : "Vertical";
+                // configureDivisionType();
+
                 if(this.divisionType === "Vertical"){
                     this.divisionType = "Horizontal";
 
@@ -153,36 +170,36 @@
                     this.containerDivision.Vertical = true;   
                     this.containerDivision.Horizontal = false;
                 }
-            },
+            }
         }
     }
 </script>
 
 <template>
     <div
-        @mouseover.self="isHover=true"
-        @mouseout.self="isHover=false"
-        @mouseclick.self="isClick=true"
+        @mouseover.self="m_isHover=true"
+        @mouseout.self="m_isHover=false"
+        @mouseclick.self="m_isClick=true"
         class="page-content-container"
         >
         <div 
-            :class="{'edit-mode': this.edit}"
+            :class="{'edit-mode': this.m_edit}"
             class="grid-template"
-            @mouseover.self="isHover=true"
-            @mouseout.self="isHover=false"
-            @mouseclick.self="isClick=true">
+            @mouseover.self="m_isHover=true"
+            @mouseout.self="m_isHover=false"
+            @mouseclick.self="m_isClick=true">
             
-            <template v-if="this.divisionNumber > 1">
+            <template v-if="this.m_divisionNumber > 1">
                 <Container 
-                    v-for="child in childNodes" 
+                    v-for="child in m_childNodes" 
                     :key="child.id"
-                    :nestLevel="child.Level"
-                    :divisionType="child.DivisionType"
+                    :nest_level="child.Level"
+                    :division_type="child.DivisionType"
                     :division_number="child.DivisionNumber"
                     :id="child.id"
+                    :styles="m_gridStyle"
                     />
             </template>
-
         </div>
 
     </div>
@@ -200,8 +217,6 @@
 
 .grid-template{
     display: grid;
-    grid-template-columns: v-bind("columnData");
-    grid-template-rows: v-bind("rowData");
 }
 
 .edit-mode{
