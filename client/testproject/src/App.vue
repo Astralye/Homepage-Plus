@@ -89,82 +89,82 @@ export default{
 </script>
 
 <template>
-    
-    <!-- icon div 
-        Make this a loop later-->
-    <div class="btnContainer"> 
-        <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
-    </div>
-    
-    <!-- icon div 
-        Make this a loop later-->
-    <div class="btnContainer"> 
-        <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
-    </div>
+
+    <teleport to="body">
+        <div class="btnContainer"> 
+            <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
+        </div>
+        
+        <!-- icon div 
+            Make this a loop later-->
+        <div class="btnContainer"> 
+            <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
+        </div>
+    </teleport>
 
     <!-- Windows -->
+    <teleport to="body">
+        <Window 
+            v-if="this.toggleTab[0].toggle"
+            title="Edit"
+            @close-window="openWindowTab">
+            
+            <template v-slot:window-content>
+                <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
+            </template>
+        </Window>
 
-    <!-- Maybe put window in its own component  -->
-    <Window 
-        v-if="this.toggleTab[0].toggle"
-        title="Edit"
-        @close-window="openWindowTab">
-        
-        <template v-slot:window-content>
-            <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
-        </template>
-    </Window>
+        <Window 
+            v-if="this.toggleTab[1].toggle"
+            title="Settings"
+            @close-window="openWindowTab"> 
 
-    <Window 
-        v-if="this.toggleTab[1].toggle"
-        title="Settings"
-        @close-window="openWindowTab"> 
+            <template v-slot:window-content>
+                <div> Hello world but settings</div>
+            </template>
+        </Window>
 
-        <template v-slot:window-content>
-            <div> Hello world but settings</div>
-        </template>
-    </Window>
+        <!-- Edit btn windows -->
 
-    <!-- Edit btn windows -->
-    <!-- Layout button -->
-    <Window
-        v-if="this.EditBtns[0].toggle"
-        title="Layout"
-        @close-window="test">
-        <template v-slot:window-content>
-            <PageSubDivision
-            @Container-Select="selectContainer">
-            </PageSubDivision>
-        </template>
-    </Window>
+        <!-- Layout button -->
+        <Window
+            v-if="this.EditBtns[0].toggle"
+            title="Layout"
+            @close-window="test">
+            <template v-slot:window-content>
+                <PageSubDivision
+                @Container-Select="selectContainer">
+                </PageSubDivision>
+            </template>
+        </Window>
 
-    <!-- Container button -->
-    <Window
-        v-if="this.EditBtns[1].toggle"
-        title="Containers"
-        @close-window="test">
-        <template v-slot:window-content>
-            <div> Containers!</div>
-        </template>
-    </Window>
+        <!-- Container button -->
+        <Window
+            v-if="this.EditBtns[1].toggle"
+            title="Containers"
+            @close-window="test">
+            <template v-slot:window-content>
+                <div> Containers!</div>
+            </template>
+        </Window>
 
-    <Window
-        v-if="this.EditBtns[2].toggle"
-        title="Widgets"
-        @close-window="test">
-        <template v-slot:window-content>
-            <div> Widgets!</div>
-        </template>
-    </Window>
+        <Window
+            v-if="this.EditBtns[2].toggle"
+            title="Widgets"
+            @close-window="test">
+            <template v-slot:window-content>
+                <div> Widgets!</div>
+            </template>
+        </Window>
+    </teleport>
 
-    <!-- This has to go last -->
     <div class="main-body">
         <PageContainer 
             :nest_level="0"
-            :division_number="2"
-            division_type="Horizontal">
+            :division_number="3"
+            division_type="Vertical">
         </PageContainer>
-    </div> 
+    </div>
 </template>
 
 <!-- 'scoped' means css only applies to this file -->
@@ -178,6 +178,7 @@ export default{
 .btnContainer{
     position: absolute;
     right: 0;
+    top: 0;
     display: flex;
     flex-direction: row ;
     margin: 10px;

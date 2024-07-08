@@ -150,6 +150,8 @@
     height: auto;
     box-shadow: 4px 4px 10px grey;
     position: absolute;
+    top: 0;
+    left: 0;
 }
 
 /* A box shadow is defined with container

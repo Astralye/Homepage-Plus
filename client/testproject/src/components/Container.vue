@@ -50,16 +50,16 @@
             // NEST TEST
             // DELETE LATER
 
+            // This would need to be in its own function
+            // This data needs to be provided at the top level
+
+            // This d
             if(this.nest_level === 0){ // Root layer
-                childDivisionType = "Vertical";
-            }
-            else if(this.id === "10"){
-                this.m_divisionNumber = 3; // Changes current division number.
-                childDivisionType = "Vertical";
-            }
-            else if(this.id === "22"){
-                this.m_divisionNumber = 3; // Changes current division number.
                 childDivisionType = "Horizontal";
+            }
+            else if(this.id === "11"){
+                this.m_divisionNumber = 4; // Changes current division number.
+                childDivisionType = "Vertical";
             }
 
             // NEST TEST
@@ -142,12 +142,6 @@
                         this.columnData = "1fr";
                     }
                 }
-
-                // Sets grid style of component independently of each other
-                this.m_gridStyle = {
-                    'grid-template-columns' : this.columnData,
-                    'grid-template-rows' : this.rowData
-                }
             },
 
 
@@ -197,21 +191,12 @@
                     :division_type="child.DivisionType"
                     :division_number="child.DivisionNumber"
                     :id="child.id"
-                    :styles="m_gridStyle"
                     />
             </template>
         </div>
 
     </div>
 </template>
-
-<!-- Need to put grid-template-xxxxx 
-    as a dynamic style in the div element
-    This is because grid-template is used by all the recursive
-    components and the column and row data is then shared between them
-    which is not a property I need.
--->
-
 
 <style scoped>
 
@@ -221,8 +206,9 @@
 
 .edit-mode{
     border-color: black;
-    border: 5px dashed black;
-    margin: 5px;
+    border-radius: ;
+    border: 2px dashed black;
+    margin: 3px;
 
     grid-template-columns: v-bind("columnData");
     grid-template-rows: v-bind("rowData");
