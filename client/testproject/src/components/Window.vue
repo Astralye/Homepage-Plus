@@ -1,10 +1,9 @@
 <script>
     export default {
         props: {
-            title: String
+            title: String,
         },
-        emits: ['closeWindow'],
-
+        emits: ['closeWindow', 'focusTab'],
         data() {
             return{
                 windowHover: false,
@@ -17,7 +16,33 @@
                 }
             }
         },
+
+        watch: {
+
+            // When the array changes, update all the other z-index values
+            // indirectly update values.
+            '$windowStack.value': {
+                handler(val, oldval){
+                    this.updateZIndex();
+                },
+            deep: true
+            }
+        },
         methods: {          
+            updateZIndex(){
+
+                // Unfortunately the overlap only occurs after the click,
+                // When holding and dragging, this does not change
+                let tmpArray = this.$windowStack.value;
+                let name = this.title.toLowerCase();
+                
+                let index = tmpArray.indexOf(name)  ;
+
+                if(index > -1){
+                    index += 10; // always in front
+                    this.$refs.draggableContainer.style.zIndex = index;
+                }
+            },
             dragMouseDown: function ( event ){
 
                 if(!this.windowHover) {return; }
@@ -30,8 +55,9 @@
                 // register on mouse move and mouse up events
                 document.onmousemove = this.elementDrag;
                 document.onmouseup = this.closeDragElement;
+
             },
-            elementDrag: function ( event) {
+            elementDrag: function (event) {
                 event.preventDefault();
 
                 this.positions.movementX = this.positions.clientX - event.clientX
@@ -53,6 +79,7 @@
 <template>
     <!-- main container -->
     <div
+        @mousedown="$emit('focusTab', `${title}`)"
         ref="draggableContainer" 
         class="window" 
         >

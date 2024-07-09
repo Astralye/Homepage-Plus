@@ -45,45 +45,90 @@ export default{
 
         // This opens a blank window with no content.
         openWindowTab(type){
-            switch (type.toLowerCase()){
+
+            let windowType;
+            let windowString = type.toLowerCase();
+
+            switch (windowString){
                 case "edit":
                 {
-                    this.toggleTab[0].toggle = !this.toggleTab[0].toggle; 
-                    return;
+                    windowType = this.toggleTab[0];
+                    break;
                 }
                 case "settings":
                 {
-                    this.toggleTab[1].toggle = !this.toggleTab[1].toggle; 
-                    return;
+                    windowType = this.toggleTab[1];
+                    break;
+                }
+            }
+
+            windowType.toggle = !windowType.toggle;
+            this.toggleWindowStack(windowType, windowString);
+        },
+
+        toggleWindowStack(toggleItem, itemName){
+
+            if(toggleItem.toggle){
+                this.$windowStack.value.push(itemName);
+            }else{
+                let index = this.$windowStack.value.indexOf(itemName);
+
+                if(index > -1){
+                    this.$windowStack.value.splice(index, 1);
                 }
             }
         },
 
+        // TODO
+        // Maybe combined this with the function above
         test(btnType) {
-            switch (btnType.toLowerCase()){
+
+            let windowType;
+            let windowString = btnType.toLowerCase();
+
+            switch (windowString){
                 case "layout":
                 {
-                    this.EditBtns[0].toggle = !this.EditBtns[0].toggle; 
-                    return;
+                    windowType = this.EditBtns[0];
+                    break;
                 }
                 case "containers":
                 {
-                    this.EditBtns[1].toggle = !this.EditBtns[1].toggle; 
-                    return;
+                    windowType = this.EditBtns[1]; 
+                    break;
                 }                
                 case "widgets":
                 {
-                    this.EditBtns[2].toggle = !this.EditBtns[2].toggle; 
-                    return;
+                    windowType = this.EditBtns[2]; 
+                    break;
                 }
             }
+
+            windowType.toggle = !windowType.toggle;
+            this.toggleWindowStack(windowType, windowString);
         },
 
         selectContainer(){
             this.containerData.isSelectionContainer = true;
-        }
-    },
+        },
+        focusClickedTab(name){
 
+            // Run code if > 1 element
+            if(this.$windowStack.length <= 1) { return; }
+        
+            let windowString = name.toLowerCase();
+            let index = this.$windowStack.value.indexOf(windowString);
+
+            // Run code if not last
+            if(index == this.$windowStack.value.length-1) { return; }
+
+            if (index > -1) {
+                let tmp = this.$windowStack.value[index];
+                this.$windowStack.value.splice(index, 1);
+                this.$windowStack.value.push(tmp);
+            }
+        },
+    }
 }
 
 </script>
@@ -107,8 +152,8 @@ export default{
         <Window 
             v-if="this.toggleTab[0].toggle"
             title="Edit"
-            @close-window="openWindowTab">
-            
+            @close-window="openWindowTab"
+            @focusTab="focusClickedTab">
             <template v-slot:window-content>
                 <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
             </template>
@@ -117,7 +162,8 @@ export default{
         <Window 
             v-if="this.toggleTab[1].toggle"
             title="Settings"
-            @close-window="openWindowTab"> 
+            @close-window="openWindowTab"
+            @focusTab="focusClickedTab">
 
             <template v-slot:window-content>
                 <div> Hello world but settings</div>
@@ -130,10 +176,11 @@ export default{
         <Window
             v-if="this.EditBtns[0].toggle"
             title="Layout"
-            @close-window="test">
+            @close-window="test"
+            @focusTab="focusClickedTab">
             <template v-slot:window-content>
                 <PageSubDivision
-                @Container-Select="selectContainer">
+                    @Container-Select="selectContainer">
                 </PageSubDivision>
             </template>
         </Window>
@@ -142,7 +189,8 @@ export default{
         <Window
             v-if="this.EditBtns[1].toggle"
             title="Containers"
-            @close-window="test">
+            @close-window="test"
+            @focusTab="focusClickedTab">
             <template v-slot:window-content>
                 <div> Containers!</div>
             </template>
@@ -151,7 +199,8 @@ export default{
         <Window
             v-if="this.EditBtns[2].toggle"
             title="Widgets"
-            @close-window="test">
+            @close-window="test"
+            @focusTab="focusClickedTab">
             <template v-slot:window-content>
                 <div> Widgets!</div>
             </template>
