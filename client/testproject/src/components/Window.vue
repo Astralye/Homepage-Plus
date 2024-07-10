@@ -30,13 +30,10 @@
         },
         methods: {          
             updateZIndex(){
-
-                // Unfortunately the overlap only occurs after the click,
-                // When holding and dragging, this does not change
                 let tmpArray = this.$windowStack.value;
                 let name = this.title.toLowerCase();
                 
-                let index = tmpArray.indexOf(name)  ;
+                let index = tmpArray.indexOf(name);
 
                 if(index > -1){
                     index += 10; // always in front
@@ -67,6 +64,8 @@
 
                 this.$refs.draggableContainer.style.top = (this.$refs.draggableContainer.offsetTop - this.positions.movementY) + 'px'
                 this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - this.positions.movementX) + 'px'
+            
+                this.updateZIndex();
             },
             closeDragElement () {
                 document.onmouseup = null;
