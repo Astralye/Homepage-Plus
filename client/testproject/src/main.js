@@ -15,5 +15,9 @@ const app = createApp(App);
     // Position in array determines z-index.
     
 app.config.globalProperties.$windowStack = ref([]);
+app.config.globalProperties.$GlobalStates = ref( {
+    editMode: false,
+    containerSelectionMode: false,
+});
 
 app.mount('#app')

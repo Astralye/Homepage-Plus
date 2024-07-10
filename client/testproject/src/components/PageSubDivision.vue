@@ -18,17 +18,17 @@ export default {
                 { index: 1, id: "Horizontal" },
             ],
             States: {
-                isSelectingContainer: false,
                 selectedContainer: null
             }
         }
     },
     methods: {
         fnc() {
-            this.States.isSelectingContainer = !this.States.isSelectingContainer;
-            this.$emit('Container-Select');
+            this.$GlobalStates.value.containerSelectionMode = !this.$GlobalStates.value.containerSelectionMode;
+            // this.States.isSelectingContainer = !this.States.isSelectingContainer;
+            // this.$emit('Container-Select');
         }
-    }
+    },
     
 }
 </script>

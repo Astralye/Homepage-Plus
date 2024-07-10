@@ -16,7 +16,6 @@
                 }
             }
         },
-
         watch: {
 
             // When the array changes, update all the other z-index values

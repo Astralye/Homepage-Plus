@@ -53,6 +53,7 @@ export default{
                 case "edit":
                 {
                     windowType = this.toggleTab[0];
+                    this.$GlobalStates.value.editMode = !this.$GlobalStates.value.editMode; 
                     break;
                 }
                 case "settings":
@@ -206,6 +207,10 @@ export default{
             </template>
         </Window>
     </teleport>
+
+
+
+    <!-- Main body content -->
 
     <div class="main-body">
         <PageContainer 

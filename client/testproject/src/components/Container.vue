@@ -104,7 +104,9 @@
                 // Array of child templates
                 m_childNodes: [],
 
-                m_gridStyle: null
+                m_gridStyle: null,
+
+                m_EditMode: false
             }
         },
         methods:{
@@ -148,21 +150,18 @@
             flipDivisionType(){
 
                 // Shortened. Havent tested if this works.
-                // this.divisionType = (this.divisionType === "Vertical") ? "Horizontal" : "Vertical";
-                // configureDivisionType();
+                this.divisionType = (this.divisionType === "Vertical") ? "Horizontal" : "Vertical";
+                configureDivisionType();
+            },
 
-                if(this.divisionType === "Vertical"){
-                    this.divisionType = "Horizontal";
-
-                    this.containerDivision.Horizontal = true;
-                    this.containerDivision.Vertical = false;
-                    
-                }
-                else{
-                    this.divisionType = "Vertical";           
-
-                    this.containerDivision.Vertical = true;   
-                    this.containerDivision.Horizontal = false;
+            onSelectionMode(){
+                this.m_EditMode = true;
+            }
+        },
+        watch: {
+            '$GlobalStates.value.containerSelectionMode': {
+                handler(val, oldval){
+                    this.onSelectionMode();
                 }
             }
         }
@@ -177,22 +176,24 @@
         class="page-content-container"
         >
         <div 
-            :class="{'edit-mode': this.m_edit}"
-            class="grid-template"
+            :class="{'edit-mode': this.$GlobalStates.value.editMode, 
+                    'edit-hover': (this.m_EditMode && this.m_isHover) }"
+            class="grid-template separator"
             @mouseover.self="m_isHover=true"
             @mouseout.self="m_isHover=false"
             @mouseclick.self="m_isClick=true">
-            
-            <template v-if="this.m_divisionNumber > 1">
-                <Container 
-                    v-for="child in m_childNodes" 
-                    :key="child.id"
-                    :nest_level="child.Level"
-                    :division_type="child.DivisionType"
-                    :division_number="child.DivisionNumber"
-                    :id="child.id"
-                    />
-            </template>
+
+                <template v-if="this.m_divisionNumber > 1">
+                    <Container 
+                        v-for="child in m_childNodes" 
+                        :key="child.id"
+                        :nest_level="child.Level"
+                        :division_type="child.DivisionType"
+                        :division_number="child.DivisionNumber"
+                        :id="child.id"
+                        />
+                </template>
+                
         </div>
 
     </div>
@@ -202,16 +203,18 @@
 
 .grid-template{
     display: grid;
+    grid-template-columns: v-bind("columnData");
+    grid-template-rows: v-bind("rowData");
+    padding: 8px;
+
+    border-radius: 10px;
 }
 
 .edit-mode{
     border-color: black;
-    border-radius: ;
-    border: 2px dashed black;
-    margin: 3px;
+    border-radius: 10px;
 
-    grid-template-columns: v-bind("columnData");
-    grid-template-rows: v-bind("rowData");
+    outline: black dashed 2px;
 }
 
 .edit-hover{
@@ -224,6 +227,7 @@
 
     height: 100%;
     width: 100%;
+    border-radius: 10px; 
     background-color: #DD7373;
 }
 
