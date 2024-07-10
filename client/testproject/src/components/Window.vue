@@ -178,6 +178,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 30;
 }
 
 /* A box shadow is defined with container
