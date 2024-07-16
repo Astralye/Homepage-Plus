@@ -5,23 +5,14 @@
             nest_level: {
                 type: Number,
                 default: 0,
-                required: true
+                required: true,
             },
-
-            division_type: {
+            parent_ID:{
                 type: String,
-                default: "Vertical",
-                required: true
+                default: ""
             },
-
-            division_number: {
+            child_Instance:{
                 type: Number,
-                default: 1,
-                required: true
-            },
-
-            id: {
-                type: String,
                 default: 0
             }
         },
@@ -33,65 +24,29 @@
         // Initializer
         // Sets variables from props
         created(){
-
-            // Sets component variables to props
-            this.m_level = this.nest_level;
-            this.m_divisionNumber = this.division_number;
-
-            // Sets child component values to props
-            let childDivisionType = this.division_type; 
-            // I assume this depends not on the parent but what the user choses
-            // Gets overridden only for the first layer
             
-            let childLevel = this.m_level + 1;
-            let childDivisionNumber = 1; // Base case, 1 stops the recurrsion
+            this.setCurrentContainer();
             this.configureDivisionType();
-
-            // NEST TEST
-            // DELETE LATER
-
-            // This would need to be in its own function
-            // This data needs to be provided at the top level
-
-            // This d
-            if(this.nest_level === 0){ // Root layer
-                childDivisionType = "Horizontal";
-            }
-            else if(this.id === "11"){
-                this.m_divisionNumber = 4; // Changes current division number.
-                childDivisionType = "Vertical";
-            }
-
-            // NEST TEST
-        
-            // Initializes containers
-            // Need a way of removing containers
-            for(let i = 0; i < this.m_divisionNumber; i++){
-
-                this.m_childNodes.push(
-                    { 
-                    Level: childLevel,
-                    DivisionType: childDivisionType,
-                    DivisionNumber: childDivisionNumber,
-                    id : childLevel.toString() + i.toString()
-                    }
-                );
-            }
-
             this.configureGridData();
 
             // Logging
-            console.log(`level: ${this.m_level}, id: ${this.id}, type: ${this.division_type}, child_type: ${childDivisionType}, divisions: ${this.m_divisionNumber}`);
-            console.log(this.gridColumnStyle, this.gridRowStyle);
+            // console.log(`level: ${this.m_level}, id: ${this.id}, type: ${this.division_type}, child_type: ${childDivisionType}, divisions: ${this.m_divisionNumber}`);
+            // console.log(this.gridColumnStyle, this.gridRowStyle);
         },
         data(){
             return{
 
+                m_ContainerData:         
+                {
+                    level: 0,
+                    divisionType: "Vertical",
+                    id: "0A",
+                    NoChildren: 0
+                },
+                    
                 m_edit: true,
                 m_isHover: false,
-                m_isClick: false,         
-                m_divisionNumber: 0,
-                m_level: 0,
+                m_isClick: false,
 
 
                 // This is temporary code
@@ -100,9 +55,6 @@
                 
                 m_columnData: null,
                 m_rowData: null,
-
-                // Array of child templates
-                m_childNodes: [],
 
                 m_gridStyle: null,
 
@@ -156,6 +108,80 @@
 
             onSelectionMode(){
                 this.m_EditMode = true;
+            },
+            setCurrentContainer(){
+                this.m_ContainerData.level = this.nest_level;
+
+                var tmpID;
+                if(this.nest_level === 0){
+                    tmpID = this.$ContainerData.value.id;
+                    console.log(tmpID);
+                }
+                else{
+                    tmpID = this.parent_ID.concat(this.createID());
+                }
+
+
+                let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
+                // console.log(this.m_ContainerData);
+                
+                this.m_ContainerData.level = tmpContainer.level;
+                this.m_ContainerData.divisionType = tmpContainer.divisionType;
+                this.m_ContainerData.id = tmpContainer.id
+                this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
+
+            },
+
+            createID(){
+                return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
+            },
+
+            // Breadth first recurrsion function
+            // Finds the corresponding data from the level and ID
+            findLevelData(currentLevelData, Level, ID){
+
+                var childData = currentLevelData.containerData;
+
+                console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
+
+                // If this level,
+                if(this.nest_level === currentLevelData.level && Level == currentLevelData.level ){
+                    // console.log("Item found")
+                    return currentLevelData;
+                }
+                
+                if(childData.length === 0 ) return null;
+
+                // Needs to look at itself
+                // Looks at the children
+                for(let i = 0; i < childData.length; i++){
+                    
+                    let item = childData[i];
+                    console.log("Looking at:", item.id);
+
+                    // Base case (Found item)
+                    if(item.id == ID){
+                        // console.log("Item found")
+                        return item
+                    }
+                    // Base case (Nothing found and only no siblings)
+                    else if(item.NoChildren === 0 && childData.length <= 1)
+                    {
+                        return null;
+                    }
+                    // Recursive
+                    else{
+                        // Moves down 1 level
+                        var tmp = this.findLevelData(item, Level + 1, ID);
+                        // If found, return up stack.
+                        if(tmp !== null){ return tmp; }
+                    }
+                }
+                return null;
+            },
+
+            updateChildren(){
+                // Update no. children depending on how many values in containerData
             }
         },
         watch: {
@@ -183,14 +209,12 @@
             @mouseout.self="m_isHover=false"
             @mouseclick.self="m_isClick=true">
 
-                <template v-if="this.m_divisionNumber > 1">
+                <template v-if="this.m_ContainerData.NoChildren > 0">
                     <Container 
-                        v-for="child in m_childNodes" 
-                        :key="child.id"
-                        :nest_level="child.Level"
-                        :division_type="child.DivisionType"
-                        :division_number="child.DivisionNumber"
-                        :id="child.id"
+                        v-for="n in this.m_ContainerData.NoChildren" 
+                        :nest_level="nest_level+1"
+                        :parent_ID="this.m_ContainerData.id"
+                        :child_Instance="n-1"
                         />
                 </template>
                 
