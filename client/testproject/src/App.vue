@@ -213,11 +213,8 @@ export default{
     <!-- Main body content -->
 
     <div class="main-body">
-        <PageContainer 
-            :nest_level="0"
-            :division_number="3"
-            division_type="Vertical">
-        </PageContainer>
+        <PageContainer
+            :nest_level="0"/>
     </div>
 </template>
 

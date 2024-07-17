@@ -24,48 +24,10 @@ app.config.globalProperties.$GlobalStates = ref( {
 // PARENTID + "Level + A/B/C/D"
 app.config.globalProperties.$ContainerData = ref({
     level: 0,
-    divisionType: "a",
+    divisionType: "Horizontal",
     id: "0A",
-    NoChildren: 2,
+    NoChildren: 0,
     containerData: [
-        {
-            level: 1,
-            divisionType: "b",
-            id: "0A1A",
-            NoChildren: 2,
-            containerData: [
-                {
-                    level: 2,
-                    divisionType: "c",
-                    id: "0A1A2A",
-                    NoChildren: 0,
-                    containerData: []
-                },
-
-                {
-                    level: 2,
-                    divisionType: "d",
-                    id: "0A1A2B",
-                    NoChildren: 0,
-                    containerData: []
-                },
-            ]
-        },
-        {
-            level: 1,
-            divisionType: "e",
-            id: "0A1B",
-            NoChildren: 1,
-            containerData: [
-                {
-                    level: 2,
-                    divisionType: "d",
-                    id: "0A1B2A",
-                    NoChildren: 0,
-                    containerData: []
-                },
-            ]
-        }
     ],
 });
 

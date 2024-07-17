@@ -30,7 +30,6 @@
             this.configureGridData();
 
             // Logging
-            // console.log(`level: ${this.m_level}, id: ${this.id}, type: ${this.division_type}, child_type: ${childDivisionType}, divisions: ${this.m_divisionNumber}`);
             // console.log(this.gridColumnStyle, this.gridRowStyle);
         },
         data(){
@@ -180,8 +179,8 @@
                 return null;
             },
 
+            // Update no. children depending on how many values in containerData
             updateChildren(){
-                // Update no. children depending on how many values in containerData
             }
         },
         watch: {
@@ -189,6 +188,14 @@
                 handler(val, oldval){
                     this.onSelectionMode();
                 }
+            },
+            '$ContainerData.value': {
+                handler(val, oldval){
+                    this.setCurrentContainer();
+                    this.configureDivisionType();
+                    this.configureGridData();
+                },
+                deep: true
             }
         }
     }

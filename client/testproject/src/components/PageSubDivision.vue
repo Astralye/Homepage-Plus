@@ -8,10 +8,10 @@ export default {
     data() {
         return{
             ContainerDivision: [
-                { index: 0, id: "One" },
-                { index: 1, id: "Two" },
-                { index: 2, id: "Three" },
-                { index: 3, id: "Four" }
+                { index: 1, id: "One" },
+                { index: 2, id: "Two" },
+                { index: 3, id: "Three" },
+                { index: 4, id: "Four" }
             ],
             DivisionType: [
                 { index: 0, id: "Vertical" },
@@ -27,7 +27,54 @@ export default {
             this.$GlobalStates.value.containerSelectionMode = !this.$GlobalStates.value.containerSelectionMode;
             // this.States.isSelectingContainer = !this.States.isSelectingContainer;
             // this.$emit('Container-Select');
-        }
+        },
+
+        modifyContainer(divisions){
+            console.log("clicked on:", divisions);
+
+            // Some form of selector is needed here
+            // For now just use the base
+
+            let currentDivisons = this.$ContainerData.value.NoChildren;
+            let newDivisions = divisions;
+            let difference = newDivisions - currentDivisons;
+
+            let currentLevel = 0;
+
+            // This code is temporary
+            // does not scale or work for the different containers 
+            // Proof of concept for buttons.
+
+            // TODO
+            // Container Selector
+            // Add, and remove containers on the fly.
+            // Change orientation.
+
+            if(difference > 0 ){
+
+                for(let i = 0; i < difference; i++)
+                {
+                    let newID = this.createID(currentLevel+1, i);
+
+                    this.$ContainerData.value.containerData.push(
+                        {
+                            level: currentLevel + 1,
+                            divisionType: "Vertical",
+                            id: "0A".concat(newID),
+                            NoChildren: 0,
+                            containerData: []
+                        }
+                    )
+                    console.log(this.$ContainerData.value);
+                }
+            }
+
+            this.$ContainerData.value.NoChildren = difference;
+        },
+
+        createID(level, index){
+            return `${level}`.concat(String.fromCharCode(64 + 1 + index));
+        },
     },
     
 }
@@ -75,7 +122,11 @@ export default {
 
             <div v-for="container in ContainerDivision">
                 <input type="radio" :id="container.id" name="no-divisions" :value="container.id" :checked="container.index == 0 ? true : false">
-                <label class="radio-btn no-divisions" :for="container.id">
+                <label
+                    class="radio-btn no-divisions"
+                    :for="container.id"
+                    @click="modifyContainer(container.index)"
+                    >
 
                     <div class="bnt-content">
 
