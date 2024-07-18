@@ -5,8 +5,6 @@ const port = 5000;
 
 var htmlPath = path.join(__dirname , "..", "client","testproject","dist");
 
-console.log(htmlPath);
-
 app.use(express.static(htmlPath));
 
 app.use((req, res) => {

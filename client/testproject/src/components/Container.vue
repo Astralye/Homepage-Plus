@@ -114,7 +114,7 @@
                 var tmpID;
                 if(this.nest_level === 0){
                     tmpID = this.$ContainerData.value.id;
-                    console.log(tmpID);
+                    // console.log(tmpID);
                 }
                 else{
                     tmpID = this.parent_ID.concat(this.createID());
@@ -124,24 +124,28 @@
                 let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
                 // console.log(this.m_ContainerData);
                 
-                this.m_ContainerData.level = tmpContainer.level;
-                this.m_ContainerData.divisionType = tmpContainer.divisionType;
-                this.m_ContainerData.id = tmpContainer.id
-                this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
-
+                if(tmpContainer != null){
+                    this.m_ContainerData.level = tmpContainer.level;
+                    this.m_ContainerData.divisionType = tmpContainer.divisionType;
+                    this.m_ContainerData.id = tmpContainer.id
+                    this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
+                }
+                else{
+                    console.error(`ERROR: Container not found. Level: ${this.m_ContainerData.level}, ID: ${tmpID}`);
+                }
             },
 
             createID(){
                 return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
             },
 
-            // Breadth first recurrsion function
+            // Depth-first search recurrsion function
             // Finds the corresponding data from the level and ID
             findLevelData(currentLevelData, Level, ID){
 
                 var childData = currentLevelData.containerData;
 
-                console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
+                // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
 
                 // If this level,
                 if(this.nest_level === currentLevelData.level && Level == currentLevelData.level ){
@@ -156,7 +160,7 @@
                 for(let i = 0; i < childData.length; i++){
                     
                     let item = childData[i];
-                    console.log("Looking at:", item.id);
+                    // console.log("Looking at:", item.id);
 
                     // Base case (Found item)
                     if(item.id == ID){
@@ -189,6 +193,7 @@
                     this.onSelectionMode();
                 }
             },
+            // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldval){
                     this.setCurrentContainer();
@@ -210,7 +215,7 @@
         >
         <div 
             :class="{'edit-mode': this.$GlobalStates.value.editMode, 
-                    'edit-hover': (this.m_EditMode && this.m_isHover) }"
+                    'edit-hover': (this.$GlobalStates.value.editMode && this.m_isHover) }"
             class="grid-template separator"
             @mouseover.self="m_isHover=true"
             @mouseout.self="m_isHover=false"

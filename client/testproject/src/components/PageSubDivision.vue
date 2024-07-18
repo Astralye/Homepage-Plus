@@ -8,10 +8,10 @@ export default {
     data() {
         return{
             ContainerDivision: [
-                { index: 1, id: "One" },
-                { index: 2, id: "Two" },
-                { index: 3, id: "Three" },
-                { index: 4, id: "Four" }
+                { index: 1, id: "One", selected: true },
+                { index: 2, id: "Two", selected: false },
+                { index: 3, id: "Three", selected: false },
+                { index: 4, id: "Four", selected: false }
             ],
             DivisionType: [
                 { index: 0, id: "Vertical" },
@@ -23,58 +23,140 @@ export default {
         }
     },
     methods: {
-        fnc() {
+        toggleSelectionMode() {
+
             this.$GlobalStates.value.containerSelectionMode = !this.$GlobalStates.value.containerSelectionMode;
             // this.States.isSelectingContainer = !this.States.isSelectingContainer;
             // this.$emit('Container-Select');
         },
 
         modifyContainer(divisions){
-            console.log("clicked on:", divisions);
+
+            let difference = divisions - this.$ContainerData.value.NoChildren;
 
             // Some form of selector is needed here
             // For now just use the base
 
-            let currentDivisons = this.$ContainerData.value.NoChildren;
-            let newDivisions = divisions;
-            let difference = newDivisions - currentDivisons;
+            const current_containerLevel = this.$ContainerData.value.level;
+            const current_containerID = this.$ContainerData.value.id;
+            let divType = "Vertical";
 
-            let currentLevel = 0;
+            // Values can be as a variable
+            // Can store the object and modify the list
+            // Just need a way to hookup the click to pass as the value
+            let container = this.findLevelData(this.$ContainerData.value, current_containerLevel, current_containerID);
 
-            // This code is temporary
-            // does not scale or work for the different containers 
-            // Proof of concept for buttons.
+            let siblingContainers = container.containerData; 
 
-            // TODO
-            // Container Selector
-            // Add, and remove containers on the fly.
-            // Change orientation.
-
-            if(difference > 0 ){
-
-                for(let i = 0; i < difference; i++)
+            // Positive, add containers            
+            if(difference > 0){
+                // Parent container has no children,
+                // Start from scratch
+                if(siblingContainers.length === 0 ){
+                    console.log("none!")
+                }
+                // Create ID taking into account the last child.
                 {
-                    let newID = this.createID(currentLevel+1, i);
+                    // Stores the last current index of the siblings
+                    var latestIndex;
 
-                    this.$ContainerData.value.containerData.push(
-                        {
-                            level: currentLevel + 1,
-                            divisionType: "Vertical",
-                            id: "0A".concat(newID),
+                    siblingContainers.forEach( (cont,index) => { latestIndex = index; });
+                    
+                    let childLevel = current_containerLevel + 1;
+                    let baseID = current_containerID;
+
+                    this.$ContainerData.value.NoChildren = divisions;
+
+                    for(let i = 0; i < divisions; i++){
+                        if(i < latestIndex+1){ continue; }
+
+                        let newID = current_containerID + this.createID(childLevel, i);
+
+                        container.containerData.push({
+                            level: childLevel,
+                            divisionType: divType,
+                            id: newID,
                             NoChildren: 0,
                             containerData: []
-                        }
-                    )
-                    console.log(this.$ContainerData.value);
+                        });
+                        
+                        this.toggleSelectionMode();
+                    }
                 }
             }
+            // Negative, remove containers
+            else if(difference < 0){
+                difference = Math.abs(difference);
+                this.$ContainerData.value.NoChildren -= difference;
 
-            this.$ContainerData.value.NoChildren = difference;
+                for(let i = 0; i < difference; i++){ container.containerData.pop(); }
+
+            }
+            // Do nothing if 0
+
+            // // TODO
         },
 
         createID(level, index){
             return `${level}`.concat(String.fromCharCode(64 + 1 + index));
         },
+
+        // Function copied from Container.
+        // Was not sure how to access the function, so I just put it here.
+        findLevelData(currentLevelData, Level, ID){
+
+            var childData = currentLevelData.containerData;
+
+            // console.log("nest:", Level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
+
+            // If this level,
+            if(Level == currentLevelData.level ){
+                // console.log("Item found")
+                return currentLevelData;
+            }
+            
+            if(childData.length === 0 ) return null;
+
+            // Needs to look at itself
+            // Looks at the children
+            for(let i = 0; i < childData.length; i++){
+                
+                let item = childData[i];
+                // console.log("Looking at:", item.id);
+
+                // Base case (Found item)
+                if(item.id == ID){
+                    // console.log("Item found")
+                    return item
+                }
+                // Base case (Nothing found and only no siblings)
+                else if(item.NoChildren === 0 && childData.length <= 1)
+                {
+                    return null;
+                }
+                // Recursive
+                else{
+                    // Moves down 1 level
+                    var tmp = this.findLevelData(item, Level + 1, ID);
+                    // If found, return up stack.
+                    if(tmp !== null){ return tmp; }
+                }
+            }
+            return null;
+        },
+
+        selectContainer(container){
+            if(!container.selected){
+                // Resets all the other values
+                this.ContainerDivision.forEach(cont => { cont.selected = false; });
+                container.selected = true;
+                return true;
+            }
+            else{
+                return false;
+            }
+            
+        }
     },
     
 }
@@ -89,7 +171,7 @@ export default {
 
         <button
             class="select-Container"
-            @click="fnc()">
+            @click="toggleSelectionMode()">
             <h2 class="label-text-container">
                 Select Container
             </h2>
@@ -121,11 +203,16 @@ export default {
         <div class="container-division-number">
 
             <div v-for="container in ContainerDivision">
-                <input type="radio" :id="container.id" name="no-divisions" :value="container.id" :checked="container.index == 0 ? true : false">
+                <input 
+                    type="radio" 
+                    name="no-divisions" 
+                    :id="container.id" 
+                    :value="container.id" 
+                    :checked="container.index === 1 ? true : false">
                 <label
                     class="radio-btn no-divisions"
                     :for="container.id"
-                    @click="modifyContainer(container.index)"
+                    @click="selectContainer(container) ? modifyContainer(container.index) : null "
                     >
 
                     <div class="bnt-content">
@@ -215,6 +302,7 @@ label:hover{
 input[type="radio"]:checked + label{
     border: 2px solid green;
     background-color: green;
+    cursor: not-allowed
 }
 
 .division-type{

@@ -26,8 +26,15 @@ app.config.globalProperties.$ContainerData = ref({
     level: 0,
     divisionType: "Horizontal",
     id: "0A",
-    NoChildren: 0,
+    NoChildren: 1,
     containerData: [
+        {
+            level: 1,
+            divisionType: "Horizontal",
+            id: "0A1A",
+            NoChildren: 0,
+            containerData: []
+        }
     ],
 });
 
