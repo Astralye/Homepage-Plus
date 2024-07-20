@@ -2,6 +2,12 @@
     export default {
         props: {
             title: String,
+
+            width: {
+                type: Number,
+                default: 300,
+                required: true,
+            },
         },
         emits: ['closeWindow', 'focusTab'],
         data() {
@@ -13,7 +19,9 @@
                     clientY: undefined,
                     movementX: 0,
                     movementY: 0
-                }
+                },
+                
+                windowWidth: `${this.width}px`
             }
         },
         watch: {
@@ -171,7 +179,7 @@
 }
 
 .window{
-    width: 300px;
+    width: v-bind("windowWidth");
     height: auto;
     box-shadow: 4px 4px 10px grey;
     position: absolute;

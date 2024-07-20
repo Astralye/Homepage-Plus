@@ -153,6 +153,7 @@ export default{
         <Window 
             v-if="this.toggleTab[0].toggle"
             title="Edit"
+            width=150
             @close-window="openWindowTab"
             @focusTab="focusClickedTab">
             <template v-slot:window-content>
