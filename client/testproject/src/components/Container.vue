@@ -26,8 +26,6 @@
         created(){
             
             this.setCurrentContainer();
-            this.configureDivisionType();
-            this.configureGridData();
 
             // Logging
             // console.log(this.gridColumnStyle, this.gridRowStyle);
@@ -46,11 +44,6 @@
                 m_edit: true,
                 m_isHover: false,
                 m_isClick: false,
-
-
-                // This is temporary code
-                // Will need to link with buttons later
-                m_horizontalDivision: false,
                 
                 m_columnData: null,
                 m_rowData: null,
@@ -61,18 +54,45 @@
             }
         },
         methods:{
-
-            // Sets local division based on prop
-            configureDivisionType(){
-                this.m_horizontalDivision = (this.division_type === "Vertical") ? false : true ;
-            },
-
+            
             // Sets css grids
-            configureGridData(){
+            configureGridData(type){
+                
+                console.log("here");
 
-                let children = 2;
+                // Needs to update itself
+                // For now I needed to update the parent
+
+                if(this.m_ContainerData.id !== "0A") { return; } 
+
+                if(type === "Horizontal"){
+                    this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                    this.m_columnData = "";
+
+                    console.log(this.rowData);
+                }
+                else{
+                    this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                    this.rowData = "";
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 let evenSplit = true;
-
                 // Todo
                 // Implement generic algorithm
                 // for calculating non-even widths.
@@ -80,29 +100,24 @@
                 // Any division means sum is always the same.
 
                 if(evenSplit){
-                    if(this.m_horizontalDivision){                  
-                        this.rowData = "1fr ".repeat(this.m_divisionNumber);
-                    }
-                    else{
-                        this.columnData = "1fr ".repeat(this.m_divisionNumber);
-                    }
+                    // if(type === "Horizontal"){
+                    //     console.log("horizontal");
+                    //     this.columnData = "";
+                    // }
+                    // else{
+                    //     console.log("Vertical");
+                    //     this.rowData = "";
+                    //     this.columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                    // }
                 }
-                else{
-                    if(this.m_horizontalDivision){
-                        this.rowData = "1fr ".repeat(children);
-                    }
-                    else{
-                        this.columnData = "1fr";
-                    }
-                }
-            },
-
-
-            flipDivisionType(){
-
-                // Shortened. Havent tested if this works.
-                this.divisionType = (this.divisionType === "Vertical") ? "Horizontal" : "Vertical";
-                configureDivisionType();
+                // else{
+                //     if(this.m_horizontalDivision){
+                //         this.rowData = "1fr ".repeat(children);
+                //     }
+                //     else{
+                //         this.columnData = "1fr";
+                //     }
+                // }
             },
 
             onSelectionMode(){
@@ -133,6 +148,8 @@
                 else{
                     console.error(`ERROR: Container not found. Level: ${this.m_ContainerData.level}, ID: ${tmpID}`);
                 }
+
+                this.configureGridData(tmpContainer.divisionType);
             },
 
             createID(){
@@ -182,10 +199,6 @@
                 }
                 return null;
             },
-
-            // Update no. children depending on how many values in containerData
-            updateChildren(){
-            }
         },
         watch: {
             '$GlobalStates.value.containerSelectionMode': {
@@ -197,8 +210,6 @@
             '$ContainerData.value': {
                 handler(val, oldval){
                     this.setCurrentContainer();
-                    this.configureDivisionType();
-                    this.configureGridData();
                 },
                 deep: true
             }
@@ -239,8 +250,8 @@
 
 .grid-template{
     display: grid;
-    grid-template-columns: v-bind("columnData");
-    grid-template-rows: v-bind("rowData");
+    grid-template-columns: v-bind("m_columnData");
+    grid-template-rows: v-bind("m_rowData");
     padding: 8px;
 
     border-radius: 10px;

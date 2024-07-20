@@ -39,7 +39,7 @@ export default {
 
             const current_containerLevel = this.$ContainerData.value.level;
             const current_containerID = this.$ContainerData.value.id;
-            let divType = "Vertical";
+            let divType = "Vertical"; // This is of the children.
 
             // Values can be as a variable
             // Can store the object and modify the list
@@ -155,7 +155,18 @@ export default {
             else{
                 return false;
             }
-            
+        },
+
+        // Update division type
+        updateDivision(type){
+        
+            const current_containerLevel = 0;
+            const current_containerID = "0A";
+
+            let parentContainer = this.findLevelData(this.$ContainerData.value, current_containerLevel,current_containerID);
+            parentContainer.divisionType = type;
+
+            console.log(parentContainer);
         }
     },
     
@@ -171,7 +182,7 @@ export default {
 
         <button
             class="select-Container"
-            @click="toggleSelectionMode()">
+            @click="toggleSelectionMode">
             <h2 class="label-text-container">
                 Select Container
             </h2>
@@ -184,8 +195,16 @@ export default {
 
             <div class="grid">
                 <div v-for="type in DivisionType">
-                    <input type="radio" :id="type.id" name="division-type" :value="type.id" :checked="type.index == 0 ? true : false">
-                    <label class="radio-btn division-type" :for="type.id">
+                    <input 
+                        type="radio"
+                        :id="type.id" 
+                        name="division-type"
+                        :value="type.id"
+                        :checked="type.index == 0 ? true : false">
+                    <label 
+                        class="radio-btn division-type" 
+                        :for="type.id"
+                        @click="updateDivision(type.id)">
 
                         <div class="label-text-container">
                             <h3> {{ type.id }} </h3>
