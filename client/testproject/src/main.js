@@ -16,7 +16,10 @@ const app = createApp(App);
     
 app.config.globalProperties.$windowStack = ref([]);
 app.config.globalProperties.$GlobalStates = ref( {
-    editMode: false,
+    edit: {
+        enabled: false,
+        containerSelected: null // ID of the container selected
+    },
     containerSelectionMode: false,
 });
 

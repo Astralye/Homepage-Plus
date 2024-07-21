@@ -5,8 +5,7 @@
 
             width: {
                 type: Number,
-                default: 300,
-                required: true,
+                default: 300
             },
         },
         emits: ['closeWindow', 'focusTab'],

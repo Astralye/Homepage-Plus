@@ -18,7 +18,10 @@ export default {
                 { index: 1, id: "Horizontal" },
             ],
             States: {
-                selectedContainer: null
+                selectedContainer: {
+                    level: this.$ContainerData.value.level,
+                    id: this.$ContainerData.value.id
+                }
             }
         }
     },
@@ -32,21 +35,25 @@ export default {
 
         modifyContainer(divisions){
 
+            console.log("clicked on :",this.States.selectedContainer.id);
+            
             let difference = divisions - this.$ContainerData.value.NoChildren;
 
             // Some form of selector is needed here
             // For now just use the base
 
-            const current_containerLevel = this.$ContainerData.value.level;
-            const current_containerID = this.$ContainerData.value.id;
+            const current_containerLevel = this.States.selectedContainer.level;
+            const current_containerID = this.States.selectedContainer.id;
+
+
             let divType = "Vertical"; // This is of the children.
 
-            // Values can be as a variable
-            // Can store the object and modify the list
-            // Just need a way to hookup the click to pass as the value
             let container = this.findLevelData(this.$ContainerData.value, current_containerLevel, current_containerID);
-
+            
             let siblingContainers = container.containerData; 
+
+            // Need a way of modifying only the children values.
+
 
             // Positive, add containers            
             if(difference > 0){
@@ -86,11 +93,14 @@ export default {
             }
             // Negative, remove containers
             else if(difference < 0){
+                
+                // When clicking on the buttons on the menu, they change the values within the container.
+                console.log("here");
+
                 difference = Math.abs(difference);
                 this.$ContainerData.value.NoChildren -= difference;
 
                 for(let i = 0; i < difference; i++){ container.containerData.pop(); }
-
             }
             // Do nothing if 0
 
@@ -165,10 +175,23 @@ export default {
 
             let parentContainer = this.findLevelData(this.$ContainerData.value, current_containerLevel,current_containerID);
             parentContainer.divisionType = type;
+        },
 
-            console.log(parentContainer);
+        changeSelectedContainer(newContainerID){
+            var level = Number(newContainerID.charAt(newContainerID.length - 2));
+            this.States.selectedContainer.level = level;
+            this.States.selectedContainer.id = newContainerID;
+
+            this.modifyContainer();
         }
     },
+    watch: {
+        '$GlobalStates.value.edit.containerSelected':{
+            handler(val, oldval){
+                this.changeSelectedContainer(val);
+            }
+        },
+    }
     
 }
 </script>
@@ -195,6 +218,21 @@ export default {
 
             <div class="grid">
                 <div v-for="type in DivisionType">
+                    <!-- 
+                        When changing the selected container, all this needs to refresh, depending on the values inside
+                        Container Data.
+
+                        For e.g When I click on 'Four', for the 0A Container, that should only be associated with the data in
+                        ContainerData.
+                            level
+                            divisionType
+                            NoChildren
+
+                        When I select a new container or click back on a pre-existing one,
+                        it should show the currently saved data for the container.
+                        
+                    -->
+
                     <input 
                         type="radio"
                         :id="type.id" 

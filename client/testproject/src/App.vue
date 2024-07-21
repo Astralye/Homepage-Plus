@@ -53,7 +53,7 @@ export default{
                 case "edit":
                 {
                     windowType = this.toggleTab[0];
-                    this.$GlobalStates.value.editMode = !this.$GlobalStates.value.editMode; 
+                    this.$GlobalStates.value.edit.enabled = !this.$GlobalStates.value.edit.enabled;
                     break;
                 }
                 case "settings":
@@ -153,7 +153,7 @@ export default{
         <Window 
             v-if="this.toggleTab[0].toggle"
             title="Edit"
-            width=150
+            width="150"
             @close-window="openWindowTab"
             @focusTab="focusClickedTab">
             <template v-slot:window-content>

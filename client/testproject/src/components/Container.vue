@@ -54,43 +54,13 @@
             }
         },
         methods:{
-            
+
             // Sets css grids
             configureGridData(type){
                 
-                console.log("here");
-
                 // Needs to update itself
                 // For now I needed to update the parent
-
-                if(this.m_ContainerData.id !== "0A") { return; } 
-
-                if(type === "Horizontal"){
-                    this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                    this.m_columnData = "";
-
-                    console.log(this.rowData);
-                }
-                else{
-                    this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                    this.rowData = "";
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                if(this.m_ContainerData.id !== "0A") { return; }
 
                 let evenSplit = true;
                 // Todo
@@ -100,15 +70,14 @@
                 // Any division means sum is always the same.
 
                 if(evenSplit){
-                    // if(type === "Horizontal"){
-                    //     console.log("horizontal");
-                    //     this.columnData = "";
-                    // }
-                    // else{
-                    //     console.log("Vertical");
-                    //     this.rowData = "";
-                    //     this.columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                    // }
+                    if(type === "Horizontal"){
+                        this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                        this.m_columnData = "";
+                    }
+                    else{
+                        this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                        this.rowData = "";
+                    }
                 }
                 // else{
                 //     if(this.m_horizontalDivision){
@@ -129,7 +98,6 @@
                 var tmpID;
                 if(this.nest_level === 0){
                     tmpID = this.$ContainerData.value.id;
-                    // console.log(tmpID);
                 }
                 else{
                     tmpID = this.parent_ID.concat(this.createID());
@@ -137,7 +105,6 @@
 
 
                 let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
-                // console.log(this.m_ContainerData);
                 
                 if(tmpContainer != null){
                     this.m_ContainerData.level = tmpContainer.level;
@@ -199,13 +166,21 @@
                 }
                 return null;
             },
+
+            storeClickedContainer(){
+                if(this.m_ContainerData.id === null) {return;}
+
+                this.$GlobalStates.value.edit.containerSelected = this.m_ContainerData.id;
+                this.$GlobalStates.value.edit.enabled = true;
+            }
         },
         watch: {
             '$GlobalStates.value.containerSelectionMode': {
                 handler(val, oldval){
-                    this.onSelectionMode();
+                    // this.onSelectionMode();
                 }
             },
+
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldval){
@@ -219,18 +194,15 @@
 
 <template>
     <div
-        @mouseover.self="m_isHover=true"
-        @mouseout.self="m_isHover=false"
-        @mouseclick.self="m_isClick=true"
         class="page-content-container"
         >
         <div 
-            :class="{'edit-mode': this.$GlobalStates.value.editMode, 
-                    'edit-hover': (this.$GlobalStates.value.editMode && this.m_isHover) }"
+            :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
+                    'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover) }"
             class="grid-template separator"
             @mouseover.self="m_isHover=true"
             @mouseout.self="m_isHover=false"
-            @mouseclick.self="m_isClick=true">
+            @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
 
                 <template v-if="this.m_ContainerData.NoChildren > 0">
                     <Container 
@@ -252,6 +224,7 @@
     display: grid;
     grid-template-columns: v-bind("m_columnData");
     grid-template-rows: v-bind("m_rowData");
+    grid-gap: 10px;
     padding: 8px;
 
     border-radius: 10px;
