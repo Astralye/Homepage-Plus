@@ -57,26 +57,21 @@
 
             // Sets css grids
             configureGridData(type){
-                
-                // Needs to update itself
-                // For now I needed to update the parent
-                if(this.m_ContainerData.id !== "0A") { return; }
-
                 let evenSplit = true;
+
                 // Todo
                 // Implement generic algorithm
                 // for calculating non-even widths.
                 // Sum -> 1fr * children.
                 // Any division means sum is always the same.
-
                 if(evenSplit){
                     if(type === "Horizontal"){
                         this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                        this.m_columnData = "";
+                        this.m_columnData = "1fr";
                     }
                     else{
                         this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                        this.rowData = "";
+                        this.rowData = "1fr";
                     }
                 }
                 // else{
@@ -93,6 +88,9 @@
                 this.m_EditMode = true;
             },
             setCurrentContainer(){
+
+                // console.log(this.$ContainerData.value);
+
                 this.m_ContainerData.level = this.nest_level;
 
                 var tmpID;

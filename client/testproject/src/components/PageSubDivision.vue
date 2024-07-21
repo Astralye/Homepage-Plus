@@ -17,6 +17,8 @@ export default {
                 { index: 0, id: "Vertical" },
                 { index: 1, id: "Horizontal" },
             ],
+            // These were for rendering, they have no semantic value to the data structure
+
             States: {
                 selectedContainer: {
                     level: this.$ContainerData.value.level,
@@ -34,29 +36,19 @@ export default {
         },
 
         modifyContainer(divisions){
-
-            console.log("clicked on :",this.States.selectedContainer.id);
-            
-            let difference = divisions - this.$ContainerData.value.NoChildren;
-
-            // Some form of selector is needed here
-            // For now just use the base
+            let divType = "Vertical"; // Default value of children
 
             const current_containerLevel = this.States.selectedContainer.level;
             const current_containerID = this.States.selectedContainer.id;
 
-
-            let divType = "Vertical"; // This is of the children.
-
             let container = this.findLevelData(this.$ContainerData.value, current_containerLevel, current_containerID);
-            
+
+            let difference = divisions - container.NoChildren;
             let siblingContainers = container.containerData; 
-
-            // Need a way of modifying only the children values.
-
 
             // Positive, add containers            
             if(difference > 0){
+
                 // Parent container has no children,
                 // Start from scratch
                 if(siblingContainers.length === 0 ){
@@ -66,16 +58,14 @@ export default {
                 {
                     // Stores the last current index of the siblings
                     var latestIndex;
+                    let childLevel = current_containerLevel + 1;
+                    let baseID = current_containerID;
+                    container.NoChildren = divisions;
 
                     siblingContainers.forEach( (cont,index) => { latestIndex = index; });
                     
-                    let childLevel = current_containerLevel + 1;
-                    let baseID = current_containerID;
-
-                    this.$ContainerData.value.NoChildren = divisions;
-
                     for(let i = 0; i < divisions; i++){
-                        if(i < latestIndex+1){ continue; }
+                        if(i < latestIndex+1){ continue; } // If the current index is not the last available
 
                         let newID = current_containerID + this.createID(childLevel, i);
 
@@ -93,18 +83,12 @@ export default {
             }
             // Negative, remove containers
             else if(difference < 0){
-                
-                // When clicking on the buttons on the menu, they change the values within the container.
-                console.log("here");
 
                 difference = Math.abs(difference);
-                this.$ContainerData.value.NoChildren -= difference;
-
+                container.NoChildren -= difference;
                 for(let i = 0; i < difference; i++){ container.containerData.pop(); }
             }
             // Do nothing if 0
-
-            // // TODO
         },
 
         createID(level, index){
@@ -156,6 +140,7 @@ export default {
         },
 
         selectContainer(container){
+            
             if(!container.selected){
                 // Resets all the other values
                 this.ContainerDivision.forEach(cont => { cont.selected = false; });
@@ -170,8 +155,8 @@ export default {
         // Update division type
         updateDivision(type){
         
-            const current_containerLevel = 0;
-            const current_containerID = "0A";
+            const current_containerLevel = this.States.selectedContainer.level;
+            const current_containerID = this.States.selectedContainer.id;
 
             let parentContainer = this.findLevelData(this.$ContainerData.value, current_containerLevel,current_containerID);
             parentContainer.divisionType = type;
@@ -181,14 +166,36 @@ export default {
             var level = Number(newContainerID.charAt(newContainerID.length - 2));
             this.States.selectedContainer.level = level;
             this.States.selectedContainer.id = newContainerID;
+        },
 
-            this.modifyContainer();
+        changeSelectedContainerDivision(index){
+            let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            
+            // If has children, display
+            if(container.NoChildren !== 0) {
+                if(container.NoChildren-1 === index){
+                    return true;
+                }
+            }
+            // If no children, select first
+            else if (index === 0) {return true;}
+
+            return false;
+        },
+
+        changeSelectedDivisionType(index){
+            let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+
+            if(container.divisionType === "Vertical" && index === 0){ return true;}
+            if(container.divisionType === "Horizontal" && index === 1){ return true;}
+            return false;
         }
     },
     watch: {
         '$GlobalStates.value.edit.containerSelected':{
             handler(val, oldval){
                 this.changeSelectedContainer(val);
+                this.changeSelectedContainerDivision();
             }
         },
     }
@@ -217,28 +224,13 @@ export default {
             </h2>
 
             <div class="grid">
-                <div v-for="type in DivisionType">
-                    <!-- 
-                        When changing the selected container, all this needs to refresh, depending on the values inside
-                        Container Data.
-
-                        For e.g When I click on 'Four', for the 0A Container, that should only be associated with the data in
-                        ContainerData.
-                            level
-                            divisionType
-                            NoChildren
-
-                        When I select a new container or click back on a pre-existing one,
-                        it should show the currently saved data for the container.
-                        
-                    -->
-
+                <div v-for="(type,index) in DivisionType">
                     <input 
                         type="radio"
                         :id="type.id" 
                         name="division-type"
                         :value="type.id"
-                        :checked="type.index == 0 ? true : false">
+                        :checked="changeSelectedDivisionType(index)">
                     <label 
                         class="radio-btn division-type" 
                         :for="type.id"
@@ -259,19 +251,17 @@ export default {
         </h3>
         <div class="container-division-number">
 
-            <div v-for="container in ContainerDivision">
+            <div v-for="(container,index) in ContainerDivision">
                 <input 
                     type="radio" 
                     name="no-divisions" 
                     :id="container.id" 
                     :value="container.id" 
-                    :checked="container.index === 1 ? true : false">
+                    :checked="changeSelectedContainerDivision(index)">
                 <label
                     class="radio-btn no-divisions"
                     :for="container.id"
-                    @click="selectContainer(container) ? modifyContainer(container.index) : null "
-                    >
-
+                    @click="selectContainer(container) ? modifyContainer(container.index) : null ">
                     <div class="bnt-content">
 
                         <div class="tmpSquare"> </div> 
