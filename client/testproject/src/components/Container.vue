@@ -50,7 +50,9 @@
 
                 m_gridStyle: null,
 
-                m_EditMode: false
+                m_EditMode: false,
+
+                m_isStoredClick: false
             }
         },
         methods:{
@@ -168,17 +170,22 @@
             storeClickedContainer(){
                 if(this.m_ContainerData.id === null) {return;}
 
+                
                 this.$GlobalStates.value.edit.containerSelected = this.m_ContainerData.id;
                 this.$GlobalStates.value.edit.enabled = true;
+            },
+
+            // Select the container which was clicked
+            storedClick(){
+                this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
             }
         },
         watch: {
-            '$GlobalStates.value.containerSelectionMode': {
-                handler(val, oldval){
-                    // this.onSelectionMode();
+            '$GlobalStates.value.edit.containerSelected':{
+                handler(val,oldval){
+                    this.storedClick();
                 }
             },
-
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldval){
@@ -192,16 +199,16 @@
 
 <template>
     <div
-        class="page-content-container"
-        >
-        <div 
-            :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
-                    'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover) }"
+    class="page-content-container"
+    >
+    <div 
+    :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
+            'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
+            'selected-container': this.m_isStoredClick  }"
             class="grid-template separator"
             @mouseover.self="m_isHover=true"
             @mouseout.self="m_isHover=false"
             @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
-
                 <template v-if="this.m_ContainerData.NoChildren > 0">
                     <Container 
                         v-for="n in this.m_ContainerData.NoChildren" 
@@ -228,15 +235,19 @@
     border-radius: 10px;
 }
 
+.selected-container{
+    background-color: #312F2F;
+}
+
 .edit-mode{
     border-color: black;
     border-radius: 10px;
 
-    outline: black dashed 2px;
+    outline: #22181C dashed 2px;
 }
 
 .edit-hover{
-    background-color: brown !important;
+    background-color: #434141 !important;
 }
 
 .page-content-container{
@@ -246,7 +257,7 @@
     height: 100%;
     width: 100%;
     border-radius: 10px; 
-    background-color: #DD7373;
+    background-color: #646363;
 }
 
 </style>
