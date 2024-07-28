@@ -27,6 +27,7 @@ export default {
             }
         }
     },
+
     methods: {
         toggleSelectionMode() {
 
@@ -189,6 +190,50 @@ export default {
             if(container.divisionType === "Vertical" && index === 0){ return true;}
             if(container.divisionType === "Horizontal" && index === 1){ return true;}
             return false;
+        },
+        saveLayout(){
+            let containerObj = this.$ContainerData.value;
+            
+            let container_serialized = JSON.stringify(containerObj);
+            localStorage.setItem("containerData", container_serialized);
+        },
+        loadLayout(){
+            const containerData = JSON.parse(localStorage.getItem("containerData"));
+
+            if(containerData === null) {
+                console.log ("No data!"); 
+                return;
+            }
+
+            this.$ContainerData.value = containerData;
+            this.resetSelected();
+        },
+        deleteLayout(){
+            // Show prompt 'are you sure you want to delete?'
+            
+            let baseObject = {
+                level: 0,
+                divisionType: "Vertical",
+                id: "0A",
+                NoChildren: 0,
+                containerData: [
+                ]
+            }
+
+            this.$ContainerData.value = baseObject;
+            this.saveLayout();
+            this.resetSelected();
+        },
+        cancelLayout(){
+            // Revert back
+            this.loadLayout();
+        },
+
+        resetSelected(){
+            // Whenever we delete or load layout, we need to currently unselect all the user clicked containers
+            this.States.selectedContainer.level = 0;
+            this.States.id = "0A";
+            this.$GlobalStates.value.edit.containerSelected = "0A";
         }
     },
     watch: {
@@ -295,6 +340,27 @@ export default {
                 max="100"
                 value="50"> 
         </div>
+
+        <div>
+            <button
+            @click="saveLayout"> Save!</button>
+        </div>
+        
+        <div>
+            <button
+            @click="loadLayout"> Load!</button>
+        </div>
+
+        <div>
+            <button
+            @click="cancelLayout"> Cancel!</button>
+        </div>
+        
+        <div>
+            <button
+            @click="deleteLayout"> Delete layout!</button>
+        </div>
+
     </div>
 </template>
 

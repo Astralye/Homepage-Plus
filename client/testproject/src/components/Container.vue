@@ -204,7 +204,7 @@
     <div 
     :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
             'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
-            'selected-container': this.m_isStoredClick  }"
+            'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
             class="grid-template separator"
             @mouseover.self="m_isHover=true"
             @mouseout.self="m_isHover=false"

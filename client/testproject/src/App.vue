@@ -37,7 +37,23 @@ export default{
             }
         }
     },
+    created(){
+        
+        // Load User data
+        this.loadData();
+    },
     methods: {
+        loadData(){
+            const containerData = JSON.parse(localStorage.getItem("containerData"));
+            
+            if(containerData === null) {
+                console.log ("No data!"); 
+                return;
+            }
+            this.$ContainerData.value = containerData;
+        },
+
+
 
         // imageLocation(fileName) {
         //     return new URL(`./assets/${fileName}`, import.meta.url).href; 
