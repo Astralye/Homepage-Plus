@@ -5,6 +5,7 @@ import Window from './components/Window.vue'
 import WindowButton from './components/WindowButton.vue'
 import PageContainer from './components/Container.vue'
 import PageSubDivision from './components/PageSubDivision.vue'
+import ContainerContent from './components/ContainerContent.vue'
 
 export default{
     name: "App",
@@ -13,7 +14,8 @@ export default{
         Window,
         WindowButton,
         PageContainer,
-        PageSubDivision
+        PageSubDivision,
+        ContainerContent
     },
     data() {
         return{
@@ -190,6 +192,25 @@ export default{
 
         <!-- Edit btn windows -->
 
+        <!-- 
+        TODO
+        -----------------
+        Standardize the window content
+        Currently each window and its contents are styled independently of each other
+        And this will make editing, styling alot more painful.
+
+        Please, Future me, just take one day and standardize the stylings, fonts, buttons.
+        Into a giant tree of components in which I can just use those instead of thinking about
+        the styling for each individual.
+
+        Also, Think about putting the stylings into a global css. Not sure right now, but
+        try and make sure I can swap classes. Obviously this uses a function but globally, not 
+        that sure.
+        
+        30/7/24
+        
+        -->
+
         <!-- Layout button -->
         <Window
             v-if="this.EditBtns[0].toggle"
@@ -210,7 +231,7 @@ export default{
             @close-window="test"
             @focusTab="focusClickedTab">
             <template v-slot:window-content>
-                <div> Containers!</div>
+                <ContainerContent/>
             </template>
         </Window>
 
