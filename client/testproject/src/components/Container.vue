@@ -224,6 +224,7 @@
 </template>
 
 <style scoped>
+@import '../assets/base.css';
 
 .grid-template{
     display: grid;
@@ -236,7 +237,7 @@
 }
 
 .selected-container{
-    background-color: #312F2F;
+    background-color: var(--Select-colour);
 }
 
 .edit-mode{
@@ -247,7 +248,7 @@
 }
 
 .edit-hover{
-    background-color: #434141 !important;
+    background-color: var(--Hover-colour) !important;
 }
 
 .page-content-container{
@@ -257,7 +258,7 @@
     height: 100%;
     width: 100%;
     border-radius: 10px; 
-    background-color: #646363;
+    background-color: var(--Primary-background-colour);
 }
 
 </style>

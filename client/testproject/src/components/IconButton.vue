@@ -23,12 +23,17 @@ export default{
 */
 button{
     width: 80px;
-    border: 0;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.button{
+    width: 80px;
+    border-width: 0;
     background-color: transparent;
 }
 
 button:hover{
-    background-color: silver;
     cursor: pointer;
 }
 

@@ -91,22 +91,24 @@
 
         <!-- Header -->
         <div 
-            class="header flex" 
+            class="header" 
             
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
-                <div class="headerContent headerText">
-                    <h1> {{ title }} </h1>
+                <div class="header-container flex">
+                    <div class="headerContent">
+                        <h1 class="header-title__line-height--small"> {{ title }} </h1>
+                    </div>
+                    <button 
+                        class="headerContent exitBtn noselect"
+                        @click="$emit('closeWindow', `${title}`)"
+                        @mouseenter.self="windowHover = false"
+                        >
+                        X
+                    </button>
                 </div>
-                <button 
-                    class="headerContent exitBtn noselect"
-                    @click="$emit('closeWindow', `${title}`)"
-                    @mouseenter.self="windowHover = false"
-                    >
-                    X
-                </button>
         </div>
 
         <!-- Main content -->
@@ -119,9 +121,23 @@
 </template>
 
 <style scoped>
+/*
+    Make sure to include 
+    @import '../assets/base.css';
+    to use the styled variables
+*/
+@import '../assets/base.css';
+
+.header-title__line-height--small{
+    line-height: 1.0;
+}
+
+.header-container{
+    padding: var(--window-padding);
+}
 
 .wind-container{
-    background-color: beige;
+    background-color: var(--Tertiary-background-colour);
     height: auto;
     
     border-bottom-left-radius: 3px;
@@ -129,7 +145,7 @@
 
     color: black;
 
-    padding-top: 5px;
+    padding: var(--window-padding);
 
     /* Todo:
         Window width and height variable
@@ -143,24 +159,18 @@
     margin-bottom: auto;
 }
 
-.headerText{
-    margin-left: 4px;
-}
-
 .exitBtn{
-    background-color: rgb(228, 69, 69);
-    margin-right: 4px;
     color: white;
     height: 30px;
     width: 30px;
-    font-size: 12px;
+    font-size: 24px;
+    font-family: var(--font-family);
+    text-align: center;
     border-radius: 5px;
 }
 
 .header{
-    background-color: grey;
-    width: 100%;
-    height: 3em;
+    background-color: var(--Secondary-background-colour);
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
 }

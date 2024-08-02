@@ -1,28 +1,47 @@
 /* color palette from <https://github.com/vuejs/theme> */
+
+/* 
+  I believe this file is for all the global css properties
+  e.g text font, colour, size...
+  This should 
+  */
+
+
+/* 
+  this is applied globally. 
+  Contains colour information.
+  This is then used to be passed as variables
+
+  '--Name' declares a css variable
+  var() references css variable
+  v-bind() references vuejs variable
+*/
 :root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+  --ThemeA-Primary: #221F26;
+  --ThemeA-Secondary: #3F3F4D;
+  --ThemeA-Tertiary: #505363;
+  --ThemeA-Accent: #F2F6D0;
 
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
+  --ThemeA-Hover: #383540;
+  --ThemeA-Select:  #4E4B59;
 
-  --vt-c-indigo: #2c3e50;
-
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+  --Base-Font-Family: "Libre Franklin", sans-serif;
 
   --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+
+  --vt-c-white: #ffffff;
+  --vt-c-white-soft: #f8f8f8;
+  --vt-c-white-mute: #E8E8E8;
+
+  --Theme-c-dark-1: var(--vt-c-white);
+  --Theme-c-dark-2: var(--vt-c-white-mute);
 }
 
 /* semantic color variables for this project */
+/* Default AKA light mode */
 :root {
+
+  --font-family: var(--Base-Font-Family);
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
@@ -33,20 +52,31 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
-  --section-gap: 160px;
-}
+  --Primary-background-colour: var(--ThemeA-Primary);
+  --Secondary-background-colour: var(--ThemeA-Secondary);
+  --Tertiary-background-colour: var(--ThemeA-Tertiary);
+  --Accent-background-colour: var(--ThemeA-Accent);
 
+  --Hover-colour: var(--ThemeA-Hover);
+  --Select-colour: var(--ThemeA-Select);
+
+  --window-padding: 5px;
+}
+/* If dark theme, changes root to these variables */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: silver;
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
+    --font-family: var(--Base-Font-Family);
+    
+    --color-heading: var(--Theme-c-dark-2);
+    --color-text: var(--Theme-c-dark-2);
 
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
+    --Primary-background-colour: var(--ThemeA-Primary);
+    --Secondary-background-colour: var(--ThemeA-Secondary);
+    --Tertiary-background-colour: var(--ThemeA-Tertiary);
+    --Accent-background-colour: var(--ThemeA-Accent);
 
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
+    --Container-Hover-colour: var(--ThemeA-Container-Hover);
+    --Container-Select-colour: var(--ThemeA-Container-Select);
   }
 }
 
@@ -55,32 +85,16 @@
 *::after {
   box-sizing: border-box;
   margin: 0;
-  font-weight: normal;
 }
 
 body {
   color: var(--color-text);
   background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
+  font-family: var(--font-family);
+
   line-height: 1.6;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
   font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
 }

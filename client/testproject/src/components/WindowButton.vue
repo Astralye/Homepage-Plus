@@ -1,35 +1,38 @@
-<script>
-    export default {
-    }
-</script>
-
 <template>
     <button class="wind-button">
-        <span class="btn-text"> <slot> </slot> </span>
+        <h2 class="btn-text"> <slot> </slot> </h2>
     </button>
 </template>
 
 <style scoped>
+@import '../assets/base.css';
 
 .wind-button{
-    display:flex;
+    display: flex;
     width: 100%;
-    height: 2.5rem;
-    margin-top: auto;
-    margin-bottom: auto;
-    padding-left: 1em;
-    padding-right: 1em;
+    height: 2rem;
+    border-width: 0;
+    border-radius: 2px;
 }
 
 .wind-button:not(:last-child){
+    margin-bottom: 3px;
+}
+
+.wind-button:hover{
+    border: 5px;
+    background: var(--Select-colour);
     border-width: 2px;
     border-color: black;
 }
 
+.wind-button:active{
+    background-color: var(--Hover-colour);
+}
+
 .btn-text{
-    font-size: 18px;
-    margin-top: auto;
-    margin-bottom: auto;
+    margin: auto 0;
+    color: var(--color-heading);
 }
 
 </style>
