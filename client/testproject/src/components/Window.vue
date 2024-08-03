@@ -140,8 +140,8 @@
     background-color: var(--Tertiary-background-colour);
     height: auto;
     
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 
     color: black;
 
@@ -155,8 +155,7 @@
 }
 
 .headerContent{
-    margin-top: auto;
-    margin-bottom: auto;
+    margin-top: 3px;
 }
 
 .exitBtn{
@@ -171,8 +170,8 @@
 
 .header{
     background-color: var(--Secondary-background-colour);
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .flex{
@@ -190,11 +189,12 @@
 .window{
     width: v-bind("windowWidth");
     height: auto;
-    box-shadow: 4px 4px 10px grey;
     position: absolute;
     top: 0;
     left: 0;
     z-index: 30;
+    border-radius: 10px;
+    box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* A box shadow is defined with container
