@@ -1,10 +1,10 @@
 <template>
-    <div class="alignRight">
+    <div>
         <div 
             class="toolTipIcon" 
             @mouseenter.self="mouseHoverHold"
             @mouseleave.self="closeToolTipWindow">
-            <p class="centerText">i</p>
+            <p class="centerText pt-serif-bold-italic">i</p>
         </div>
         
         <!-- 
@@ -74,8 +74,24 @@ export default {
 }
 </script>
 
+<!-- 
+TODO:
+    I realised I can make a tooltip without js.
+    I will try refactor this some other time
+-->
+
 <style scoped>
 
+.icon-center{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.pt-serif-bold-italic {
+    font-family: "PT Serif", serif;
+    font-weight: 700;
+    font-style: italic;
+  }
 
 .toolTipWindow{
     width: 200px;
@@ -93,16 +109,10 @@ export default {
 }
 
 .toolTipIcon{
-    background: lightblue;
-    width: 30px;
-    height: 30px;
-    margin-right: 5px;
-    border-color: black;
-    border-radius: 7px;
+    background: #3167cc;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #0f367d;
+    border-radius: 50%;
 }
-
-.alignRight{
-    float: right;
-}
-
 </style>
