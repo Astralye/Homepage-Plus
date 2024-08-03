@@ -2,7 +2,7 @@
 
 import ModifyButtons from './components/MainButton.vue'
 import Window from './components/Window.vue'
-import WindowButton from './components/WindowButton.vue'
+import WindowButton from './components/ListButton.vue'
 import PageContainer from './components/Container.vue'
 import PageSubDivision from './components/PageSubDivision.vue'
 import ContainerContent from './components/ContainerContent.vue'

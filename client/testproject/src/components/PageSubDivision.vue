@@ -2,7 +2,7 @@
 <script>
 
 import Window from './Window.vue'
-import WindowButton from './WindowButton.vue'
+import WindowButton from './ListButton.vue'
 
 export default {
     data() {

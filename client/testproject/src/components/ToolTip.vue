@@ -64,10 +64,7 @@ export default {
         },
         
         openToolTipWindow(){
-            console.log("a")
             this.m_hover = true;
-            
-            console.log("b")
         },
         closeToolTipWindow(){
             this.m_hoverHold = false;
