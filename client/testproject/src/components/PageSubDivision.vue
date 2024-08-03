@@ -1,10 +1,15 @@
 
 <script>
-
-import Window from './Window.vue'
-import WindowButton from './ListButton.vue'
+import SingleButton from './SingleButton.vue';
+import WindowContainerDivider from './WindowContainerDivider.vue';
+import ToolTip from './ToolTip.vue';
 
 export default {
+    components: {
+        SingleButton,
+        WindowContainerDivider,
+        ToolTip
+    },
     data() {
         return{
             ContainerDivision: [
@@ -253,21 +258,37 @@ export default {
     To be subdivided, and allowed to create more containers.
     -->
 <template>
-    <div class="wind-cont">
 
-        <button
-            class="select-Container"
-            @click="toggleSelectionMode">
-            <h2 class="label-text-container">
-                Select Container
-            </h2>
-        </button>
+    <!-- <button
+        @click="toggleSelectionMode">
+        <h2 class="label-text-container">
+            Select Container
+        </h2>
+    </button> -->
 
-        <div class="window-content">
-            <h2>
+    <SingleButton
+        @click="toggleSelectionMode" class="center">
+        <h2> Select Container </h2>
+    </SingleButton>
+
+    <!--
+        Maybe have a component call 
+        window container divider.
+        Since im using it alot
+
+        Often, this would use a header
+        as well as a div with the content.
+    -->
+
+    <WindowContainerDivider
+        class="container-divider">
+        <template #header> 
+            <h2 class="inline">
                 Division type
             </h2>
+        </template>
 
+        <template #content>
             <div class="grid">
                 <div v-for="(type,index) in DivisionType">
                     <input 
@@ -280,91 +301,132 @@ export default {
                         class="radio-btn division-type" 
                         :for="type.id"
                         @click="updateDivision(type.id)">
-
+    
                         <div class="label-text-container">
                             <h3> {{ type.id }} </h3>
                         </div>
                     </label>
                 </div> 
             </div>
-        </div>
+        </template>
 
-        <hr>
+        <template #tooltip>
+            <ToolTip>
+                Divisions
+            </ToolTip>
+        </template>
+    </WindowContainerDivider>
 
-        <h3>
-            Container Divisions
-        </h3>
-        <div class="container-division-number">
+    <WindowContainerDivider
+        class="container-divider"> 
+        <template #header> 
+            <h2 class="inline">
+                Container Divisions
+            </h2>
+        </template>
 
-            <div v-for="(container,index) in ContainerDivision">
-                <input 
-                    type="radio" 
-                    name="no-divisions" 
-                    :id="container.id" 
-                    :value="container.id" 
-                    :checked="changeSelectedContainerDivision(index)">
-                <label
-                    class="radio-btn no-divisions"
-                    :for="container.id"
-                    @click="selectContainer(container) ? modifyContainer(container.index) : null ">
-                    <div class="bnt-content">
-
-                        <div class="tmpSquare"> </div> 
-
-                        <div class="label-text-container"> 
-                            <h3> {{ container.id }} </h3>
+        <template #content>
+            <div class="container-division-number">
+    
+                <div v-for="(container,index) in ContainerDivision">
+                    <input 
+                        type="radio" 
+                        name="no-divisions" 
+                        :id="container.id" 
+                        :value="container.id" 
+                        :checked="changeSelectedContainerDivision(index)">
+                    <label
+                        class="radio-btn no-divisions"
+                        :for="container.id"
+                        @click="selectContainer(container) ? modifyContainer(container.index) : null ">
+                        <div class="bnt-content">
+    
+                            <div class="tmpSquare"> </div> 
+    
+                            <div class="label-text-container"> 
+                                <h3> {{ container.id }} </h3>
+                            </div>
                         </div>
-                    </div>
-                </label>
+                    </label>
+                </div>
+    
             </div>
+        </template>
 
-        </div>
+        <template #tooltip>
+            <ToolTip>
+                Divisions
+            </ToolTip>
+        </template>
+    </WindowContainerDivider>
 
-        <div>
+    <WindowContainerDivider
+        class="container-divider"> 
+        <template #header>
+            <h4 class="inline">
+                Even spacing
+            </h4>
+        </template>
+
+        <template #content>
             <label class="selection fullWidth">
                 <input type="checkbox" id="EvenSpacing" name="EvenSpacing" value="EvenSpacing" class="EvenSpacing">
-
-                <h3 for="EvenSpacing">
-                    Even Spacing
-                </h3>
             </label>
-        </div>
+        </template>
 
-        <hr>
+        <template #tooltip>
+            <ToolTip>
+                Divisions
+            </ToolTip>
+        </template>
+    </WindowContainerDivider>
 
-        <div>
-            % Spacing
-            <input 
-                type="range"
-                min="1" 
-                max="100"
-                value="50"> 
-        </div>
+    <div>
+        % Spacing
+        <input 
+            type="range"
+            min="1" 
+            max="100"
+            value="50"> 
+    </div>
 
-        <div>
-            <button
-            @click="saveLayout"> Save!</button>
-        </div>
-        
-        <div>
-            <button
-            @click="loadLayout"> Load!</button>
-        </div>
+    <div>
+        <button
+        @click="saveLayout"> Save!</button>
+    </div>
+    
+    <div>
+        <button
+        @click="loadLayout"> Load!</button>
+    </div>
 
-        <div>
-            <button
-            @click="cancelLayout"> Cancel!</button>
-        </div>
-        
-        <div>
-            <button
-            @click="deleteLayout"> Delete layout!</button>
-        </div>
-
+    <div>
+        <button
+        @click="cancelLayout"> Cancel!</button>
+    </div>
+    
+    <div>
+        <button
+        @click="deleteLayout"> Delete layout!</button>
     </div>
 </template>
 
 <style scoped>
+
+.inline{
+    display: inline;
+}
+
+.container-divider{
+    margin: 3px;
+}
+.container-divider:not(:last-child){
+    margin-bottom: 6px;
+}
+
+.center{
+    margin: auto;
+}
 
 .btnActive{
     background-color: green;
@@ -380,10 +442,6 @@ export default {
     width: 80px;
     margin-left: auto;
     margin-right: auto;
-}
-
-.select-Container{
-    width: 100%;
 }
 
 button.select-Container{
@@ -435,10 +493,6 @@ input[type="radio"]:checked + label{
 
 .EvenSpacing{
     margin-right: 10px;
-}
-
-.wind-cont{
-    padding: 5px;
 }
 
 .division-item{
