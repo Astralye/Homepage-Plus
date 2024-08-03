@@ -16,17 +16,13 @@
 <style scoped>
 
 .center-align{
-    margin-top: auto;
-    margin-bottom: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .margin-bottom{
     margin-bottom: 2px
-}
-
-
-.inline{
-    float: right;
 }
 
 </style>
