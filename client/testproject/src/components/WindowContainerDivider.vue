@@ -7,9 +7,7 @@
         
         <slot name="content">
 
-        </slot>
-
-            
+        </slot>            
     </div>
 </template>
 

@@ -168,27 +168,32 @@ export default{
 
     <!-- Windows -->
     <teleport to="body">
-        <Window 
-            v-if="this.toggleTab[0].toggle"
-            title="Edit"
-            width="150"
-            @close-window="openWindowTab"
-            @focusTab="focusClickedTab">
-            <template v-slot:window-content>
-                <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
-            </template>
-        </Window>
 
-        <Window 
-            v-if="this.toggleTab[1].toggle"
-            title="Settings"
-            @close-window="openWindowTab"
-            @focusTab="focusClickedTab">
+        <Transition name="fade">
+            <Window 
+                v-if="this.toggleTab[0].toggle"
+                title="Edit"
+                width="150"
+                @close-window="openWindowTab"
+                @focusTab="focusClickedTab">
+                <template v-slot:window-content>
+                    <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
+                </template>
+            </Window>
+        </Transition>
 
-            <template v-slot:window-content>
-                <div> Hello world but settings</div>
-            </template>
-        </Window>
+        <Transition name="fade">
+            <Window 
+                v-if="this.toggleTab[1].toggle"
+                title="Settings"
+                @close-window="openWindowTab"
+                @focusTab="focusClickedTab">
+
+                <template v-slot:window-content>
+                    <div> Hello world but settings</div>
+                </template>
+            </Window>
+        </Transition>
 
         <!-- Edit btn windows -->
 
@@ -212,38 +217,44 @@ export default{
         -->
 
         <!-- Layout button -->
-        <Window
-            v-if="this.EditBtns[0].toggle"
-            title="Layout"
-            @close-window="test"
-            @focusTab="focusClickedTab">
-            <template v-slot:window-content>
-                <PageSubDivision
-                    @Container-Select="selectContainer">
-                </PageSubDivision>
-            </template>
-        </Window>
+        <Transition name="fade">
+            <Window
+                v-if="this.EditBtns[0].toggle"
+                title="Layout"
+                @close-window="test"
+                @focusTab="focusClickedTab">
+                <template v-slot:window-content>
+                    <PageSubDivision
+                        @Container-Select="selectContainer">
+                    </PageSubDivision>
+                </template>
+            </Window>
+        </Transition>
 
         <!-- Container button -->
-        <Window
-            v-if="this.EditBtns[1].toggle"
-            title="Containers"
-            @close-window="test"
-            @focusTab="focusClickedTab">
-            <template v-slot:window-content>
-                <ContainerContent/>
-            </template>
-        </Window>
+        <Transition name="fade">
+            <Window
+                v-if="this.EditBtns[1].toggle"
+                title="Containers"
+                @close-window="test"
+                @focusTab="focusClickedTab">
+                <template v-slot:window-content>
+                    <ContainerContent/>
+                </template>
+            </Window>
+        </Transition>
 
-        <Window
-            v-if="this.EditBtns[2].toggle"
-            title="Widgets"
-            @close-window="test"
-            @focusTab="focusClickedTab">
-            <template v-slot:window-content>
-                <div> Widgets!</div>
-            </template>
-        </Window>
+        <Transition name="fade">
+            <Window
+                v-if="this.EditBtns[2].toggle"
+                title="Widgets"
+                @close-window="test"
+                @focusTab="focusClickedTab">
+                <template v-slot:window-content>
+                    <div> Widgets!</div>
+                </template>
+            </Window>
+        </Transition>
     </teleport>
 
 
@@ -258,6 +269,16 @@ export default{
 
 <!-- 'scoped' means css only applies to this file -->
 <style>
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.1s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
 
 .main-body{
     height: 100vh;

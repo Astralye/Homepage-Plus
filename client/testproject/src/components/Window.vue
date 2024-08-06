@@ -86,7 +86,7 @@
     <div
         @mousedown="$emit('focusTab', `${title}`)"
         ref="draggableContainer" 
-        class="window" 
+        class="window"
         >
 
         <!-- Header -->
@@ -196,23 +196,5 @@
     border-radius: 10px;
     box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.4);
 }
-
-/* A box shadow is defined with container
-    offset, x + y
-    blur
-    color
-
-    By default css the size is the size of the container,
-    but we could try change the size of the container manually
-
-*/
-/* .shadow{
-    position: absolute;
-    
-    width: 100px;
-    height: 100px;
-    background: black;
-    filter:blur(10px); 
-} */
 
 </style>
