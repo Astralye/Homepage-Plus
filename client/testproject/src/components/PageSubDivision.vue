@@ -355,7 +355,7 @@ export default {
 
         <template #tooltip>
             <ToolTip>
-                Divisions
+                Number of divisions the container will have.
             </ToolTip>
         </template>
     </WindowContainerDivider>
