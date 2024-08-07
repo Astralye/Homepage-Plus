@@ -52,7 +52,10 @@ export default {
             let difference = divisions - container.NoChildren;
             let siblingContainers = container.containerData; 
 
-            // Positive, add containers            
+            // If positive -1 from value, if already 0 return 0
+            let noSiblings =  ( divisions - 1 > 0) ? divisions - 1 : 0; 
+
+            // Positive, add containers
             if(difference > 0){
 
                 // Parent container has no children,
@@ -60,40 +63,39 @@ export default {
                 if(siblingContainers.length === 0 ){
                     console.log("none!")
                 }
-                // Create ID taking into account the last child.
-                {
-                    // Stores the last current index of the siblings
-                    var latestIndex;
-                    let childLevel = current_containerLevel + 1;
-                    let baseID = current_containerID;
-                    container.NoChildren = divisions;
 
-                    siblingContainers.forEach( (cont,index) => { latestIndex = index; });
-                    
-                    for(let i = 0; i < divisions; i++){
-                        if(i < latestIndex+1){ continue; } // If the current index is not the last available
+                // Stores the last current index of the siblings
+                var latestIndex;
+                let childLevel = current_containerLevel + 1;
+                container.NoChildren = divisions;
 
-                        let newID = current_containerID + this.createID(childLevel, i);
+                siblingContainers.forEach( (cont,index) => { latestIndex = index; });
 
-                        container.containerData.push({
-                            level: childLevel,
-                            divisionType: divType,
-                            id: newID,
-                            NoChildren: 0,
-                            containerData: []
-                        });
-                        
-                        this.toggleSelectionMode();
-                    }
+                for(let i = 0; i < divisions; i++){
+                    if(i < latestIndex+1){ continue; } // If the current index is not the last available
+
+                    let newID = current_containerID + this.createID(childLevel, i);
+
+                    container.containerData.push({
+                        level: childLevel,
+                        divisionType: divType,
+                        id: newID,
+                        NoChildren: 0,
+                        siblings: noSiblings,
+                        containerData: []
+                    });
+                    this.toggleSelectionMode();
                 }
             }
             // Negative, remove containers
             else if(difference < 0){
-
                 difference = Math.abs(difference);
                 container.NoChildren -= difference;
                 for(let i = 0; i < difference; i++){ container.containerData.pop(); }
+
             }
+            // Update sibling value
+            container.containerData.forEach( (data) => { data.siblings = noSiblings;});
             // Do nothing if 0
         },
 
@@ -221,6 +223,7 @@ export default {
                 divisionType: "Vertical",
                 id: "0A",
                 NoChildren: 0,
+                siblings: 0,
                 containerData: [
                 ]
             }
@@ -259,26 +262,10 @@ export default {
     -->
 <template>
 
-    <!-- <button
-        @click="toggleSelectionMode">
-        <h2 class="label-text-container">
-            Select Container
-        </h2>
-    </button> -->
-
     <SingleButton
         @click="toggleSelectionMode" class="center">
         <h2> Select Container </h2>
     </SingleButton>
-
-    <!--
-        Maybe have a component call 
-        window container divider.
-        Since im using it alot
-
-        Often, this would use a header
-        as well as a div with the content.
-    -->
 
     <WindowContainerDivider
         class="container-divider">
