@@ -38,8 +38,10 @@
                     level: 0,
                     divisionType: "Vertical",
                     id: "0A",
-                    NoChildren: 0
+                    NoChildren: 0,
+                    siblings: 0,
                 },
+
                     
                 m_edit: true,
                 m_isHover: false,
@@ -52,7 +54,9 @@
 
                 m_EditMode: false,
 
-                m_isStoredClick: false
+                m_isStoredClick: false,
+
+                m_isVertical: true,
             }
         },
         methods:{
@@ -75,7 +79,10 @@
                         this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
                         this.rowData = "1fr";
                     }
+
                 }
+                
+
                 // else{
                 //     if(this.m_horizontalDivision){
                 //         this.rowData = "1fr ".repeat(children);
@@ -90,9 +97,6 @@
                 this.m_EditMode = true;
             },
             setCurrentContainer(){
-
-                // console.log(this.$ContainerData.value);
-
                 this.m_ContainerData.level = this.nest_level;
 
                 var tmpID;
@@ -106,22 +110,40 @@
 
                 let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
                 
+                // Set the current container data
                 if(tmpContainer != null){
                     this.m_ContainerData.level = tmpContainer.level;
                     this.m_ContainerData.divisionType = tmpContainer.divisionType;
                     this.m_ContainerData.id = tmpContainer.id
                     this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
-                }
+                    this.m_ContainerData.siblings = tmpContainer.siblings;
+               }
                 else{
                     console.error(`ERROR: Container not found. Level: ${this.m_ContainerData.level}, ID: ${tmpID}`);
                 }
 
                 this.configureGridData(tmpContainer.divisionType);
+                this.setDragOrientation();
             },
 
             createID(){
                 return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
             },
+
+
+
+            /*
+                TODO
+                -------------------------------------------
+                This function is broken.
+                It uses a predefined variable (this.nest_level),
+                This means it cant find level data of values up the hierarchy,
+                only down
+                -> REFACTOR THIS
+                -> Fix any implementation bugs.
+
+                07/08/24
+            */
 
             // Depth-first search recurrsion function
             // Finds the corresponding data from the level and ID
@@ -129,16 +151,16 @@
 
                 var childData = currentLevelData.containerData;
 
-                // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
+                console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
 
                 // If this level,
                 if(this.nest_level === currentLevelData.level && Level == currentLevelData.level ){
-                    // console.log("Item found")
+                    console.log("Item found at current level:", currentLevelData.level, Level );
                     return currentLevelData;
                 }
                 
                 if(childData.length === 0 ) return null;
-
+            
                 // Needs to look at itself
                 // Looks at the children
                 for(let i = 0; i < childData.length; i++){
@@ -178,6 +200,43 @@
             // Select the container which was clicked
             storedClick(){
                 this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
+            },
+            
+            getSiblingNumber(){
+                let LastValue = this.m_ContainerData.id.substring(this.m_ContainerData.id.length - 1).toLowerCase();
+                return LastValue.charCodeAt(0) - 97;
+            },
+
+            isLastSibling(){
+                // if(this.m_ContainerData === undefined) { return true; }
+                // console.log(this.getSiblingNumber());
+                
+                // if(this.getSiblingNumber() == this.containerData.siblings){
+                //     return true;
+                // }
+                // return false;
+            },
+            isBaseContainer(){
+                if(this.m_ContainerData.id === "0A"){ return true;}
+                return false;
+            },
+
+            // The values are updating correctly,
+            // But the Page drag value needs to look at its parent to decide what orientation it should be,
+            // NOT the current state.
+            setDragOrientation(){
+                if(this.isBaseContainer()){ return;} // Base 
+
+                let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
+                console.log("HERE");
+                let parentObj = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
+                
+                console.log("ID:", parentID, "parent level", this.m_ContainerData.level -1, "parent obj", parentObj);
+
+
+                this.m_isVertical = (parentObj.divisionType === "Vertical") ? true : false; 
+
+                // console.log(this.m_ContainerData.id, this.m_isVertical);
             }
         },
         watch: {
@@ -201,26 +260,40 @@
     <div
     class="page-content-container"
     >
-    <div 
-    :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
-            'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
-            'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
-            class="grid-template separator"
-            @mouseover.self="m_isHover=true"
-            @mouseout.self="m_isHover=false"
-            @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
-                <template v-if="this.m_ContainerData.NoChildren > 0">
-                    <Container 
-                        v-for="n in this.m_ContainerData.NoChildren" 
-                        :nest_level="nest_level+1"
-                        :parent_ID="this.m_ContainerData.id"
-                        :child_Instance="n-1"
-                        />
-                </template>
-                
-        </div>
+        <div 
+        :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
+                'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
+                'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
+                class="grid-template separator"
+                @mouseover.self="m_isHover=true"
+                @mouseout.self="m_isHover=false"
+                @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
+                    <template v-if="this.m_ContainerData.NoChildren > 0">
+                        <Container 
+                            v-for="n in this.m_ContainerData.NoChildren" 
+                            :nest_level="nest_level+1"
+                            :parent_ID="this.m_ContainerData.id"
+                            :child_Instance="n-1"
+                            />
+                    </template>
 
+                </div>
+
+        <!-- if this is hovered or click, 
+            disable the click events for the containers -->
+
+            <!-- 
+                Value Verticality SHOULD DEPEND ON THE PARENT VALUE, NOT THE CURRENT CONTAINER
+            -->
+        <div v-if="this.$GlobalStates.value.edit.enabled && !this.isBaseContainer()"
+            :class="{
+                'page-drag-Vertical': this.m_isVertical,
+                'page-drag-Horizontal': ( !this.m_isVertical),
+            }">
+                    <!-- Need to switch between classes depending on the divisionType  -->
+        </div>
     </div>
+
 </template>
 
 <style scoped>
@@ -244,11 +317,31 @@
     border-color: black;
     border-radius: 10px;
 
-    outline: #22181C dashed 2px;
+    outline: silver dashed 2px;
 }
 
 .edit-hover{
     background-color: var(--Hover-colour) !important;
+}
+
+.page-drag-Horizontal{
+    position: absolute;
+    left: 0;
+    height: 10px;
+    width: 100vw;
+    transform: translateY(-10px);
+    cursor: row-resize;
+    background-color: white;
+}
+
+.page-drag-Vertical{
+    position: absolute;
+    top: 0;
+    height: 100vh;
+    width: 10px;
+    transform: translateX(-10px);
+    cursor: col-resize;
+    background-color: white;
 }
 
 .page-content-container{
