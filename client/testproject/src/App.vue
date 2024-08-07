@@ -272,7 +272,7 @@ export default{
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.1s ease;
+    transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,
