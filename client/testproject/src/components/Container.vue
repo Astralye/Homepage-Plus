@@ -97,30 +97,23 @@
                 this.m_EditMode = true;
             },
             setCurrentContainer(){
-                this.m_ContainerData.level = this.nest_level;
-
-                var tmpID;
-                if(this.nest_level === 0){
-                    tmpID = this.$ContainerData.value.id;
-                }
-                else{
-                    tmpID = this.parent_ID.concat(this.createID());
-                }
-
-
-                let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
                 
+                this.m_ContainerData.level = this.nest_level;
+                let tmpID = (this.nest_level === 0) ? this.$ContainerData.value.id : this.parent_ID.concat(this.createID());
+                let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
+
                 // Set the current container data
-                if(tmpContainer != null){
-                    this.m_ContainerData.level = tmpContainer.level;
-                    this.m_ContainerData.divisionType = tmpContainer.divisionType;
-                    this.m_ContainerData.id = tmpContainer.id
-                    this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
-                    this.m_ContainerData.siblings = tmpContainer.siblings;
-               }
-                else{
+                if(tmpContainer == null){
                     console.error(`ERROR: Container not found. Level: ${this.m_ContainerData.level}, ID: ${tmpID}`);
+                    return;
                 }
+
+                // Set container component data.
+                this.m_ContainerData.level = tmpContainer.level;
+                this.m_ContainerData.divisionType = tmpContainer.divisionType;
+                this.m_ContainerData.id = tmpContainer.id
+                this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
+                this.m_ContainerData.siblings = tmpContainer.siblings;
 
                 this.configureGridData(tmpContainer.divisionType);
                 this.setDragOrientation();
@@ -130,74 +123,50 @@
                 return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
             },
 
-
-
-            /*
-                TODO
-                -------------------------------------------
-                This function is broken.
-                It uses a predefined variable (this.nest_level),
-                This means it cant find level data of values up the hierarchy,
-                only down
-                -> REFACTOR THIS
-                -> Fix any implementation bugs.
-
-                07/08/24
-            */
-
             // Depth-first search recurrsion function
             // Finds the corresponding data from the level and ID
             findLevelData(currentLevelData, Level, ID){
-
-                var childData = currentLevelData.containerData;
-
-                console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
-
-                // If this level,
-                if(this.nest_level === currentLevelData.level && Level == currentLevelData.level ){
-                    console.log("Item found at current level:", currentLevelData.level, Level );
+                
+                // Input level is the current level data
+                if(Level == currentLevelData.level ){
+                    // console.log("Item found at current level:", currentLevelData.level, Level );
                     return currentLevelData;
                 }
+
+                // Retrieve child data
+                var childData = currentLevelData.containerData; // if no children, move up stack.
+                if(childData.length === 0 ) return null; 
+                // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
                 
-                if(childData.length === 0 ) return null;
-            
-                // Needs to look at itself
-                // Looks at the children
+                // Looks at children
                 for(let i = 0; i < childData.length; i++){
-                    
                     let item = childData[i];
                     // console.log("Looking at:", item.id);
 
                     // Base case (Found item)
-                    if(item.id == ID){
-                        // console.log("Item found")
-                        return item
-                    }
-                    // Base case (Nothing found and only no siblings)
-                    else if(item.NoChildren === 0 && childData.length <= 1)
-                    {
-                        return null;
-                    }
-                    // Recursive
+                    if(item.id == ID){ return item; }
+
+                    // Base case (Nothing found and no siblings)
+                    else if(item.NoChildren === 0 && childData.length <= 1) { return null; }
+                    
+                    // Base case (Has children)
                     else{
-                        // Moves down 1 level
                         var tmp = this.findLevelData(item, Level + 1, ID);
-                        // If found, return up stack.
+                        // If any item is found, return up stack.
                         if(tmp !== null){ return tmp; }
                     }
                 }
-                return null;
+                return null; // Not found in children, move up stack.
             },
 
+            // Store container data to global variable
             storeClickedContainer(){
                 if(this.m_ContainerData.id === null) {return;}
-
-                
                 this.$GlobalStates.value.edit.containerSelected = this.m_ContainerData.id;
                 this.$GlobalStates.value.edit.enabled = true;
             },
 
-            // Select the container which was clicked
+            // Boolean, store if container was clicked.
             storedClick(){
                 this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
             },
@@ -207,7 +176,7 @@
                 return LastValue.charCodeAt(0) - 97;
             },
 
-            isLastSibling(){
+            isFirstSibling(){
                 // if(this.m_ContainerData === undefined) { return true; }
                 // console.log(this.getSiblingNumber());
                 
@@ -220,23 +189,12 @@
                 if(this.m_ContainerData.id === "0A"){ return true;}
                 return false;
             },
-
-            // The values are updating correctly,
-            // But the Page drag value needs to look at its parent to decide what orientation it should be,
-            // NOT the current state.
             setDragOrientation(){
                 if(this.isBaseContainer()){ return;} // Base 
 
                 let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
-                console.log("HERE");
                 let parentObj = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
-                
-                console.log("ID:", parentID, "parent level", this.m_ContainerData.level -1, "parent obj", parentObj);
-
-
                 this.m_isVertical = (parentObj.divisionType === "Vertical") ? true : false; 
-
-                // console.log(this.m_ContainerData.id, this.m_isVertical);
             }
         },
         watch: {
