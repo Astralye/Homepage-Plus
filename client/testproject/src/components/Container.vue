@@ -177,13 +177,7 @@
             },
 
             isFirstSibling(){
-                // if(this.m_ContainerData === undefined) { return true; }
-                // console.log(this.getSiblingNumber());
-                
-                // if(this.getSiblingNumber() == this.containerData.siblings){
-                //     return true;
-                // }
-                // return false;
+                return (this.getSiblingNumber() === 0) ? true : false;
             },
             isBaseContainer(){
                 if(this.m_ContainerData.id === "0A"){ return true;}
@@ -243,7 +237,7 @@
             <!-- 
                 Value Verticality SHOULD DEPEND ON THE PARENT VALUE, NOT THE CURRENT CONTAINER
             -->
-        <div v-if="this.$GlobalStates.value.edit.enabled && !this.isBaseContainer()"
+        <div v-if="this.$GlobalStates.value.edit.enabled && !this.isBaseContainer() && !isFirstSibling()"
             :class="{
                 'page-drag-Vertical': this.m_isVertical,
                 'page-drag-Horizontal': ( !this.m_isVertical),
