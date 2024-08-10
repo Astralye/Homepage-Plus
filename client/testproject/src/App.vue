@@ -263,7 +263,7 @@ export default{
 
 .main-body{
     height: 100vh;
-    width: 100vw;
+    overflow: hidden;
 }
 
 .btnContainer{

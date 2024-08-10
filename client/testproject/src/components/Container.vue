@@ -14,6 +14,10 @@
             child_Instance:{
                 type: Number,
                 default: 0
+            },
+            render_divider:{
+                type: Boolean,
+                default: false
             }
         },
 
@@ -176,19 +180,19 @@
                 return LastValue.charCodeAt(0) - 97;
             },
 
-            isFirstSibling(){
-                return (this.getSiblingNumber() === 0) ? true : false;
-            },
-            isBaseContainer(){
-                if(this.m_ContainerData.id === "0A"){ return true;}
-                return false;
+            isFirstSibling(){ return (this.getSiblingNumber() === 0) ? true : false; },
+            isLastSibling(){ return (this.getSiblingNumber() === this.getParentObj().NoChildren - 1) ? true : false; },
+            isBaseContainer(){ return this.m_ContainerData.id === "0A" ? true : false; },
+            getParentObj(){
+                let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
+                return this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
             },
             setDragOrientation(){
                 if(this.isBaseContainer()){ return;} // Base 
-
-                let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
-                let parentObj = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
-                this.m_isVertical = (parentObj.divisionType === "Vertical") ? true : false; 
+                this.m_isVertical = (this.getParentObj().divisionType === "Vertical") ? true : false; 
+            },
+            removeExtraContainer(){
+                return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
             }
         },
         watch: {
@@ -209,47 +213,56 @@
 </script>
 
 <template>
-    <div
-    class="page-content-container"
-    >
-        <div 
-        :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
-                'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
-                'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
-                class="grid-template separator"
-                @mouseover.self="m_isHover=true"
-                @mouseout.self="m_isHover=false"
-                @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
-                    <template v-if="this.m_ContainerData.NoChildren > 0">
-                        <Container 
-                            v-for="n in this.m_ContainerData.NoChildren" 
-                            :nest_level="nest_level+1"
-                            :parent_ID="this.m_ContainerData.id"
-                            :child_Instance="n-1"
-                            />
-                    </template>
+    <div class="component-container">
+        <div
+            class="page-content-container">
+            
+            <div 
+            :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
+                    'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
+            'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
+            class="grid-template"
+            @mouseover.self="m_isHover=true"
+            @mouseout.self="m_isHover=false"
+            @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
+                <template v-if="this.m_ContainerData.NoChildren > 0">
+                    <Container 
+                        v-for="n in this.m_ContainerData.NoChildren" 
+                        :nest_level="nest_level+1"
+                        :parent_ID="this.m_ContainerData.id"
+                        :child_Instance="n-1"
+                        :render_divider="true"
+                        >
+                    </Container>
+                </template>
+            </div>
 
-                </div>
-
-        <!-- if this is hovered or click, 
-            disable the click events for the containers -->
-
-            <!-- 
-                Value Verticality SHOULD DEPEND ON THE PARENT VALUE, NOT THE CURRENT CONTAINER
-            -->
-        <div v-if="this.$GlobalStates.value.edit.enabled && !this.isBaseContainer() && !isFirstSibling()"
-            :class="{
-                'page-drag-Vertical': this.m_isVertical,
-                'page-drag-Horizontal': ( !this.m_isVertical),
-            }">
-                    <!-- Need to switch between classes depending on the divisionType  -->
         </div>
+        
+        <template v-if="this.render_divider">
+            <div v-if="this.$GlobalStates.value.edit.enabled && !this.isBaseContainer() && this.removeExtraContainer()"
+            :class="{
+                'page-drag-Horizontal': ( !this.m_isVertical),
+                'page-drag-Vertical': (this.m_isVertical)
+            }">
+            </div>
+        </template>
     </div>
-
 </template>
 
+<!-- Horizontal and Vertical act differently.
+    Vertical bars, horizontal mode, require removal of first child
+    Horizontal bars, vertical mode, require removal of last child.
+
+    Need to have some algorithm to check which to remove.
+-->
+                
 <style scoped>
 @import '../assets/base.css';
+
+.component-container{
+    height: 100%;
+}
 
 .grid-template{
     display: grid;
@@ -259,6 +272,7 @@
     padding: 8px;
 
     border-radius: 10px;
+    transition: all 0.1s;
 }
 
 .selected-container{
@@ -268,7 +282,6 @@
 .edit-mode{
     border-color: black;
     border-radius: 10px;
-
     outline: silver dashed 2px;
 }
 
@@ -277,33 +290,30 @@
 }
 
 .page-drag-Horizontal{
-    position: absolute;
-    left: 0;
     height: 10px;
-    width: 100vw;
-    transform: translateY(-10px);
+    width: 100%;
     cursor: row-resize;
-    background-color: white;
+    background-color: rgba(255,255,255,0.4);
 }
 
+/*
+    Use a standard colour
+*/
 .page-drag-Vertical{
-    position: absolute;
-    top: 0;
-    height: 100vh;
+    height: 100%;
     width: 10px;
-    transform: translateX(-10px);
+    transform: translate(-10px, -100%);
     cursor: col-resize;
-    background-color: white;
+    background-color: rgba(255,255,255,0.4);
 }
 
 .page-content-container{
-    box-sizing: border-box;
     display: grid;
 
     height: 100%;
     width: 100%;
-    border-radius: 10px; 
     background-color: var(--Primary-background-colour);
+    transition: all 0.12s;
 }
 
 </style>
