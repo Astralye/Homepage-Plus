@@ -272,7 +272,7 @@
     padding: 8px;
 
     border-radius: 10px;
-    transition: all 0.1s;
+    transition: all 0.1s ease-in-out;
 }
 
 .selected-container{
@@ -313,7 +313,7 @@
     height: 100%;
     width: 100%;
     background-color: var(--Primary-background-colour);
-    transition: all 0.12s;
+    transition: all 0.1s ease-in-out;
 }
 
 </style>

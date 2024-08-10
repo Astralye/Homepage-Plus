@@ -140,13 +140,13 @@
     background-color: var(--Tertiary-background-colour);
     height: auto;
     
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    
     color: black;
 
     padding: var(--window-padding);
-
+    
     /* Todo:
         Window width and height variable
         -> Set shadow width + height
@@ -170,8 +170,6 @@
 
 .header{
     background-color: var(--Secondary-background-colour);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
 }
 
 .flex{
@@ -192,9 +190,13 @@
     position: absolute;
     top: 0;
     left: 0;
+    box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.6), -3px -3px 10px rgba(0, 0, 0, 0.3);
     z-index: 30;
-    border-radius: 10px;
-    box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.4);
+
+    border-radius: 7px;
+    border-style: solid;
+    border-width: 3px;
+    border-color: var(--Secondary-background-colour);
 }
 
 </style>
