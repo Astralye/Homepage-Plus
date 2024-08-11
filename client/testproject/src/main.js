@@ -31,6 +31,7 @@ app.config.globalProperties.$ContainerData = ref({
     id: "0A",
     NoChildren: 0,
     siblings: 0,
+    evenSplit: "true",
     containerData: [
     ],
 });
