@@ -41,6 +41,8 @@ export default {
             // this.$emit('Container-Select');
         },
 
+
+        // Maybe make this funciton smaller?
         modifyContainer(divisions){
             let divType = "Vertical"; // Default value of children
 
@@ -82,6 +84,7 @@ export default {
                         id: newID,
                         NoChildren: 0,
                         siblings: noSiblings,
+                        evenSplit: true,
                         containerData: []
                     });
                     this.toggleSelectionMode();
@@ -99,68 +102,56 @@ export default {
             // Do nothing if 0
         },
 
-        createID(level, index){
-            return `${level}`.concat(String.fromCharCode(64 + 1 + index));
-        },
+        // Generate ID from the index and parent level
+        createID(level, index){ return `${level}`.concat(String.fromCharCode(64 + 1 + index)); },
 
         // Function copied from Container.
         // Was not sure how to access the function, so I just put it here.
         findLevelData(currentLevelData, Level, ID){
 
-            var childData = currentLevelData.containerData;
-
-            // console.log("nest:", Level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
-
-            // If this level,
+            // Input level is the current level data
             if(Level == currentLevelData.level ){
-                // console.log("Item found")
+                // console.log("Item found at current level:", currentLevelData.level, Level );
                 return currentLevelData;
             }
-            
-            if(childData.length === 0 ) return null;
 
-            // Needs to look at itself
-            // Looks at the children
+            // Retrieve child data
+            var childData = currentLevelData.containerData; // if no children, move up stack.
+            if(childData.length === 0 ) return null; 
+            // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
+            
+            // Looks at children
             for(let i = 0; i < childData.length; i++){
-                
                 let item = childData[i];
                 // console.log("Looking at:", item.id);
 
                 // Base case (Found item)
-                if(item.id == ID){
-                    // console.log("Item found")
-                    return item
-                }
-                // Base case (Nothing found and only no siblings)
-                else if(item.NoChildren === 0 && childData.length <= 1)
-                {
-                    return null;
-                }
-                // Recursive
+                if(item.id == ID){ return item; }
+
+                // Base case (Nothing found and no siblings)
+                else if(item.NoChildren === 0 && childData.length <= 1) { return null; }
+                
+                // Base case (Has children)
                 else{
-                    // Moves down 1 level
                     var tmp = this.findLevelData(item, Level + 1, ID);
-                    // If found, return up stack.
+                    // If any item is found, return up stack.
                     if(tmp !== null){ return tmp; }
                 }
             }
-            return null;
+            return null; // Not found in children, move up stack.
         },
 
+        // Selects a clicked container and deselect previous container
         selectContainer(container){
-            
-            if(!container.selected){
-                // Resets all the other values
-                this.ContainerDivision.forEach(cont => { cont.selected = false; });
-                container.selected = true;
-                return true;
-            }
-            else{
-                return false;
-            }
+            if(container.selected){ return false; }
+
+            // Resets all the other values
+            this.ContainerDivision.forEach(cont => { cont.selected = false; });
+            container.selected = true;
+            return true;
         },
 
-        // Update division type
+        // Update division type of container
         updateDivision(type){
         
             const current_containerLevel = this.States.selectedContainer.level;
@@ -179,17 +170,13 @@ export default {
         changeSelectedContainerDivision(index){
             let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
             
-            // If has children, display
-            if(container.NoChildren !== 0) {
-                if(container.NoChildren-1 === index){
-                    return true;
-                }
-            }
             // If no children, select first
-            else if (index === 0) {return true;}
-
+            if (index === 0) {return true;}
+            // If has children, display
+            else if(container.NoChildren !== 0 && container.NoChildren-1 === index ) { return true; }
             return false;
         },
+
 
         changeSelectedDivisionType(index){
             let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
@@ -224,6 +211,7 @@ export default {
                 id: "0A",
                 NoChildren: 0,
                 siblings: 0,
+                evenSplit: "true",
                 containerData: [
                 ]
             }
@@ -356,9 +344,16 @@ export default {
         </template>
 
         <template #content>
-            <label class="selection fullWidth">
-                <input type="checkbox" id="EvenSpacing" name="EvenSpacing" value="EvenSpacing" class="EvenSpacing">
-            </label>
+            <input 
+                type="checkbox" 
+                id="EvenSpacing" 
+                name="EvenSpacing" 
+                value="EvenSpacing" 
+                class="EvenSpacing">
+
+                <!-- Need to write logic to make the checkbox work with the container value. -->
+                
+            <label class="selection fullWidth"></label>
         </template>
 
         <template #tooltip>
