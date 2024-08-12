@@ -47,6 +47,11 @@
                     evenSplit: true
                 },
 
+                m_MouseCoordinate:{
+                    x: 0,
+                    y: 0
+                },
+
                     
                 m_edit: true,
                 m_isHover: false,
@@ -62,6 +67,8 @@
                 m_isStoredClick: false,
 
                 m_isVertical: true,
+
+                m_isMoveContainer: false,
             }
         },
         methods:{
@@ -76,6 +83,16 @@
                     this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
                     this.m_rowData = "1fr";
                 }
+            },
+            configureGridNonEven(type){
+                // if(type === "Horizontal"){
+                //     this.m_rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                //     this.m_columnData = "1fr";
+                // }
+                // else{
+                //     this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                //     this.m_rowData = "1fr";
+                // }
             },
             onSelectionMode(){
                 this.m_EditMode = true;
@@ -103,9 +120,9 @@
                 if(this.m_ContainerData.evenSplit){
                     this.configureGridEven(this.m_ContainerData.divisionType);
                 }
-                // else{
-                //     this.moveContainer();
-                // }
+                else{
+                    this.configureGridNonEven(this.m_ContainerData.divisionType);
+                }
 
                 this.setDragOrientation();
             },
@@ -182,9 +199,9 @@
             removeExtraContainer(){
                 return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
             },
+            // Finds the container which is being clicked on.
+            // Sends an emitter to modify grid data 
             moveContainer(){
-
-            
                 let parentObj = this.getParentObj();
                 if(parentObj.evenSplit) { return; }
                 let siblingData = parentObj.containerData;
@@ -205,9 +222,12 @@
                     index: siblingIndex,
                     type: parentObj.divisionType,
                 };
+                
+                // Algorithm for finding difference in coordinate.
+                // console.log(this.m_MouseCoordinate);
 
+                // Run parent function
                 this.$emit('drag', data);
-                // console.log(`Current index: ${currentIndex}, sibling index: ${siblingIndex}`);
             },
 
             // This function only runs at the parents container.
@@ -218,33 +238,46 @@
                 let siblingValue;
                 let baseValue;
 
-                if(data.type === "Vertical"){
-                    // console.log("Vertical");
-                    
-                    // Set the column data
-                    let columnArray = this.retrieveGridData(this.m_columnData); 
-                    // console.log(columnArray);
-                    
-                    siblingValue = columnArray[siblingIndex];
-                    baseValue = columnArray[baseIndex];
+                // Temporary
+                // On layout window, make this modifyable.
+                let stepSize = 0.05;
 
-                    // console.log("base index:", baseValue, "sibling Value:", siblingValue);
+                let arrayData = (data.type === "Vertical") ? this.retrieveGridData(this.m_columnData) : this.retrieveGridData(this.m_rowData);
+
+                // console.log("base index:", baseValue, "sibling Value:", siblingValue);
+                siblingValue = arrayData[siblingIndex];
+                baseValue = arrayData[baseIndex];
+
+                /*
+                TODO
                     
-                    // Temporary
-                    // On layout window, make this modifyable.
-                    let stepSize = 0.05;
+                    Need to add or subtract value. depending on direction.
+                    For now, keep as is
 
-                    baseValue += stepSize;
-                    siblingValue -= stepSize;
+                */
+                // baseValue += stepSize;
+                // siblingValue -= stepSize;
 
-                    columnArray[siblingIndex] = siblingValue;
-                    columnArray[baseIndex] = baseValue;
-    
-                    this.setGridData(columnArray, data.type);
-                }
-                else{
-                    console.log("Horizontal");
-                }
+                // Set back the values 
+                arrayData[siblingIndex] = siblingValue;
+                arrayData[baseIndex] = baseValue;
+
+                // Convert back to string.
+                let tmpString = "";
+                for(let i = 0; i < arrayData.length; i++){ tmpString += String(arrayData[i]) + "fr "; }
+                // Set the corresponding data 
+                if(data.type === "Vertical"){ this.m_columnData = tmpString; } 
+                else{ this.m_rowData = tmpString;}
+            },
+            // Check mouse location
+            getMouseCoordinate(event, holding){
+                if(!holding) { return; }
+                
+                // console.log(this.m_MouseCoordinate);
+                this.m_MouseCoordinate.x = event.pageX;
+                this.m_MouseCoordinate.y = event.pageY;
+
+                this.moveContainer();
             },
             retrieveGridData(data){
                 let splitData = data.split(" ");
@@ -256,21 +289,6 @@
                 }
                 return tmpArray;
             },
-            setGridData(data, type){
-
-                // Set back to string.
-                let tmpString = "";
-                for(let i = 0; i < data.length; i++){ 
-                    tmpString += String(data[i]) + "fr ";
-                }
-
-                // Make this code generalizable with both types
-                // For now I have only implemented for vertical.
-
-                if(type === "Vertical"){
-                    this.m_columnData = tmpString;
-                }
-            }
             // isEvenSpacing(){ return this.m_ContainerData.evenSplit; }
         },
         watch: {
@@ -317,6 +335,7 @@
             </div>
         </div>
         
+        <!-- Divider -->
         <template v-if="this.render_divider">
             <div v-if="this.$GlobalStates.value.edit.enabled && 
                       !this.isBaseContainer() && this.removeExtraContainer()"
@@ -324,8 +343,13 @@
                 'page-drag-Horizontal': ( !this.m_isVertical),
                 'page-drag-Vertical': (this.m_isVertical)
             }"
-            @mousedown="moveContainer"
+            @mousemove="getMouseCoordinate($event, m_isMoveContainer)"
+            @mousedown="m_isMoveContainer = true; getMouseCoordinate($event, m_isMoveContainer)"
+            @mouseup="m_isMoveContainer = false"
+            @mouseleave="m_isMoveContainer = false"
             >
+
+            <!-- function -> moveContainer -->
             <!-- @mouseup="console.log('up')" -->
             </div>
         </template>
