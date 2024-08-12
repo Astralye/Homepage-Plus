@@ -204,8 +204,15 @@
             moveContainer(){
                 let parentObj = this.getParentObj();
                 if(parentObj.evenSplit) { return; }
+                // Algorithm for finding difference in coordinate
+                const difference = this.findMouseDifference(parentObj.divisionType);
+
                 let siblingData = parentObj.containerData;
                 let siblingIndex;
+
+                let isMoveContainer = false;
+                let isPositive = false;
+                const threshold = 1; // 2 pixels
 
                 // Find the adjacent sibling
                 for(let i = 0; i < siblingData.length; i++){
@@ -218,16 +225,45 @@
                 // Horizontal divisions, Extra container removed is the start, count after
                 if(!this.m_isVertical){ siblingIndex += 1;};
 
+                // Determines whether to run move function
+                if(Math.abs(difference) >= threshold){
+                    isMoveContainer = true;
+                    if( difference >= 0) { isPositive = true;}
+                }
+                // isPositive = False -> Left or Down
+                // isPositive = True -> Right or Up
+
+                // Data sent to parent
                 let data = {
                     index: siblingIndex,
                     type: parentObj.divisionType,
+                    direction: isPositive
                 };
-                
-                // Algorithm for finding difference in coordinate.
-                // console.log(this.m_MouseCoordinate);
 
                 // Run parent function
-                this.$emit('drag', data);
+                if(isMoveContainer){ this.$emit('drag', data);}
+            },
+
+            // Algorithm for finding difference in coordinate in a relative scale
+            findMouseDifference(division){
+                // Gets the value of the corresponding coordinate to move.
+                const divider = this.$refs["divider"].getBoundingClientRect();
+
+                let value;
+                let elementCoordinate;
+                let size;
+                if(division === "Vertical"){
+                    value = this.m_MouseCoordinate.x;
+                    elementCoordinate = divider.x;
+                    size = divider.width;
+                }
+                else{
+                    value = this.m_MouseCoordinate.y;
+                    elementCoordinate = divider.y;
+                    size = divider.height;
+                }
+
+                return ( elementCoordinate - value + (size / 2));
             },
 
             // This function only runs at the parents container.
@@ -240,23 +276,23 @@
 
                 // Temporary
                 // On layout window, make this modifyable.
-                let stepSize = 0.05;
+                let stepSize = 0.009;
 
                 let arrayData = (data.type === "Vertical") ? this.retrieveGridData(this.m_columnData) : this.retrieveGridData(this.m_rowData);
 
-                // console.log("base index:", baseValue, "sibling Value:", siblingValue);
                 siblingValue = arrayData[siblingIndex];
                 baseValue = arrayData[baseIndex];
 
-                /*
-                TODO
-                    
-                    Need to add or subtract value. depending on direction.
-                    For now, keep as is
-
-                */
-                // baseValue += stepSize;
-                // siblingValue -= stepSize;
+                // False -> Left or Down
+                // True -> Right or Up
+                if(data.direction){
+                    baseValue -= stepSize;
+                    siblingValue += stepSize;
+                }
+                else{
+                    baseValue += stepSize;
+                    siblingValue -= stepSize;
+                }
 
                 // Set back the values 
                 arrayData[siblingIndex] = siblingValue;
@@ -347,6 +383,7 @@
             @mousedown="m_isMoveContainer = true; getMouseCoordinate($event, m_isMoveContainer)"
             @mouseup="m_isMoveContainer = false"
             @mouseleave="m_isMoveContainer = false"
+            ref="divider"
             >
 
             <!-- function -> moveContainer -->
