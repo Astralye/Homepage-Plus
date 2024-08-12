@@ -67,40 +67,16 @@
         methods:{
 
             // Sets css grids
-            configureGridData(type, index){
-
-
-                // Todo
-                // Implement generic algorithm
-                // for calculating non-even widths.
-                // Sum -> 1fr * children.
-                // Any division means sum is always the same.
-                if(this.m_ContainerData.evenSplit){
-                    if(type === "Horizontal"){
-                        this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                        this.m_columnData = "1fr";
-                    }
-                    else{
-                        this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                        this.rowData = "1fr";
-                    }
+            configureGridEven(type){
+                if(type === "Horizontal"){
+                    this.m_rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                    this.m_columnData = "1fr";
                 }
-                // Non-even split
-                else if (index !== null){
-                    if(type === "Vertical"){
-                        console.log("Vertical Drag");
-                        this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                        this.rowData = "1fr";
-                        // console.log("Horizontal Drag");
-
-                        // this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                        // this.m_columnData = "1fr";
-                    }
-                    else{
-                    }
+                else{
+                    this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                    this.m_rowData = "1fr";
                 }
             },
-
             onSelectionMode(){
                 this.m_EditMode = true;
             },
@@ -124,14 +100,12 @@
                 this.m_ContainerData.siblings = tmpContainer.siblings;
                 this.m_ContainerData.evenSplit = tmpContainer.evenSplit;
 
-                // console.log(this.m_ContainerData.id, "even split:",this.m_ContainerData.evenSplit);
-
-                // Check the modification type
-                // If changing container divisions
-                this.configureGridData(this.m_ContainerData.divisionType);
-
-                // if changing even spacing
-                // moveContainer();
+                if(this.m_ContainerData.evenSplit){
+                    this.configureGridEven(this.m_ContainerData.divisionType);
+                }
+                // else{
+                //     this.moveContainer();
+                // }
 
                 this.setDragOrientation();
             },
@@ -208,14 +182,13 @@
             removeExtraContainer(){
                 return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
             },
-            checkModifiedValue(oldVal, newVal){
-                console.log("oldval:", oldVal, "newval:",newVal);
-            },
             moveContainer(){
+
+            
                 let parentObj = this.getParentObj();
+                if(parentObj.evenSplit) { return; }
                 let siblingData = parentObj.containerData;
                 let siblingIndex;
-                let currentIndex;
 
                 // Find the adjacent sibling
                 for(let i = 0; i < siblingData.length; i++){
@@ -227,12 +200,78 @@
 
                 // Horizontal divisions, Extra container removed is the start, count after
                 if(!this.m_isVertical){ siblingIndex += 1;};
-                currentIndex = siblingIndex - 1;
 
-                // this.configureGridData(parentObj.divisionType,false,siblingIndex);
+                let data = {
+                    index: siblingIndex,
+                    type: parentObj.divisionType,
+                };
+
+                this.$emit('drag', data);
                 // console.log(`Current index: ${currentIndex}, sibling index: ${siblingIndex}`);
             },
-            isEvenSpacing(){ return this.m_ContainerData.evenSplit; }
+
+            // This function only runs at the parents container.
+            // This is because it modifies the css variable.
+            updateParentColumnRow(data){
+                let siblingIndex = data.index;
+                let baseIndex = siblingIndex - 1;
+                let siblingValue;
+                let baseValue;
+
+                if(data.type === "Vertical"){
+                    // console.log("Vertical");
+                    
+                    // Set the column data
+                    let columnArray = this.retrieveGridData(this.m_columnData); 
+                    // console.log(columnArray);
+                    
+                    siblingValue = columnArray[siblingIndex];
+                    baseValue = columnArray[baseIndex];
+
+                    // console.log("base index:", baseValue, "sibling Value:", siblingValue);
+                    
+                    // Temporary
+                    // On layout window, make this modifyable.
+                    let stepSize = 0.05;
+
+                    baseValue += stepSize;
+                    siblingValue -= stepSize;
+
+                    columnArray[siblingIndex] = siblingValue;
+                    columnArray[baseIndex] = baseValue;
+    
+                    this.setGridData(columnArray, data.type);
+                }
+                else{
+                    console.log("Horizontal");
+                }
+            },
+            retrieveGridData(data){
+                let splitData = data.split(" ");
+                let tmpArray = [];
+                splitData.pop();
+
+                for(let i = 0; i < splitData.length; i++){
+                    tmpArray.push(Number(splitData[i].substring(0,splitData[i].length-2)));
+                }
+                return tmpArray;
+            },
+            setGridData(data, type){
+
+                // Set back to string.
+                let tmpString = "";
+                for(let i = 0; i < data.length; i++){ 
+                    tmpString += String(data[i]) + "fr ";
+                }
+
+                // Make this code generalizable with both types
+                // For now I have only implemented for vertical.
+
+                if(type === "Vertical"){
+                    this.m_columnData = tmpString;
+                }
+            }
+            // isEvenSpacing(){ return this.m_ContainerData.evenSplit; }
         },
         watch: {
             '$GlobalStates.value.edit.containerSelected':{
@@ -243,8 +282,6 @@
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldVal){
-                    console.log("old:", oldVal);
-                    console.log("new:", val);
                     this.setCurrentContainer();
                 },
                 deep: true
@@ -273,6 +310,7 @@
                         :parent_ID="this.m_ContainerData.id"
                         :child_Instance="n-1"
                         :render_divider="true"
+                        @drag="updateParentColumnRow"
                         >
                     </Container>
                 </template>
@@ -286,9 +324,9 @@
                 'page-drag-Horizontal': ( !this.m_isVertical),
                 'page-drag-Vertical': (this.m_isVertical)
             }"
-            @mousedown="moveContainer()"
-            @mouseup="console.log('up')"
+            @mousedown="moveContainer"
             >
+            <!-- @mouseup="console.log('up')" -->
             </div>
         </template>
     </div>
