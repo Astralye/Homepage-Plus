@@ -140,8 +140,8 @@
     background-color: var(--Tertiary-background-colour);
     height: auto;
     
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
     
     color: black;
 
@@ -170,6 +170,7 @@
 
 .header{
     background-color: var(--Secondary-background-colour);
+    padding-top: 2px;
 }
 
 .flex{
@@ -190,10 +191,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.6), -3px -3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.3), -3px -3px 20px rgba(0, 0, 0, 0.2);
     z-index: 30;
 
-    border-radius: 7px;
+    border-radius: 10px;
     border-style: solid;
     border-width: 3px;
     border-color: var(--Secondary-background-colour);

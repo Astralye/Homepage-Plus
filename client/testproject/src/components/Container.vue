@@ -44,6 +44,7 @@
                     id: "0A",
                     NoChildren: 0,
                     siblings: 0,
+                    evenSplit: true
                 },
 
                     
@@ -66,15 +67,15 @@
         methods:{
 
             // Sets css grids
-            configureGridData(type){
-                let evenSplit = true;
+            configureGridData(type, index){
+
 
                 // Todo
                 // Implement generic algorithm
                 // for calculating non-even widths.
                 // Sum -> 1fr * children.
                 // Any division means sum is always the same.
-                if(evenSplit){
+                if(this.m_ContainerData.evenSplit){
                     if(type === "Horizontal"){
                         this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
                         this.m_columnData = "1fr";
@@ -83,18 +84,21 @@
                         this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
                         this.rowData = "1fr";
                     }
-
                 }
-                
+                // Non-even split
+                else if (index !== null){
+                    if(type === "Vertical"){
+                        console.log("Vertical Drag");
+                        this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                        this.rowData = "1fr";
+                        // console.log("Horizontal Drag");
 
-                // else{
-                //     if(this.m_horizontalDivision){
-                //         this.rowData = "1fr ".repeat(children);
-                //     }
-                //     else{
-                //         this.columnData = "1fr";
-                //     }
-                // }
+                        // this.rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
+                        // this.m_columnData = "1fr";
+                    }
+                    else{
+                    }
+                }
             },
 
             onSelectionMode(){
@@ -118,8 +122,17 @@
                 this.m_ContainerData.id = tmpContainer.id
                 this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
                 this.m_ContainerData.siblings = tmpContainer.siblings;
+                this.m_ContainerData.evenSplit = tmpContainer.evenSplit;
 
-                this.configureGridData(tmpContainer.divisionType);
+                // console.log(this.m_ContainerData.id, "even split:",this.m_ContainerData.evenSplit);
+
+                // Check the modification type
+                // If changing container divisions
+                this.configureGridData(this.m_ContainerData.divisionType);
+
+                // if changing even spacing
+                // moveContainer();
+
                 this.setDragOrientation();
             },
 
@@ -175,6 +188,7 @@
                 this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
             },
             
+            // Sibling identifier, A,B,C,D
             getSiblingNumber(){
                 let LastValue = this.m_ContainerData.id.substring(this.m_ContainerData.id.length - 1).toLowerCase();
                 return LastValue.charCodeAt(0) - 97;
@@ -193,7 +207,32 @@
             },
             removeExtraContainer(){
                 return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
-            }
+            },
+            checkModifiedValue(oldVal, newVal){
+                console.log("oldval:", oldVal, "newval:",newVal);
+            },
+            moveContainer(){
+                let parentObj = this.getParentObj();
+                let siblingData = parentObj.containerData;
+                let siblingIndex;
+                let currentIndex;
+
+                // Find the adjacent sibling
+                for(let i = 0; i < siblingData.length; i++){
+                    if(siblingData[i].id == this.m_ContainerData.id){
+                        siblingIndex = i;
+                        break;
+                    }
+                }
+
+                // Horizontal divisions, Extra container removed is the start, count after
+                if(!this.m_isVertical){ siblingIndex += 1;};
+                currentIndex = siblingIndex - 1;
+
+                // this.configureGridData(parentObj.divisionType,false,siblingIndex);
+                // console.log(`Current index: ${currentIndex}, sibling index: ${siblingIndex}`);
+            },
+            isEvenSpacing(){ return this.m_ContainerData.evenSplit; }
         },
         watch: {
             '$GlobalStates.value.edit.containerSelected':{
@@ -203,11 +242,13 @@
             },
             // When the values in the container data change
             '$ContainerData.value': {
-                handler(val, oldval){
+                handler(val, oldVal){
+                    console.log("old:", oldVal);
+                    console.log("new:", val);
                     this.setCurrentContainer();
                 },
                 deep: true
-            }
+            },
         }
     }
 </script>
@@ -236,15 +277,18 @@
                     </Container>
                 </template>
             </div>
-
         </div>
         
         <template v-if="this.render_divider">
-            <div v-if="this.$GlobalStates.value.edit.enabled && !this.isBaseContainer() && this.removeExtraContainer()"
+            <div v-if="this.$GlobalStates.value.edit.enabled && 
+                      !this.isBaseContainer() && this.removeExtraContainer()"
             :class="{
                 'page-drag-Horizontal': ( !this.m_isVertical),
                 'page-drag-Vertical': (this.m_isVertical)
-            }">
+            }"
+            @mousedown="moveContainer()"
+            @mouseup="console.log('up')"
+            >
             </div>
         </template>
     </div>

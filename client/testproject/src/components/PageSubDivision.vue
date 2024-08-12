@@ -27,7 +27,8 @@ export default {
             States: {
                 selectedContainer: {
                     level: this.$ContainerData.value.level,
-                    id: this.$ContainerData.value.id
+                    id: this.$ContainerData.value.id,
+                    evenlySpaced: this.$ContainerData.value.evenlySpaced
                 }
             }
         }
@@ -123,19 +124,17 @@ export default {
             // Looks at children
             for(let i = 0; i < childData.length; i++){
                 let item = childData[i];
-                // console.log("Looking at:", item.id);
 
                 // Base case (Found item)
                 if(item.id == ID){ return item; }
 
                 // Base case (Nothing found and no siblings)
                 else if(item.NoChildren === 0 && childData.length <= 1) { return null; }
-                
+
                 // Base case (Has children)
                 else{
                     var tmp = this.findLevelData(item, Level + 1, ID);
-                    // If any item is found, return up stack.
-                    if(tmp !== null){ return tmp; }
+                    if(tmp !== null){ return tmp; } // If any item is found, return up stack.
                 }
             }
             return null; // Not found in children, move up stack.
@@ -165,15 +164,25 @@ export default {
             var level = Number(newContainerID.charAt(newContainerID.length - 2));
             this.States.selectedContainer.level = level;
             this.States.selectedContainer.id = newContainerID;
+            
+            let evenSplit = this.findLevelData(this.$ContainerData.value, level, newContainerID).evenSplit;
+            this.States.selectedContainer.evenlySpaced = evenSplit;
         },
 
         changeSelectedContainerDivision(index){
             let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
             
-            // If no children, select first
-            if (index === 0) {return true;}
             // If has children, display
-            else if(container.NoChildren !== 0 && container.NoChildren-1 === index ) { return true; }
+
+            // Cant combine this into a single if statement for some reason.
+            if(container.NoChildren !== 0) {
+                if(container.NoChildren-1 === index){
+                    return true;
+                }
+            }
+            // If no children, select first
+            else if (index === 0) {return true;}
+
             return false;
         },
 
@@ -230,7 +239,13 @@ export default {
             this.States.selectedContainer.level = 0;
             this.States.id = "0A";
             this.$GlobalStates.value.edit.containerSelected = "0A";
-        }
+        },
+        setSpacingCheckmark(checked){
+            // let checkValue = this.States.selectedContainer.evenlySpaced;
+            let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            container.evenSplit = checked;
+            this.States.selectedContainer.evenlySpaced = checked;
+        },
     },
     watch: {
         '$GlobalStates.value.edit.containerSelected':{
@@ -345,13 +360,17 @@ export default {
 
         <template #content>
             <input 
-                type="checkbox" 
-                id="EvenSpacing" 
-                name="EvenSpacing" 
-                value="EvenSpacing" 
-                class="EvenSpacing">
+            type="checkbox" 
+            id="EvenSpacing"
+            name="EvenSpacing" 
+            value="EvenSpacing"
+            class="EvenSpacing"
+            v-model="check"
+            @change="setSpacingCheckmark(check)"
+            :checked="this.States.selectedContainer.evenlySpaced"
+            >
 
-                <!-- Need to write logic to make the checkbox work with the container value. -->
+            <!-- Need to write logic to make the checkbox work with the container value. -->
                 
             <label class="selection fullWidth"></label>
         </template>
