@@ -207,12 +207,14 @@
                 // Algorithm for finding difference in coordinate
                 const difference = this.findMouseDifference(parentObj.divisionType);
 
+                console.log(difference);
+
                 let siblingData = parentObj.containerData;
                 let siblingIndex;
 
                 let isMoveContainer = false;
                 let isPositive = false;
-                const threshold = 1; // 2 pixels
+                const threshold = 5; // 2 pixels
 
                 // Find the adjacent sibling
                 for(let i = 0; i < siblingData.length; i++){
@@ -276,7 +278,7 @@
 
                 // Temporary
                 // On layout window, make this modifyable.
-                let stepSize = 0.009;
+                let stepSize = 0.1;
 
                 let arrayData = (data.type === "Vertical") ? this.retrieveGridData(this.m_columnData) : this.retrieveGridData(this.m_rowData);
 
@@ -307,12 +309,29 @@
             },
             // Check mouse location
             getMouseCoordinate(event, holding){
-                if(!holding) { return; }
+                this.m_isMoveContainer = true;
+
+                // Mouse up event
+                // Vuejs @mouseup only works if mouse is inside component
+                // This will turn off tracking if mouse1 has been lifted.
+                document.addEventListener('mouseup', function(e) {
+                    this.m_isMoveContainer = false;
+                    document.onmousemove = null;
+                    console.log("Mouse Up!");
+                }, { once: true });
+
+                document.onmousemove = this.moving;
                 
-                // console.log(this.m_MouseCoordinate);
+                // // console.log(this.m_MouseCoordinate);
+                // this.m_MouseCoordinate.x = event.pageX;
+                // this.m_MouseCoordinate.y = event.pageY;
+                // console.log(event);
+                
+
+            },
+            moving: function(event){
                 this.m_MouseCoordinate.x = event.pageX;
                 this.m_MouseCoordinate.y = event.pageY;
-
                 this.moveContainer();
             },
             retrieveGridData(data){
@@ -339,7 +358,7 @@
                     this.setCurrentContainer();
                 },
                 deep: true
-            },
+            }
         }
     }
 </script>
@@ -379,27 +398,33 @@
                 'page-drag-Horizontal': ( !this.m_isVertical),
                 'page-drag-Vertical': (this.m_isVertical)
             }"
-            @mousemove="getMouseCoordinate($event, m_isMoveContainer)"
-            @mousedown="m_isMoveContainer = true; getMouseCoordinate($event, m_isMoveContainer)"
-            @mouseup="m_isMoveContainer = false"
-            @mouseleave="m_isMoveContainer = false"
+            @mousedown="getMouseCoordinate"
             ref="divider"
             >
 
-            <!-- function -> moveContainer -->
-            <!-- @mouseup="console.log('up')" -->
+            <!-- 
+                Disable for now
+                @mousemove="getMouseCoordinate($event, m_isMoveContainer)"
+            -->
+            
+            <!-- 
+                NOTES
+                
+                After some thinking,
+                I need to change the algorithm for the click and drag events (mouse)
+
+                In this case, @mouseup and @mouseleave
+                means that the cursor HAS to ALWAYS be on the element
+
+                I want to click and drag the element even though it is not on the element
+                This means, I would have to store the event details somewhere,
+                like a global variable, as locally can only be accessed here.
+                
+                -->
             </div>
         </template>
     </div>
-</template>
-
-<!-- Horizontal and Vertical act differently.
-    Vertical bars, horizontal mode, require removal of first child
-    Horizontal bars, vertical mode, require removal of last child.
-
-    Need to have some algorithm to check which to remove.
--->
-                
+</template>     
 <style scoped>
 @import '../assets/base.css';
 
@@ -415,7 +440,6 @@
     padding: 8px;
 
     border-radius: 10px;
-    transition: all 0.1s ease-in-out;
 }
 
 .selected-container{
@@ -444,8 +468,8 @@
 */
 .page-drag-Vertical{
     height: 100%;
-    width: 10px;
-    transform: translate(-10px, -100%);
+    width: 20px;
+    transform: translate(-15px, -100%);
     cursor: col-resize;
     background-color: rgba(255,255,255,0.4);
 }
