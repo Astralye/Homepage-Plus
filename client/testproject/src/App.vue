@@ -43,6 +43,12 @@ export default{
         
         // Load User data
         this.loadData();
+
+        // Resize window
+        window.addEventListener("resize", () => {
+            this.$GlobalStates.value.edit.windowSize.height = window.innerHeight;
+            this.$GlobalStates.value.edit.windowSize.width = window.innerWidth;
+        });
     },
     methods: {
         loadData(){
@@ -54,8 +60,6 @@ export default{
             }
             this.$ContainerData.value = containerData;
         },
-
-
 
         // imageLocation(fileName) {
         //     return new URL(`./assets/${fileName}`, import.meta.url).href; 
@@ -238,13 +242,10 @@ export default{
         </Transition>
     </teleport>
 
-
-
     <!-- Main body content -->
 
     <div class="main-body">
-        <PageContainer
-            :nest_level="0"/>
+        <PageContainer :nest_level="0"/>
     </div>
 </template>
 

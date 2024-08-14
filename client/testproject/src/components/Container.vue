@@ -20,6 +20,7 @@
                 default: false
             }
         },
+        
 
         // x_Y -> props
         // m_xY -> member values
@@ -30,9 +31,7 @@
         created(){
             
             this.setCurrentContainer();
-
-            // Logging
-            // console.log(this.gridColumnStyle, this.gridRowStyle);
+            this.recalculateThreshold(window.innerWidth, window.innerHeight);
         },
         data(){
             return{
@@ -69,6 +68,9 @@
                 m_isVertical: true,
 
                 m_isMoveContainer: false,
+                
+                m_pxThreshold: 5,
+                m_StepSize: 0.25,
             }
         },
         methods:{
@@ -123,7 +125,8 @@
                 else{
                     this.configureGridNonEven(this.m_ContainerData.divisionType);
                 }
-
+                
+                this.recalculateThreshold(window.innerWidth, window.innerHeight);
                 this.setDragOrientation();
             },
 
@@ -207,14 +210,13 @@
                 // Algorithm for finding difference in coordinate
                 const difference = this.findMouseDifference(parentObj.divisionType);
 
-                console.log(difference);
+                // console.log(difference);
 
                 let siblingData = parentObj.containerData;
                 let siblingIndex;
 
                 let isMoveContainer = false;
                 let isPositive = false;
-                const threshold = 5; // 2 pixels
 
                 // Find the adjacent sibling
                 for(let i = 0; i < siblingData.length; i++){
@@ -228,7 +230,7 @@
                 if(!this.m_isVertical){ siblingIndex += 1;};
 
                 // Determines whether to run move function
-                if(Math.abs(difference) >= threshold){
+                if(Math.abs(difference) >= this.m_pxThreshold){
                     isMoveContainer = true;
                     if( difference >= 0) { isPositive = true;}
                 }
@@ -276,10 +278,6 @@
                 let siblingValue;
                 let baseValue;
 
-                // Temporary
-                // On layout window, make this modifyable.
-                let stepSize = 0.1;
-
                 let arrayData = (data.type === "Vertical") ? this.retrieveGridData(this.m_columnData) : this.retrieveGridData(this.m_rowData);
 
                 siblingValue = arrayData[siblingIndex];
@@ -288,12 +286,12 @@
                 // False -> Left or Down
                 // True -> Right or Up
                 if(data.direction){
-                    baseValue -= stepSize;
-                    siblingValue += stepSize;
+                    baseValue -= this.m_StepSize;
+                    siblingValue += this.m_StepSize;
                 }
                 else{
-                    baseValue += stepSize;
-                    siblingValue -= stepSize;
+                    baseValue += this.m_StepSize;
+                    siblingValue -= this.m_StepSize;
                 }
 
                 // Set back the values 
@@ -308,7 +306,7 @@
                 else{ this.m_rowData = tmpString;}
             },
             // Check mouse location
-            getMouseCoordinate(event, holding){
+            mouseHold(event, holding){
                 this.m_isMoveContainer = true;
 
                 // Mouse up event
@@ -317,22 +315,43 @@
                 document.addEventListener('mouseup', function(e) {
                     this.m_isMoveContainer = false;
                     document.onmousemove = null;
-                    console.log("Mouse Up!");
                 }, { once: true });
 
-                document.onmousemove = this.moving;
+                document.onmousemove = this.movingMouse;
                 
                 // // console.log(this.m_MouseCoordinate);
                 // this.m_MouseCoordinate.x = event.pageX;
                 // this.m_MouseCoordinate.y = event.pageY;
                 // console.log(event);
-                
-
             },
-            moving: function(event){
+            movingMouse: function(event){
                 this.m_MouseCoordinate.x = event.pageX;
                 this.m_MouseCoordinate.y = event.pageY;
                 this.moveContainer();
+            },
+
+            // This runs every N times for N containers when resized
+            // Modifies (in px) the threshold of mouse position to move per stepsize
+            recalculateThreshold(width, height){
+                // Only applicable for non-evenspacing
+                // if(this.m_ContainerData.evenSplit) { return; }
+            
+                // if vertical, use width,
+                let container_px = (this.m_ContainerData.divisionType === "Vertical") ? width : height;
+                
+                let totalContainers = this.m_ContainerData.siblings + 1;
+                
+                let pxPerFractionalUnit = container_px / totalContainers;
+                let pxPerStep = pxPerFractionalUnit * this.m_StepSize;
+                
+                // Logging
+                console.log("ID:", this.m_ContainerData.id, 
+                            "Type:", this.m_ContainerData.divisionType,
+                            "Pixels Per step:", pxPerStep
+                        );
+                
+                this.m_pxThreshold = pxPerStep;
+
             },
             retrieveGridData(data){
                 let splitData = data.split(" ");
@@ -352,13 +371,20 @@
                     this.storedClick();
                 }
             },
+            '$GlobalStates.value.edit.windowSize':{
+                handler(val,oldval){
+                    this.recalculateThreshold(val.width,val.height);
+                },
+                deep: true
+            },
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldVal){
                     this.setCurrentContainer();
                 },
                 deep: true
-            }
+            },
+
         }
     }
 </script>
@@ -396,31 +422,9 @@
                       !this.isBaseContainer() && this.removeExtraContainer()"
             :class="{
                 'page-drag-Horizontal': ( !this.m_isVertical),
-                'page-drag-Vertical': (this.m_isVertical)
-            }"
-            @mousedown="getMouseCoordinate"
-            ref="divider"
-            >
-
-            <!-- 
-                Disable for now
-                @mousemove="getMouseCoordinate($event, m_isMoveContainer)"
-            -->
-            
-            <!-- 
-                NOTES
-                
-                After some thinking,
-                I need to change the algorithm for the click and drag events (mouse)
-
-                In this case, @mouseup and @mouseleave
-                means that the cursor HAS to ALWAYS be on the element
-
-                I want to click and drag the element even though it is not on the element
-                This means, I would have to store the event details somewhere,
-                like a global variable, as locally can only be accessed here.
-                
-                -->
+                'page-drag-Vertical': (this.m_isVertical) }"
+            @mousedown="mouseHold"
+            ref="divider">
             </div>
         </template>
     </div>
