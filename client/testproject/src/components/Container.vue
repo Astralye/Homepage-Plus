@@ -20,7 +20,6 @@
                 default: false
             }
         },
-        
 
         // x_Y -> props
         // m_xY -> member values
@@ -30,6 +29,7 @@
         // Sets variables from props
         created(){
             
+            this.$GlobalStates.clickLoad = true;
             this.setCurrentContainer();
             this.recalculateThreshold(window.innerWidth, window.innerHeight);
         },
@@ -43,7 +43,8 @@
                     id: "0A",
                     NoChildren: 0,
                     siblings: 0,
-                    evenSplit: true
+                    evenSplit: true,
+                    unevenFRData: ""
                 },
 
                 m_MouseCoordinate:{
@@ -86,21 +87,20 @@
                     this.m_rowData = "1fr";
                 }
             },
-            configureGridNonEven(type){
-                // if(type === "Horizontal"){
-                //     this.m_rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                //     this.m_columnData = "1fr";
-                // }
-                // else{
-                //     this.m_columnData = "1fr ".repeat(this.m_ContainerData.NoChildren);
-                //     this.m_rowData = "1fr";
-                // }
+            configureGridNonEven(container){
+                if(container.divisionType === "Horizontal"){
+                    this.m_rowData = container.unevenFRData;
+                    this.m_columnData = "1fr";
+                }
+                else{
+                    this.m_rowData = "1fr";
+                    this.m_columnData = container.unevenFRData;
+                }
             },
             onSelectionMode(){
                 this.m_EditMode = true;
             },
             setCurrentContainer(){
-                
                 this.m_ContainerData.level = this.nest_level;
                 let tmpID = (this.nest_level === 0) ? this.$ContainerData.value.id : this.parent_ID.concat(this.createID());
                 let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
@@ -118,18 +118,48 @@
                 this.m_ContainerData.NoChildren = tmpContainer.NoChildren;
                 this.m_ContainerData.siblings = tmpContainer.siblings;
                 this.m_ContainerData.evenSplit = tmpContainer.evenSplit;
+                this.m_ContainerData.unevenFRData = tmpContainer.unevenFRData;
+                
 
                 if(this.m_ContainerData.evenSplit){
                     this.configureGridEven(this.m_ContainerData.divisionType);
+                    tmpContainer["unevenFRData"] = ""; // Deletes uneven data when even spacing is turned on.
                 }
-                else{
-                    this.configureGridNonEven(this.m_ContainerData.divisionType);
+                else if(this.$GlobalStates.clickLoad){
+                    this.configureGridNonEven(this.m_ContainerData);
+                }
+
+                // Check if the container is the final container to be rendered
+                let lastRenderContainer = this.isFinalNode(this.findLevelData(this.$ContainerData.value, 0, "0A"), this.m_ContainerData.id);
+                    
+                // Turn off Load rendering
+                if( lastRenderContainer && this.$GlobalStates.clickLoad) {
+                    this.$GlobalStates.clickLoad = false;
                 }
                 
                 this.recalculateThreshold(window.innerWidth, window.innerHeight);
                 this.setDragOrientation();
             },
+            // Check if the child is the last container in the tree
+            isFinalNode(parentObject, childID){
+                if( parentObject.NoChildren === 0 ) { return false; } // if no children;
 
+                let lastChild = parentObject.containerData[ parentObject.containerData.length - 1];
+                let count = 0;
+                while(true){
+                    if(lastChild.containerData.length !== 0){
+                        lastChild = lastChild.containerData[lastChild.containerData.length - 1];
+                        count++;
+                        if(count === 100) { break; } // Avoid a potential infinite loop
+                        continue;
+                    }
+                    break;
+                }
+
+                // Logging
+                // console.log("Looking for:", lastChild.id, "got:", childID);
+                return (lastChild.id === childID) ? true : false;
+            },
             createID(){
                 return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
             },
@@ -301,9 +331,15 @@
                 // Convert back to string.
                 let tmpString = "";
                 for(let i = 0; i < arrayData.length; i++){ tmpString += String(arrayData[i]) + "fr "; }
+                
                 // Set the corresponding data 
                 if(data.type === "Vertical"){ this.m_columnData = tmpString; } 
-                else{ this.m_rowData = tmpString;}
+                else{ this.m_rowData = tmpString; } 
+
+                // Updates the global container values
+                let globalLevelData = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, this.m_ContainerData.id)
+                globalLevelData.unevenFRData = tmpString;
+
             },
             // Check mouse location
             mouseHold(event, holding){
@@ -345,10 +381,10 @@
                 let pxPerStep = pxPerFractionalUnit * this.m_StepSize;
                 
                 // Logging
-                console.log("ID:", this.m_ContainerData.id, 
-                            "Type:", this.m_ContainerData.divisionType,
-                            "Pixels Per step:", pxPerStep
-                        );
+                // console.log("ID:", this.m_ContainerData.id, 
+                //             "Type:", this.m_ContainerData.divisionType,
+                //             "Pixels Per step:", pxPerStep
+                //         );
                 
                 this.m_pxThreshold = pxPerStep;
 
@@ -380,7 +416,7 @@
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldVal){
-                    this.setCurrentContainer();
+                    this.setCurrentContainer(true);
                 },
                 deep: true
             },
@@ -458,6 +494,10 @@
 
 .edit-hover{
     background-color: var(--Hover-colour) !important;
+}
+
+.page-drag-cursor{
+    cursor: row-resize;
 }
 
 .page-drag-Horizontal{

@@ -19,6 +19,7 @@ app.config.globalProperties.$GlobalStates = ref( {
             height: 0,
         }
     },
+    clickLoad: false,
     containerSelectionMode: false
 });
 
@@ -31,6 +32,7 @@ app.config.globalProperties.$ContainerData = ref({
     NoChildren: 0,
     siblings: 0,
     evenSplit: true,
+    unevenFRData: "",
     containerData: [
     ],
 });

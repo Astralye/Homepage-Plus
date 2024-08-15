@@ -86,6 +86,7 @@ export default {
                         NoChildren: 0,
                         siblings: noSiblings,
                         evenSplit: true,
+                        unevenFRData: "",
                         containerData: []
                     });
                     this.toggleSelectionMode();
@@ -182,7 +183,6 @@ export default {
             }
             // If no children, select first
             else if (index === 0) {return true;}
-
             return false;
         },
 
@@ -208,6 +208,7 @@ export default {
                 return;
             }
 
+            this.$GlobalStates.clickLoad = true; 
             this.$ContainerData.value = containerData;
             this.resetSelected();
         },
@@ -221,6 +222,7 @@ export default {
                 NoChildren: 0,
                 siblings: 0,
                 evenSplit: "true",
+                unevenFRData: "",
                 containerData: [
                 ]
             }
