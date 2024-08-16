@@ -3,12 +3,14 @@
 import SingleButton from './SingleButton.vue';
 import WindowContainerDivider from './WindowContainerDivider.vue';
 import ToolTip from './ToolTip.vue';
+import RadioButton from './RadioBtn.vue';
 
 export default {
     components: {
         SingleButton,
         WindowContainerDivider,
-        ToolTip
+        ToolTip,
+        RadioButton
     },
     data() {
         return{
@@ -281,7 +283,7 @@ export default {
         </template>
 
         <template #content>
-            <div class="grid">
+            <div class="grid container-content-margin-top">
                 <div v-for="(type,index) in DivisionType">
                     <input 
                         type="radio"
@@ -300,11 +302,18 @@ export default {
                     </label>
                 </div> 
             </div>
+
+            <!-- 
+                Find a way to integrate this data and stuff into the component
+            -->
+            <RadioButton
+                :text_array='["Vertical", "Horizontal"]'>
+            </RadioButton>
         </template>
 
         <template #tooltip>
             <ToolTip>
-                Divisions
+                Determines how the container is divided
             </ToolTip>
         </template>
     </WindowContainerDivider>
@@ -318,7 +327,7 @@ export default {
         </template>
 
         <template #content>
-            <div class="container-division-number">
+            <div class="container-content-margin-top">
     
                 <div v-for="(container,index) in ContainerDivision">
                     <input 
@@ -333,21 +342,26 @@ export default {
                         @click="selectContainer(container) ? modifyContainer(container.index) : null ">
                         <div class="bnt-content">
     
-                            <div class="tmpSquare"> </div> 
-    
                             <div class="label-text-container"> 
                                 <h3> {{ container.id }} </h3>
                             </div>
                         </div>
                     </label>
                 </div>
-    
             </div>
+
+            <!-- 
+                TODO
+                Replace the data above with this
+            -->
+            <RadioButton
+                :text_array='["One", "Two", "Three", "Four"]'>
+            </RadioButton>
         </template>
 
         <template #tooltip>
             <ToolTip>
-                Number of divisions the container will have.
+                Number of divisions the container will have
             </ToolTip>
         </template>
     </WindowContainerDivider>
@@ -355,43 +369,62 @@ export default {
     <WindowContainerDivider
         class="container-divider"> 
         <template #header>
-            <h4 class="inline">
+            <h3 class="inline">
                 Even spacing
-            </h4>
+            </h3>
         </template>
 
         <template #content>
-            <input 
-            type="checkbox" 
-            id="EvenSpacing"
-            name="EvenSpacing" 
-            value="EvenSpacing"
-            class="EvenSpacing"
-            v-model="check"
-            @change="setSpacingCheckmark(check)"
-            :checked="this.States.selectedContainer.evenlySpaced"
-            >
+            <div class="container-content-margin-top">
 
-            <!-- Need to write logic to make the checkbox work with the container value. -->
-                
-            <label class="selection fullWidth"></label>
+                <input 
+                type="checkbox" 
+                id="EvenSpacing"
+                name="EvenSpacing" 
+                value="EvenSpacing"
+                class="EvenSpacing"
+                v-model="check"
+                @change="setSpacingCheckmark(check)"
+                :checked="this.States.selectedContainer.evenlySpaced"
+                >
+
+                <!-- Need to write logic to make the checkbox work with the container value. -->
+                    
+                <label class="selection fullWidth"></label>
+            </div>
         </template>
 
         <template #tooltip>
             <ToolTip>
-                Divisions
+                Enable to maintain even spacing between all the child containers
             </ToolTip>
         </template>
     </WindowContainerDivider>
 
-    <div>
-        % Spacing
-        <input 
-            type="range"
-            min="1" 
-            max="100"
-            value="50"> 
-    </div>
+
+    <WindowContainerDivider
+    class="container-divider"> 
+    <template #header>
+        <h4 class="inline">
+            Drag step size
+        </h4>
+    </template>
+
+        <template #content>
+            <div class="container-content-margin-top">
+                <input 
+                    type="range" list="abc" id="abc" min="0" max="75" value="50" step="25"
+                    class="flex width-100"> 
+            </div>
+        </template>
+
+        
+        <template #tooltip>
+            <ToolTip>
+                Step size are in fractional units of the parent container
+            </ToolTip>
+    </template>
+    </WindowContainerDivider>
 
     <div>
         <button
@@ -415,6 +448,18 @@ export default {
 </template>
 
 <style scoped>
+
+.container-content-margin-top{
+    margin-top: 0.5rem;
+}
+
+.width-100{
+    width: 70%;
+}
+
+.flex{
+    display: flex;
+}
 
 .inline{
     display: inline;
@@ -483,12 +528,10 @@ input[type="radio"]:checked + label{
     height: 40px;
 }
 
-.no-divisions{
-    height: auto;
-}
 
 .radio-btn{
     display: block;
+    width: auto;
     background-color: silver;
     border: 2px solid black;
     border-radius: 5px;
