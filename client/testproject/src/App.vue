@@ -6,6 +6,7 @@ import WindowButton from './components/ListButton.vue'
 import PageContainer from './components/Container.vue'
 import PageSubDivision from './components/PageSubDivision.vue'
 import ContainerContent from './components/ContainerContent.vue'
+import LinkMaker from './components/LinkMaker.vue'
 
 export default{
     name: "App",
@@ -15,7 +16,8 @@ export default{
         WindowButton,
         PageContainer,
         PageSubDivision,
-        ContainerContent
+        ContainerContent,
+        LinkMaker
     },
     data() {
         return{
@@ -30,7 +32,8 @@ export default{
             EditBtns: [
                 { name: "Layout", toggle: false },
                 { name: "Containers", toggle: false },
-                { name: "Widgets", toggle: false}
+                { name: "Widgets", toggle: false},
+                { name: "Link Maker", toggle: false},
             ],
 
             containerData: {
@@ -123,6 +126,11 @@ export default{
                 case "widgets":
                 {
                     windowType = this.EditBtns[2]; 
+                    break;
+                }
+                case "link maker":
+                {
+                    windowType = this.EditBtns[3]; 
                     break;
                 }
             }
@@ -237,6 +245,18 @@ export default{
                 @focusTab="focusClickedTab">
                 <template v-slot:window-content>
                     <div> Widgets!</div>
+                </template>
+            </Window>
+        </Transition>
+
+        <Transition name="fade">
+            <Window
+                v-if="this.EditBtns[3].toggle"
+                title="Link Maker"
+                @close-window="test"
+                @focusTab="focusClickedTab">
+                <template v-slot:window-content>
+                    <LinkMaker> </LinkMaker>
                 </template>
             </Window>
         </Transition>
