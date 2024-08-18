@@ -4,13 +4,15 @@ import SingleButton from '../Window Components/SingleButton.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
+import RangeSlider from '../Input Components/RangeSlider.vue';
 
 export default {
     components: {
         SingleButton,
         WindowContainerDivider,
         ToolTip,
-        RadioButton
+        RadioButton,
+        RangeSlider
     },
     data() {
         return{
@@ -412,9 +414,7 @@ export default {
 
         <template #content>
             <div class="container-content-margin-top">
-                <input 
-                    type="range" list="abc" id="abc" min="0" max="75" value="50" step="25"
-                    class="flex width-100"> 
+                <RangeSlider/>
             </div>
         </template>
 

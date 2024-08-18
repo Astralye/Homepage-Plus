@@ -9,10 +9,8 @@
             Image
 
             <input placeholder="Item name">
-                
-            </input>
 
-            <input type="range" min="0" max="75" value="50" step="25">
+            <RangeSlider/>
         </template>
     </WindowContainerDivider>
 
@@ -51,15 +49,12 @@
         </template>
 
         <template #content>
-
-            <input>
-            
-            </input>
+            <TextInput></TextInput>
         </template>
 
         <template #tooltip>
             <ToolTip>
-                Sirectory after the domain name e.g youtube.com/{XYZ}
+                Directory after the domain name e.g youtube.com/{XYZ}
                 where XYZ is the input
             </ToolTip>
         </template>
@@ -86,11 +81,15 @@
 <script>
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+import RangeSlider from '../Input Components/RangeSlider.vue';
+import TextInput from '../Input Components/TextInput.vue';
 
 export default {
     components: {
         WindowContainerDivider,
-        ToolTip
+        ToolTip,
+        RangeSlider,
+        TextInput
     }
 }
 

@@ -32,7 +32,7 @@
       </template>
 
       <template #content>
-        <input type="range" list="iconSize" id="iconSize" min="0" max="75" value="50" step="25"> 
+        <RangeSlider/>
       </template>
 
     </WindowContainerDivider>
@@ -84,6 +84,7 @@
 <script>
 
 import RadioButton from '../Input Components/RadioBtn.vue';
+import RangeSlider from '../Input Components/RangeSlider.vue';
 import SingleButton from '../Window Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
@@ -93,7 +94,8 @@ export default {
         ToolTip,
         WindowContainerDivider,
         SingleButton,
-        RadioButton
+        RadioButton,
+        RangeSlider
     }
 }
 </script>
