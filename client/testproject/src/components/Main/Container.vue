@@ -466,7 +466,7 @@
     </div>
 </template>     
 <style scoped>
-@import '../assets/base.css';
+@import '../../assets/base.css';
 
 .component-container{
     height: 100%;

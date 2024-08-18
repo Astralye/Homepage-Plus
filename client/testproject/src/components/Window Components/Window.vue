@@ -121,12 +121,7 @@
 </template>
 
 <style scoped>
-/*
-    Make sure to include 
-    @import '../assets/base.css';
-    to use the styled variables
-*/
-@import '../assets/base.css';
+@import '../../assets/base.css';
 
 .header-title__line-height--small{
     line-height: 1.0;

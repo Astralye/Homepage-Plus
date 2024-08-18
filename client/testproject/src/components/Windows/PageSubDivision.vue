@@ -1,9 +1,9 @@
 
 <script>
-import SingleButton from './SingleButton.vue';
-import WindowContainerDivider from './WindowContainerDivider.vue';
-import ToolTip from './ToolTip.vue';
-import RadioButton from './RadioBtn.vue';
+import SingleButton from '../Window Components/SingleButton.vue';
+import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+import ToolTip from '../Window Components/ToolTip.vue';
+import RadioButton from '../Input Components/RadioBtn.vue';
 
 export default {
     components: {

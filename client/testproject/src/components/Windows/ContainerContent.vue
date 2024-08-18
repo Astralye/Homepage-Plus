@@ -83,10 +83,10 @@
 
 <script>
 
-import RadioButton from './RadioBtn.vue';
-import SingleButton from './SingleButton.vue';
-import ToolTip from './ToolTip.vue';
-import WindowContainerDivider from './WindowContainerDivider.vue';
+import RadioButton from '../Input Components/RadioBtn.vue';
+import SingleButton from '../Window Components/SingleButton.vue';
+import ToolTip from '../Window Components/ToolTip.vue';
+import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 
 export default {
     components: {

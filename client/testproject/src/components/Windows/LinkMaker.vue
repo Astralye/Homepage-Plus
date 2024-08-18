@@ -84,8 +84,8 @@
 </template>
 
 <script>
-import ToolTip from './ToolTip.vue';
-import WindowContainerDivider from './WindowContainerDivider.vue';
+import ToolTip from '../Window Components/ToolTip.vue';
+import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 
 export default {
     components: {

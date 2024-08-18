@@ -1,12 +1,12 @@
 <script>
 
-import ModifyButtons from './components/MainButton.vue'
-import Window from './components/Window.vue'
-import WindowButton from './components/ListButton.vue'
-import PageContainer from './components/Container.vue'
-import PageSubDivision from './components/PageSubDivision.vue'
-import ContainerContent from './components/ContainerContent.vue'
-import LinkMaker from './components/LinkMaker.vue'
+import ModifyButtons from './components/Main/MainButton.vue'
+import Window from './components/Window Components/Window.vue'
+import WindowButton from './components/Main/ListButton.vue'
+import PageContainer from './components/Main/Container.vue'
+import PageSubDivision from './components/Windows/PageSubDivision.vue'
+import ContainerContent from './components/Windows/ContainerContent.vue'
+import LinkMaker from './components/Windows/LinkMaker.vue'
 
 export default{
     name: "App",

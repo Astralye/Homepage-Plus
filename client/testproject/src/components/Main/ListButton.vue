@@ -5,8 +5,7 @@
 </template>
 
 <style scoped>
-@import '../assets/base.css';
-
+@import '../../assets/base.css';
 .list-button{
     display: flex;
     width: 100%;

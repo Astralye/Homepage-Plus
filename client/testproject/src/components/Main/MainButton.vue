@@ -1,6 +1,6 @@
 <script>
 
-import IconButton from './IconButton.vue'
+import IconButton from '../Input Components/IconButton.vue'
 
 export default{
     name: "MainBtn",
