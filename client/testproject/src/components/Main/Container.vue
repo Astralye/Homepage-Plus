@@ -25,14 +25,6 @@
         // m_xY -> member values
         // xY -> local variables
 
-        // Initializer
-        // Sets variables from props
-        created(){
-            
-            this.$GlobalStates.clickLoad = true;
-            this.setCurrentContainer();
-            this.recalculateThreshold(window.innerWidth, window.innerHeight);
-        },
         data(){
             return{
 
@@ -74,9 +66,39 @@
                 m_StepSize: 0.25,
             }
         },
+
+        // Initializer
+        // Sets variables from props
+        created(){
+            
+            this.$GlobalStates.clickLoad = true;
+            this.setCurrentContainer();
+            this.recalculateThreshold(window.innerWidth, window.innerHeight);
+        },
         methods:{
 
-            // Sets css grids
+// Logging Functions 
+// -----------------------------------------------------------------------------------------------------
+            printContainerInfo(){
+                  console.log("Container Info\n",
+                              "\nLevel: ", this.m_ContainerData.level,
+                              "\nDivision Type:", this.m_ContainerData.divisionType,
+                              "\nID:", this.m_ContainerData.id,
+                              "\nSiblings:", this.m_ContainerData.siblings,
+                              "\nEven Split?", this.m_ContainerData.evenSplit,
+                              "\nFR data:", this.m_ContainerData.unevenFRData,
+                  );
+            },
+            printMouseCoordinate(){
+                console.log("Mouse Coordinate (Absolute)\n",
+                            "\nX:", this.m_MouseCoordinate.x,
+                            "\nY:", this.m_MouseCoordinate.y,
+                );
+            },
+// -------------------------------------------------------------------------------------------------------
+
+// Row + Column Data variable setters
+// -------------------------------------------------------------------------------------------------------
             configureGridEven(type){
                 if(type === "Horizontal"){
                     this.m_rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
@@ -97,9 +119,18 @@
                     this.m_columnData = container.unevenFRData;
                 }
             },
+
+// -------------------------------------------------------------------------------------------------------
+
+// General Container Functions
+// --------------------------------------------------------------------------------------------------------
+
+
             onSelectionMode(){
                 this.m_EditMode = true;
             },
+
+            // Applies any changed data to the container
             setCurrentContainer(){
                 this.m_ContainerData.level = this.nest_level;
                 let tmpID = (this.nest_level === 0) ? this.$ContainerData.value.id : this.parent_ID.concat(this.createID());
@@ -119,7 +150,6 @@
                 this.m_ContainerData.siblings = tmpContainer.siblings;
                 this.m_ContainerData.evenSplit = tmpContainer.evenSplit;
                 this.m_ContainerData.unevenFRData = tmpContainer.unevenFRData;
-                
 
                 if(this.m_ContainerData.evenSplit){
                     this.configureGridEven(this.m_ContainerData.divisionType);
@@ -131,15 +161,66 @@
 
                 // Check if the container is the final container to be rendered
                 let lastRenderContainer = this.isFinalNode(this.findLevelData(this.$ContainerData.value, 0, "0A"), this.m_ContainerData.id);
-                    
                 // Turn off Load rendering
-                if( lastRenderContainer && this.$GlobalStates.clickLoad) {
-                    this.$GlobalStates.clickLoad = false;
-                }
+                if( lastRenderContainer && this.$GlobalStates.clickLoad) { this.$GlobalStates.clickLoad = false;}
                 
                 this.recalculateThreshold(window.innerWidth, window.innerHeight);
                 this.setDragOrientation();
             },
+
+            createID(){
+                return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
+            },
+
+            // Store container data to global variable
+            storeClickedContainer(){
+                if(this.m_ContainerData.id === null) {return;}
+                this.$GlobalStates.value.edit.containerSelected = this.m_ContainerData.id;
+                this.$GlobalStates.value.edit.enabled = true;
+            },
+
+            // Boolean, store if container was clicked.
+            storedClick(){
+                this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
+            },
+
+            // Sibling identifier, A,B,C,D
+            getSiblingNumber(){
+                let LastValue = this.m_ContainerData.id.substring(this.m_ContainerData.id.length - 1).toLowerCase();
+                return LastValue.charCodeAt(0) - 97;
+            },
+            getParentObj(){
+                let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
+                return this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
+            },
+            
+            isFirstSibling(){ return (this.getSiblingNumber() === 0) ? true : false; },
+            isLastSibling(){ return (this.getSiblingNumber() === this.getParentObj().NoChildren - 1) ? true : false; },
+            isBaseContainer(){ return this.m_ContainerData.id === "0A" ? true : false; },
+            setDragOrientation(){
+                if(this.isBaseContainer()){ return;} // Base 
+                this.m_isVertical = (this.getParentObj().divisionType === "Vertical") ? true : false; 
+            },
+            removeExtraContainer(){
+                return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
+            },
+
+            retrieveGridData(data){
+                let splitData = data.split(" ");
+                let tmpArray = [];
+                splitData.pop();
+
+                for(let i = 0; i < splitData.length; i++){
+                    tmpArray.push(Number(splitData[i].substring(0,splitData[i].length-2)));
+                }
+                return tmpArray;
+            },
+
+// --------------------------------------------------------------------------------------------------------
+
+// Recurrsion and tree based functions
+// --------------------------------------------------------------------------------------------------------
+            
             // Check if the child is the last container in the tree
             isFinalNode(parentObject, childID){
                 if( parentObject.NoChildren === 0 ) { return false; } // if no children;
@@ -155,13 +236,7 @@
                     }
                     break;
                 }
-
-                // Logging
-                // console.log("Looking for:", lastChild.id, "got:", childID);
                 return (lastChild.id === childID) ? true : false;
-            },
-            createID(){
-                return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
             },
 
             // Depth-first search recurrsion function
@@ -200,38 +275,57 @@
                 return null; // Not found in children, move up stack.
             },
 
-            // Store container data to global variable
-            storeClickedContainer(){
-                if(this.m_ContainerData.id === null) {return;}
-                this.$GlobalStates.value.edit.containerSelected = this.m_ContainerData.id;
-                this.$GlobalStates.value.edit.enabled = true;
+// ---------------------------------------------------------------------------------------------------------
+
+// Divider drag functions
+// ---------------------------------------------------------------------------------------------------------
+
+
+            // Start event on mouse down on divider.
+            // End event on mouse up regardless of position.
+            mouseHold(event, holding){
+                this.m_isMoveContainer = true;
+                
+                document.addEventListener('mouseup', function(e) {
+                    this.m_isMoveContainer = false;
+                    document.onmousemove = null;
+                }, { once: true });
+
+                document.onmousemove = this.movingMouse;
             },
 
-            // Boolean, store if container was clicked.
-            storedClick(){
-                this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
-            },
-            
-            // Sibling identifier, A,B,C,D
-            getSiblingNumber(){
-                let LastValue = this.m_ContainerData.id.substring(this.m_ContainerData.id.length - 1).toLowerCase();
-                return LastValue.charCodeAt(0) - 97;
+            // Store absolute mouse position
+            movingMouse: function(event){
+                this.m_MouseCoordinate.x = event.pageX;
+                this.m_MouseCoordinate.y = event.pageY;
+                this.moveContainer();
             },
 
-            isFirstSibling(){ return (this.getSiblingNumber() === 0) ? true : false; },
-            isLastSibling(){ return (this.getSiblingNumber() === this.getParentObj().NoChildren - 1) ? true : false; },
-            isBaseContainer(){ return this.m_ContainerData.id === "0A" ? true : false; },
-            getParentObj(){
-                let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
-                return this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
+            // Algorithm for finding difference in coordinate in a relative scale
+            findMouseDifference(division){
+                // Gets the value of the corresponding coordinate to move.
+                const divider = this.$refs["divider"].getBoundingClientRect();
+
+                console.log(this.$parent.$data.m_pxThreshold);
+
+                let value;
+                let elementCoordinate;
+                let size;
+                if(division === "Vertical"){
+                    value = this.m_MouseCoordinate.x;
+                    elementCoordinate = divider.x;
+                    size = divider.width;
+                }
+                else{
+                    value = this.m_MouseCoordinate.y;
+                    elementCoordinate = divider.y;
+                    size = divider.height;
+                }
+
+                return ( elementCoordinate - value + (size / 2));
             },
-            setDragOrientation(){
-                if(this.isBaseContainer()){ return;} // Base 
-                this.m_isVertical = (this.getParentObj().divisionType === "Vertical") ? true : false; 
-            },
-            removeExtraContainer(){
-                return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
-            },
+
+
             // Finds the container which is being clicked on.
             // Sends an emitter to modify grid data 
             moveContainer(){
@@ -278,27 +372,6 @@
                 if(isMoveContainer){ this.$emit('drag', data);}
             },
 
-            // Algorithm for finding difference in coordinate in a relative scale
-            findMouseDifference(division){
-                // Gets the value of the corresponding coordinate to move.
-                const divider = this.$refs["divider"].getBoundingClientRect();
-
-                let value;
-                let elementCoordinate;
-                let size;
-                if(division === "Vertical"){
-                    value = this.m_MouseCoordinate.x;
-                    elementCoordinate = divider.x;
-                    size = divider.width;
-                }
-                else{
-                    value = this.m_MouseCoordinate.y;
-                    elementCoordinate = divider.y;
-                    size = divider.height;
-                }
-
-                return ( elementCoordinate - value + (size / 2));
-            },
 
             // This function only runs at the parents container.
             // This is because it modifies the css variable.
@@ -341,33 +414,11 @@
                 globalLevelData.unevenFRData = tmpString;
 
             },
-            // Check mouse location
-            mouseHold(event, holding){
-                this.m_isMoveContainer = true;
 
-                // Mouse up event
-                // Vuejs @mouseup only works if mouse is inside component
-                // This will turn off tracking if mouse1 has been lifted.
-                document.addEventListener('mouseup', function(e) {
-                    this.m_isMoveContainer = false;
-                    document.onmousemove = null;
-                }, { once: true });
-
-                document.onmousemove = this.movingMouse;
-                
-                // // console.log(this.m_MouseCoordinate);
-                // this.m_MouseCoordinate.x = event.pageX;
-                // this.m_MouseCoordinate.y = event.pageY;
-                // console.log(event);
-            },
-            movingMouse: function(event){
-                this.m_MouseCoordinate.x = event.pageX;
-                this.m_MouseCoordinate.y = event.pageY;
-                this.moveContainer();
-            },
-
-            // This runs every N times for N containers when resized
-            // Modifies (in px) the threshold of mouse position to move per stepsize
+            /*
+                This runs every N times for N containers when resized
+                Modifies (in px) the threshold of mouse position to move per stepsize
+            */
             recalculateThreshold(width, height){
                 // Only applicable for non-evenspacing
                 // if(this.m_ContainerData.evenSplit) { return; }
@@ -389,18 +440,11 @@
                 this.m_pxThreshold = pxPerStep;
 
             },
-            retrieveGridData(data){
-                let splitData = data.split(" ");
-                let tmpArray = [];
-                splitData.pop();
-
-                for(let i = 0; i < splitData.length; i++){
-                    tmpArray.push(Number(splitData[i].substring(0,splitData[i].length-2)));
-                }
-                return tmpArray;
-            },
-            // isEvenSpacing(){ return this.m_ContainerData.evenSplit; }
         },
+
+// Watchers
+// --------------------------------------------------------------------------------------------------------------
+
         watch: {
             '$GlobalStates.value.edit.containerSelected':{
                 handler(val,oldval){
@@ -464,7 +508,12 @@
             </div>
         </template>
     </div>
-</template>     
+</template>
+
+<!---------------------------------------------------------------------------------------------------------------------------
+    CSS
+-->
+
 <style scoped>
 @import '../../assets/base.css';
 
@@ -478,6 +527,14 @@
     grid-template-rows: v-bind("m_rowData");
     grid-gap: 10px;
     padding: 8px;
+    
+    
+    /*
+    Transitions change the position of the slider.
+        Causes bugs with the math and calculations
+        Maybe in future implement
+        transition: grid 0.2s linear;
+    */
 
     border-radius: 10px;
 }
@@ -504,7 +561,16 @@
     height: 10px;
     width: 100%;
     cursor: row-resize;
-    background-color: rgba(255,255,255,0.4);
+    background-color: rgba(255,255,255,0);
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-drag-Horizontal:hover{
+    background-color: rgba(255,255,255,0.2);
+}
+.page-drag-Horizontal:active{
+    background-color: rgba(255,255,255,0.6);
 }
 
 /*
@@ -516,6 +582,15 @@
     transform: translate(-15px, -100%);
     cursor: col-resize;
     background-color: rgba(255,255,255,0.4);
+    background-color: rgba(255,255,255, 0 );
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+}
+.page-drag-Vertical:hover{
+    background-color: rgba(255,255,255,0.2);
+}
+.page-drag-Vertical:active{
+    background-color: rgba(255,255,255,0.6);
 }
 
 .page-content-container{
