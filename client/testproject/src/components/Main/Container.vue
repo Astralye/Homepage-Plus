@@ -28,6 +28,15 @@
         data(){
             return{
 
+                // Objects
+
+                /*
+                    Each component stores data of the container.
+                    This data determines how it is rendered
+
+                    The values are taken from the global variable and 
+                    watchers update the values
+                */
                 m_ContainerData:         
                 {
                     level: 0,
@@ -39,28 +48,31 @@
                     unevenFRData: ""
                 },
 
+                m_ComponentCoordinate:{
+                    x: 0,
+                    y: 0
+                },
+
                 m_MouseCoordinate:{
                     x: 0,
                     y: 0
                 },
 
-                    
+                // Conditional HTML 
                 m_edit: true,
                 m_isHover: false,
                 m_isClick: false,
+
+                // Default instantiate values
+                m_EditMode: false,
+                m_isStoredClick: false,
+                m_isVertical: true,
+                m_isMoveContainer: false,
                 
+                // Data 
                 m_columnData: null,
                 m_rowData: null,
-
                 m_gridStyle: null,
-
-                m_EditMode: false,
-
-                m_isStoredClick: false,
-
-                m_isVertical: true,
-
-                m_isMoveContainer: false,
                 
                 m_pxThreshold: 5,
                 m_StepSize: 0.25,
@@ -99,7 +111,7 @@
 
 // Row + Column Data variable setters
 // -------------------------------------------------------------------------------------------------------
-            configureGridEven(type){
+            setGridEven(type){
                 if(type === "Horizontal"){
                     this.m_rowData = "1fr ".repeat(this.m_ContainerData.NoChildren);
                     this.m_columnData = "1fr";
@@ -109,7 +121,7 @@
                     this.m_rowData = "1fr";
                 }
             },
-            configureGridNonEven(container){
+            setGridNonEven(container){
                 if(container.divisionType === "Horizontal"){
                     this.m_rowData = container.unevenFRData;
                     this.m_columnData = "1fr";
@@ -126,7 +138,7 @@
 // --------------------------------------------------------------------------------------------------------
 
 
-            onSelectionMode(){
+            toggleSelectionMode(){
                 this.m_EditMode = true;
             },
 
@@ -134,7 +146,7 @@
             setCurrentContainer(){
                 this.m_ContainerData.level = this.nest_level;
                 let tmpID = (this.nest_level === 0) ? this.$ContainerData.value.id : this.parent_ID.concat(this.createID());
-                let tmpContainer = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
+                let tmpContainer = this.getLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
 
                 // Set the current container data
                 if(tmpContainer == null){
@@ -152,15 +164,15 @@
                 this.m_ContainerData.unevenFRData = tmpContainer.unevenFRData;
 
                 if(this.m_ContainerData.evenSplit){
-                    this.configureGridEven(this.m_ContainerData.divisionType);
+                    this.setGridEven(this.m_ContainerData.divisionType);
                     tmpContainer["unevenFRData"] = ""; // Deletes uneven data when even spacing is turned on.
                 }
                 else if(this.$GlobalStates.clickLoad){
-                    this.configureGridNonEven(this.m_ContainerData);
+                    this.setGridNonEven(this.m_ContainerData);
                 }
 
                 // Check if the container is the final container to be rendered
-                let lastRenderContainer = this.isFinalNode(this.findLevelData(this.$ContainerData.value, 0, "0A"), this.m_ContainerData.id);
+                let lastRenderContainer = this.isFinalNode(this.getLevelData(this.$ContainerData.value, 0, "0A"), this.m_ContainerData.id);
                 // Turn off Load rendering
                 if( lastRenderContainer && this.$GlobalStates.clickLoad) { this.$GlobalStates.clickLoad = false;}
                 
@@ -168,6 +180,7 @@
                 this.setDragOrientation();
             },
 
+            // Create ID based on the level and child instance
             createID(){
                 return `${this.m_ContainerData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
             },
@@ -180,7 +193,7 @@
             },
 
             // Boolean, store if container was clicked.
-            storedClick(){
+            isStoredClick(){
                 this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_ContainerData.id) ? false : true;
             },
 
@@ -191,7 +204,7 @@
             },
             getParentObj(){
                 let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
-                return this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
+                return this.getLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
             },
             
             isFirstSibling(){ return (this.getSiblingNumber() === 0) ? true : false; },
@@ -201,11 +214,13 @@
                 if(this.isBaseContainer()){ return;} // Base 
                 this.m_isVertical = (this.getParentObj().divisionType === "Vertical") ? true : false; 
             },
-            removeExtraContainer(){
-                return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); 
-            },
-
-            retrieveGridData(data){
+            
+            /*
+                Due to rendering the order of the division varies
+                Vertical -> Extra at the start
+            */
+            isExtraContainerValue(){ return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); },
+            getGridData(data){
                 let splitData = data.split(" ");
                 let tmpArray = [];
                 splitData.pop();
@@ -241,7 +256,7 @@
 
             // Depth-first search recurrsion function
             // Finds the corresponding data from the level and ID
-            findLevelData(currentLevelData, Level, ID){
+            getLevelData(currentLevelData, Level, ID){
                 
                 // Input level is the current level data
                 if(Level == currentLevelData.level ){
@@ -267,7 +282,7 @@
                     
                     // Base case (Has children)
                     else{
-                        var tmp = this.findLevelData(item, Level + 1, ID);
+                        var tmp = this.getLevelData(item, Level + 1, ID);
                         // If any item is found, return up stack.
                         if(tmp !== null){ return tmp; }
                     }
@@ -283,7 +298,7 @@
 
             // Start event on mouse down on divider.
             // End event on mouse up regardless of position.
-            mouseHold(event, holding){
+            onMouseHold(event, holding){
                 this.m_isMoveContainer = true;
                 
                 document.addEventListener('mouseup', function(e) {
@@ -291,18 +306,18 @@
                     document.onmousemove = null;
                 }, { once: true });
 
-                document.onmousemove = this.movingMouse;
+                document.onmousemove = this.trackMousePosition;
             },
 
             // Store absolute mouse position
-            movingMouse: function(event){
+            trackMousePosition: function(event){
                 this.m_MouseCoordinate.x = event.pageX;
                 this.m_MouseCoordinate.y = event.pageY;
                 this.moveContainer();
             },
 
             // Algorithm for finding difference in coordinate in a relative scale
-            findMouseDifference(division){
+            calculateMouseDifference(division){
                 // Gets the value of the corresponding coordinate to move.
                 const divider = this.$refs["divider"].getBoundingClientRect();
 
@@ -326,15 +341,14 @@
             },
 
 
-            // Finds the container which is being clicked on.
-            // Sends an emitter to modify grid data 
             moveContainer(){
                 let parentObj = this.getParentObj();
                 if(parentObj.evenSplit) { return; }
-                // Algorithm for finding difference in coordinate
-                const difference = this.findMouseDifference(parentObj.divisionType);
 
+                const difference = this.calculateMouseDifference(parentObj.divisionType);
+                
                 // console.log(difference);
+                return;
 
                 let siblingData = parentObj.containerData;
                 let siblingIndex;
@@ -381,7 +395,7 @@
                 let siblingValue;
                 let baseValue;
 
-                let arrayData = (data.type === "Vertical") ? this.retrieveGridData(this.m_columnData) : this.retrieveGridData(this.m_rowData);
+                let arrayData = (data.type === "Vertical") ? this.getGridData(this.m_columnData) : this.getGridData(this.m_rowData);
 
                 siblingValue = arrayData[siblingIndex];
                 baseValue = arrayData[baseIndex];
@@ -410,7 +424,7 @@
                 else{ this.m_rowData = tmpString; } 
 
                 // Updates the global container values
-                let globalLevelData = this.findLevelData(this.$ContainerData.value, this.m_ContainerData.level, this.m_ContainerData.id)
+                let globalLevelData = this.getLevelData(this.$ContainerData.value, this.m_ContainerData.level, this.m_ContainerData.id)
                 globalLevelData.unevenFRData = tmpString;
 
             },
@@ -420,9 +434,6 @@
                 Modifies (in px) the threshold of mouse position to move per stepsize
             */
             recalculateThreshold(width, height){
-                // Only applicable for non-evenspacing
-                // if(this.m_ContainerData.evenSplit) { return; }
-            
                 // if vertical, use width,
                 let container_px = (this.m_ContainerData.divisionType === "Vertical") ? width : height;
                 
@@ -448,7 +459,7 @@
         watch: {
             '$GlobalStates.value.edit.containerSelected':{
                 handler(val,oldval){
-                    this.storedClick();
+                    this.isStoredClick();
                 }
             },
             '$GlobalStates.value.edit.windowSize':{
@@ -470,10 +481,14 @@
 </script>
 
 <template>
+    <!-- Container wrapper -->
     <div class="component-container">
+        
+        <!-- Container -->
         <div
             class="page-content-container">
             
+            <!-- Edit based container functions -->
             <div 
             :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
                     'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
@@ -482,7 +497,10 @@
             @mouseover.self="m_isHover=true"
             @mouseout.self="m_isHover=false"
             @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
+
                 <template v-if="this.m_ContainerData.NoChildren > 0">
+                    
+                    <!-- Recurrsion, uses data to determine how many to render -->
                     <Container 
                         v-for="n in this.m_ContainerData.NoChildren" 
                         :nest_level="nest_level+1"
@@ -490,8 +508,8 @@
                         :child_Instance="n-1"
                         :render_divider="true"
                         @drag="updateParentColumnRow"
-                        >
-                    </Container>
+                        />
+
                 </template>
             </div>
         </div>
@@ -499,11 +517,11 @@
         <!-- Divider -->
         <template v-if="this.render_divider">
             <div v-if="this.$GlobalStates.value.edit.enabled && 
-                      !this.isBaseContainer() && this.removeExtraContainer()"
+                      !this.isBaseContainer() && this.isExtraContainerValue()"
             :class="{
                 'page-drag-Horizontal': ( !this.m_isVertical),
                 'page-drag-Vertical': (this.m_isVertical) }"
-            @mousedown="mouseHold"
+            @mousedown="onMouseHold"
             ref="divider">
             </div>
         </template>
