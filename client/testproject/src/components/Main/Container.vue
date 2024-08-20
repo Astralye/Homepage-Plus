@@ -48,9 +48,12 @@
                     unevenFRData: ""
                 },
 
-                m_ComponentCoordinate:{
+                // component (HTML DOM) data NOT container
+                m_ComponentData:{
                     x: 0,
-                    y: 0
+                    y: 0,
+                    width: 0,
+                    height: 0,
                 },
 
                 m_MouseCoordinate:{
@@ -76,6 +79,8 @@
                 
                 m_pxThreshold: 5,
                 m_StepSize: 0.25,
+
+                m_cursor: "default",
             }
         },
 
@@ -85,7 +90,11 @@
             
             this.$GlobalStates.clickLoad = true;
             this.setCurrentContainer();
-            this.recalculateThreshold(window.innerWidth, window.innerHeight);
+            this.recalculateThreshold();
+        },
+        mounted(){
+            this.setComponentDOMValues();
+            
         },
         methods:{
 
@@ -106,6 +115,13 @@
                             "\nX:", this.m_MouseCoordinate.x,
                             "\nY:", this.m_MouseCoordinate.y,
                 );
+            },
+            printParentContainerInfo(){
+                console.log("Parent information\n" ,
+                            "\nx:", this.$parent.$data.m_ComponentData.x,
+                            "\ny:", this.$parent.$data.m_ComponentData.y,
+                            "\nheight:", this.$parent.$data.m_ComponentData.height,
+                            "\nwidth:", this.$parent.$data.m_ComponentData.width);
             },
 // -------------------------------------------------------------------------------------------------------
 
@@ -176,7 +192,7 @@
                 // Turn off Load rendering
                 if( lastRenderContainer && this.$GlobalStates.clickLoad) { this.$GlobalStates.clickLoad = false;}
                 
-                this.recalculateThreshold(window.innerWidth, window.innerHeight);
+                this.recalculateThreshold();
                 this.setDragOrientation();
             },
 
@@ -304,9 +320,15 @@
                 document.addEventListener('mouseup', function(e) {
                     this.m_isMoveContainer = false;
                     document.onmousemove = null;
+                    this.m_cursor = "default";
+                    document.documentElement.style.setProperty("--cursor", this.m_cursor);
+
                 }, { once: true });
 
                 document.onmousemove = this.trackMousePosition;
+
+                this.m_cursor = (this.$parent.$data.m_ContainerData.divisionType === "Vertical") ? "col-resize" : "row-resize";
+                document.documentElement.style.setProperty("--cursor", this.m_cursor);
             },
 
             // Store absolute mouse position
@@ -316,40 +338,49 @@
                 this.moveContainer();
             },
 
-            // Algorithm for finding difference in coordinate in a relative scale
+            // Find difference in coordinates of mouse and divider center
             calculateMouseDifference(division){
-                // Gets the value of the corresponding coordinate to move.
                 const divider = this.$refs["divider"].getBoundingClientRect();
+                // Absolute value need to convert to relative position
 
-                console.log(this.$parent.$data.m_pxThreshold);
+                let relMouseCoord = { x: 0, y: 0 };
+                let relDividerCoord = { x: 0, y:0 };
 
-                let value;
-                let elementCoordinate;
-                let size;
+                // Calculation values
+                let dividerSize;
+                let mousePos;
+                let dividerCoord;
+
+                relMouseCoord.x = this.m_MouseCoordinate.x - this.$parent.$data.m_ComponentData.x;
+                relMouseCoord.y = this.m_MouseCoordinate.y - this.$parent.$data.m_ComponentData.y;
+
+                relDividerCoord.x = divider.x - this.$parent.$data.m_ComponentData.x;
+                relDividerCoord.y = divider.y - this.$parent.$data.m_ComponentData.y;
+
+                // console.log(`Rel Mouse Coord: ${relMouseCoord.x}, ${relMouseCoord.y}`,
+                //             `\nRel Divider Coord: ${relDividerCoord.x}, ${relDividerCoord.y}`);
+
                 if(division === "Vertical"){
-                    value = this.m_MouseCoordinate.x;
-                    elementCoordinate = divider.x;
-                    size = divider.width;
+                    mousePos = relMouseCoord.x;
+                    dividerCoord = relDividerCoord.x;
+                    dividerSize = divider.width / 2;
                 }
                 else{
-                    value = this.m_MouseCoordinate.y;
-                    elementCoordinate = divider.y;
-                    size = divider.height;
+                    mousePos = relMouseCoord.y;
+                    dividerCoord = relDividerCoord.y;
+                    dividerSize = divider.height / 2;
                 }
 
-                return ( elementCoordinate - value + (size / 2));
+                return mousePos - dividerCoord - dividerSize;
             },
-
 
             moveContainer(){
                 let parentObj = this.getParentObj();
                 if(parentObj.evenSplit) { return; }
 
                 const difference = this.calculateMouseDifference(parentObj.divisionType);
-                
-                // console.log(difference);
-                return;
 
+                // console.log(`Diffrence: ${difference}, ${this.m_pxThreshold}`);
                 let siblingData = parentObj.containerData;
                 let siblingIndex;
 
@@ -367,13 +398,17 @@
                 // Horizontal divisions, Extra container removed is the start, count after
                 if(!this.m_isVertical){ siblingIndex += 1;};
 
+
+                // console.log(this.$parent.$data.m_pxThreshold);
+                // console.log(difference);
+
                 // Determines whether to run move function
                 if(Math.abs(difference) >= this.m_pxThreshold){
                     isMoveContainer = true;
-                    if( difference >= 0) { isPositive = true;}
+                    if( difference < 0) { isPositive = true;}
                 }
-                // isPositive = False -> Left or Down
                 // isPositive = True -> Right or Up
+                // isPositive = False -> Left or Down
 
                 // Data sent to parent
                 let data = {
@@ -387,8 +422,8 @@
             },
 
 
-            // This function only runs at the parents container.
-            // This is because it modifies the css variable.
+            // This function only runs at the parents container
+            // because it modifies the css variable.
             updateParentColumnRow(data){
                 let siblingIndex = data.index;
                 let baseIndex = siblingIndex - 1;
@@ -433,24 +468,52 @@
                 This runs every N times for N containers when resized
                 Modifies (in px) the threshold of mouse position to move per stepsize
             */
-            recalculateThreshold(width, height){
+            recalculateThreshold(){
+
+                // this.printContainerInfo();
+                let width;
+                let height;
+
+                let margin = 8;
+                let divisionStatement;
+
+                let thresholdOffset = -4;
+                
+                if(this.m_ContainerData.id === "0A") {
+                    divisionStatement = this.m_ContainerData.divisionType;
+
+                    width = window.innerWidth - ( 2 * margin);
+                    height = window.innerHeight - ( 2 * margin);
+                }
+                else{
+                    const parentComponent = this.$parent.$data.m_ComponentData;
+                    divisionStatement = this.$parent.$data.m_ContainerData.divisionType;
+
+                    // Dimension without margin
+                    width = parentComponent.width - (2 * margin);
+                    height = parentComponent.height - (2 * margin);
+                }
+
                 // if vertical, use width,
-                let container_px = (this.m_ContainerData.divisionType === "Vertical") ? width : height;
+                let container_px = (divisionStatement === "Vertical") ? width : height;
                 
+
                 let totalContainers = this.m_ContainerData.siblings + 1;
-                
                 let pxPerFractionalUnit = container_px / totalContainers;
                 let pxPerStep = pxPerFractionalUnit * this.m_StepSize;
-                
-                // Logging
-                // console.log("ID:", this.m_ContainerData.id, 
-                //             "Type:", this.m_ContainerData.divisionType,
-                //             "Pixels Per step:", pxPerStep
-                //         );
-                
-                this.m_pxThreshold = pxPerStep;
 
+                this.m_pxThreshold = pxPerStep + thresholdOffset;
             },
+
+            // Allows child components to calculate relative coordinates.
+            setComponentDOMValues(){
+                let data = this.$refs["refContainer"].getBoundingClientRect();
+                
+                this.m_ComponentData.x = data.x;
+                this.m_ComponentData.y = data.y;
+                this.m_ComponentData.width = data.width;
+                this.m_ComponentData.height = data.height;
+            }
         },
 
 // Watchers
@@ -464,14 +527,16 @@
             },
             '$GlobalStates.value.edit.windowSize':{
                 handler(val,oldval){
-                    this.recalculateThreshold(val.width,val.height);
+                    this.setComponentDOMValues();
+                    this.recalculateThreshold();
                 },
                 deep: true
             },
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldVal){
-                    this.setCurrentContainer(true);
+                    this.setComponentDOMValues();
+                    this.setCurrentContainer();
                 },
                 deep: true
             },
@@ -486,7 +551,9 @@
         
         <!-- Container -->
         <div
-            class="page-content-container">
+            class="page-content-container"
+            ref="refContainer"
+            >
             
             <!-- Edit based container functions -->
             <div 
@@ -520,7 +587,7 @@
                       !this.isBaseContainer() && this.isExtraContainerValue()"
             :class="{
                 'page-drag-Horizontal': ( !this.m_isVertical),
-                'page-drag-Vertical': (this.m_isVertical) }"
+                'page-drag-Vertical': (this.m_isVertical)}"
             @mousedown="onMouseHold"
             ref="divider">
             </div>
@@ -571,14 +638,9 @@
     background-color: var(--Hover-colour) !important;
 }
 
-.page-drag-cursor{
-    cursor: row-resize;
-}
-
 .page-drag-Horizontal{
     height: 10px;
     width: 100%;
-    cursor: row-resize;
     background-color: rgba(255,255,255,0);
     border-radius: 10px;
     transition: all 0.2s ease-in-out;
@@ -586,6 +648,7 @@
 
 .page-drag-Horizontal:hover{
     background-color: rgba(255,255,255,0.2);
+    cursor: row-resize;
 }
 .page-drag-Horizontal:active{
     background-color: rgba(255,255,255,0.6);
@@ -598,7 +661,6 @@
     height: 100%;
     width: 20px;
     transform: translate(-15px, -100%);
-    cursor: col-resize;
     background-color: rgba(255,255,255,0.4);
     background-color: rgba(255,255,255, 0 );
     border-radius: 10px;
@@ -606,6 +668,7 @@
 }
 .page-drag-Vertical:hover{
     background-color: rgba(255,255,255,0.2);
+    cursor: col-resize;
 }
 .page-drag-Vertical:active{
     background-color: rgba(255,255,255,0.6);
