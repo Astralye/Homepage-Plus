@@ -23,8 +23,8 @@ export default {
                 { index: 4, id: "Four", selected: false }
             ],
             DivisionType: [
-                { index: 0, id: "Vertical" },
-                { index: 1, id: "Horizontal" },
+                { index: 0, id: "Vertical", selected: true},
+                { index: 1, id: "Horizontal", selected: false},
             ],
             // These were for rendering, they have no semantic value to the data structure
 
@@ -155,6 +155,12 @@ export default {
             return true;
         },
 
+        selectAndModifyContainer(container){
+            return this.selectContainer(container) ? this.modifyContainer(container.index) : null ;
+        },
+
+
+
         // Update division type of container
         updateDivision(type){
         
@@ -191,6 +197,7 @@ export default {
         },
 
 
+        // True on a selected container
         changeSelectedDivisionType(index){
             let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
 
@@ -240,6 +247,11 @@ export default {
             this.loadLayout();
         },
 
+        testfnc(input){
+        //   console.log("Moved up!", input);
+          return 5;
+        },
+
         resetSelected(){
             // Whenever we delete or load layout, we need to currently unselect all the user clicked containers
             this.States.selectedContainer.level = 0;
@@ -252,6 +264,44 @@ export default {
             container.evenSplit = checked;
             this.States.selectedContainer.evenlySpaced = checked;
         },
+
+// RADIO BUTTON PROP FUNCTIONS
+// -------------------------------------------------------------------------------------------------
+
+        returnContainerDivisionFnc(){
+            return  {
+                
+                    checkedFncDetails:
+                    {
+                        fncName: 'changeSelectedContainerDivision',
+                        parameterType: "index",
+                    },
+                    clickedFncDetails:
+                    {
+                        fncName: 'selectAndModifyContainer',
+                        parameterType: "object",
+                    }
+                    };
+        },
+
+        returnDivisionTypeFnc(){
+            return  {
+                    checkedFncDetails:
+                    {
+                        fncName: 'changeSelectedDivisionType',
+                        parameterType: 'index',
+                    },
+
+                    clickedFncDetails:
+                    {
+                        fncName: 'updateDivision',
+                        parameterType: "id",
+                    }
+                    };
+        }
+
+// 
+// ---------------------------------------------------------------------------------------------------------
     },
     watch: {
         '$GlobalStates.value.edit.containerSelected':{
@@ -276,6 +326,7 @@ export default {
         <h2> Select Container </h2>
     </SingleButton>
 
+    <!-- Division Type -->
     <WindowContainerDivider
         class="container-divider">
         <template #header> 
@@ -285,31 +336,10 @@ export default {
         </template>
 
         <template #content>
-            <div class="grid container-content-margin-top">
-                <div v-for="(type,index) in DivisionType">
-                    <input 
-                        type="radio"
-                        :id="type.id" 
-                        name="division-type"
-                        :value="type.id"
-                        :checked="changeSelectedDivisionType(index)">
-                    <label 
-                        class="radio-btn division-type" 
-                        :for="type.id"
-                        @click="updateDivision(type.id)">
-    
-                        <div class="label-text-container">
-                            <h3> {{ type.id }} </h3>
-                        </div>
-                    </label>
-                </div> 
-            </div>
-
-            <!-- 
-                Find a way to integrate this data and stuff into the component
-            -->
             <RadioButton
-                :text_array='["Vertical", "Horizontal"]'>
+                parent_Variable_String="DivisionType"
+                parent_Fnc_Data="returnDivisionTypeFnc"
+                >
             </RadioButton>
         </template>
 
@@ -320,6 +350,7 @@ export default {
         </template>
     </WindowContainerDivider>
 
+    <!-- No. divisions -->
     <WindowContainerDivider
         class="container-divider"> 
         <template #header> 
@@ -329,35 +360,10 @@ export default {
         </template>
 
         <template #content>
-            <div class="container-content-margin-top">
-    
-                <div v-for="(container,index) in ContainerDivision">
-                    <input 
-                        type="radio" 
-                        name="no-divisions" 
-                        :id="container.id" 
-                        :value="container.id" 
-                        :checked="changeSelectedContainerDivision(index)">
-                    <label
-                        class="radio-btn no-divisions"
-                        :for="container.id"
-                        @click="selectContainer(container) ? modifyContainer(container.index) : null ">
-                        <div class="bnt-content">
-    
-                            <div class="label-text-container"> 
-                                <h3> {{ container.id }} </h3>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- 
-                TODO
-                Replace the data above with this
-            -->
             <RadioButton
-                :text_array='["One", "Two", "Three", "Four"]'>
+                parent_Variable_String="ContainerDivision"
+                parent_Fnc_Data="returnContainerDivisionFnc"
+                >
             </RadioButton>
         </template>
 
@@ -368,6 +374,7 @@ export default {
         </template>
     </WindowContainerDivider>
 
+    <!-- Toggle Even spacing -->
     <WindowContainerDivider
         class="container-divider"> 
         <template #header>
@@ -403,7 +410,7 @@ export default {
         </template>
     </WindowContainerDivider>
 
-
+    <!-- Step size slider -->
     <WindowContainerDivider
     class="container-divider"> 
     <template #header>
@@ -425,6 +432,9 @@ export default {
             </ToolTip>
     </template>
     </WindowContainerDivider>
+
+
+<!--   REMOVE LATER  -->
 
     <div>
         <button
