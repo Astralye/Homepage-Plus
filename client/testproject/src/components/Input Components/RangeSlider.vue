@@ -1,69 +1,152 @@
 <template>
     <input type="range"
-        min="0" max="75" value="50" step="25" />
+        min="0" 
+        :max="this.m_SliderData.max" 
+        :step="this.m_SliderData.stepSize"
+        list="my-datalist"
+        v-model="sliderValue"
+    />
+
+    <datalist id="my-datalist">
+        <template v-for="n in this.m_SliderData.divisions">
+            <option>{{ input_Data[n-1] }}</option>
+        </template>
+    </datalist>
 </template>
 
 <script>
 export default {
+    data(){
+        return{
+            // m_ParentVariableData: null,
+            // m_functions: {}
+            m_SliderData: {
+                blocks: 0,
+                stepSize: 100,
+                max: 100,
+                divisions: 0,
+                value: 0,
+            },
+            sliderValue: 0
+        }
+    },
+    props: {
+        input_Data:{
+            type: Array,
+            default: [],
+            required: true,
+        },
+
+        // parent_Variable_String: {
+        //     type: String,
+        //     default: "",
+        //     required: true,
+        // },
+
+        // Temporary
+        // May need to be an object later
+        parent_Fnc_Data: {
+            type: String,
+            default: "",
+            required: true,
+        }
+    },
+    created(){
+        this.setSliderData();
+    },
+    methods: {
+        printSliderData(){
+            console.log(`Slider data\n`,
+                    `\nStep size: ${this.m_SliderData.stepSize}`,
+                    `\nBlocks: ${this.m_SliderData.blocks}`,
+                    `\nMax: ${this.m_SliderData.max}`,
+                );
+        },
+
+        setSliderData(){
+            if(this.input_Data.length === 0){
+                console.warn("ERROR (RangeSlider.vue): No input data");
+                return;
+            }
+            else if(this.input_Data.length === 2){
+                console.warn("ERROR (RangeSlider.vue): Slider component requires minimum 3 values");
+                return;
+            }
+
+            this.m_SliderData.blocks = this.input_Data.length - 1;
+            this.m_SliderData.stepSize = Math.round(100 / this.m_SliderData.blocks);
+            this.m_SliderData.max = this.m_SliderData.blocks * this.m_SliderData.stepSize;
+            this.m_SliderData.divisions = this.input_Data.length;
+
+            // this.printSliderData();
+        },
+    },
+    watch:{
+        // Calculate real value from interpreted value
+        sliderValue(val, oldval){
+            
+            // Update value
+            let position = val / this.m_SliderData.stepSize;
+            this.m_SliderData.value = this.input_Data[position];
+
+            this.parent_Fnc_Data(this.m_SliderData.value);
+        }
+    }
 }
 </script>
 
 <style scoped>
+datalist{
+    --list-length: v-bind("m_SliderData.divisions");
+}
+
+input[type=range] + datalist {
+    display: flex;
+    margin-top: -9px;
+}
+input[type=range] + datalist option {
+    display: inline-block;
+    width: calc((100% - 12px) / (var(--list-length) - 1));
+    text-align: center;
+}
+input[type=range] + datalist option:first-child {
+    width: calc((100% - 12px) / ((var(--list-length) - 1) * 2) + 6px);
+    text-align: left;
+}
+input[type=range] + datalist option:last-child {
+    width: calc((100% - 12px) / ((var(--list-length) - 1) * 2) + 6px);
+    text-align: right;
+    margin-right: 10px;
+}
+
+option{
+    font-size: 12px;
+}
+
 /*
 
     Credit to S. Shahriar for the base code
     https://codepen.io/ShadowShahriar/pen/zYPPYrQ
 
 */
-
- html,
- body {
-     height: 100%;
- }
- 
- * {
-     padding: 0;
-     margin: 0;
-     box-sizing: border-box;
- }
- 
- body {
-     display: grid;
-     place-items: center;
- }
- 
- main {
-     display: flex;
-     flex-direction: column;
-     gap: 2.2em;
-     padding: 1em 0;
- }
- 
- html::before {
-     content: "";
-     position: fixed;
-     left: 0;
-     top: 0;
-     width: 100vw;
-     height: 100vh;
-     background: radial-gradient(circle at center, #fff, #fafafa);
-     display: block;
- }
  
  /* === range theme and appearance === */
  input[type="range"] {
-     font-size: 1.5rem;
-     width: 100%;
+    font-size: 1.25rem;
+    width: 100%;
+    position: relative;
+    background: #fff0;
+    overflow: hidden;
  }
  
  input[type="range"] {
-     color: #ef233c;
-     --thumb-height: 1.125em;
-     --track-height: 0.125em;
-     --track-color: rgba(0, 0, 0, 0.2);
-     --brightness-hover: 180%;
-     --brightness-down: 80%;
-     --clip-edges: 0.125em;
+    color: #ef233c;
+    --thumb-height: 1.125em;
+    --track-height: 0.125em;
+    --track-color: rgba(0, 0, 0, 0.2);
+    --brightness-hover: 180%;
+    --brightness-down: 80%;
+    --clip-edges: 0.125em;
  }
  
  input[type="range"].win10-thumb {
@@ -94,11 +177,6 @@ export default {
  }
  
  /* === range commons === */
- input[type="range"] {
-     position: relative;
-     background: #fff0;
-     overflow: hidden;
- }
  
  input[type="range"]:active {
      cursor: grabbing;
