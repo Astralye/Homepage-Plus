@@ -91,6 +91,10 @@ export default {
             const checkedFnc = (type === "click") ? this.m_functions.clickedFncDetails : this.m_functions.checkedFncDetails;
             var result;
             
+            if(checkedFnc === undefined) {
+                console.warn(`ERROR (RadioBtn.vue): Function does not exist.`);                
+            }
+
             if(!(checkedFnc.parameterType === "index" || checkedFnc.parameterType === "object" || checkedFnc.parameterType === "id" )){
                 console.warn(`ERROR (RadioBtn.vue): Parameter Type undefined, '${checkedFnc.parameterType}'`);
                 return;
@@ -164,7 +168,7 @@ export default {
 
 /*
     Todo: 
-    
+
     Single focus two button -> height 60px
     Otherwise: auto
 */
