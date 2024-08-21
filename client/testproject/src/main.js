@@ -17,7 +17,8 @@ app.config.globalProperties.$GlobalStates = ref( {
         windowSize: {
             width: 0,
             height: 0,
-        }
+        },
+        dragStepSize: 0.25,
     },
     clickLoad: false,
     containerSelectionMode: false

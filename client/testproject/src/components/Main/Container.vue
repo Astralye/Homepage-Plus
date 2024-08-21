@@ -532,6 +532,9 @@
                 },
                 deep: true
             },
+            '$GlobalStates.value.edit.dragStepSize'(val, oldval){
+                this.m_StepSize = val;
+            },
             // When the values in the container data change
             '$ContainerData.value': {
                 handler(val, oldVal){

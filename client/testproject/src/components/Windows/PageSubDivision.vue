@@ -16,6 +16,9 @@ export default {
     },
     data() {
         return{
+
+            // Radio Button Object Values
+            // --------------------------------------------------------------------------
             ContainerDivision: [
                 { index: 1, id: "One", selected: true },
                 { index: 2, id: "Two", selected: false },
@@ -26,6 +29,13 @@ export default {
                 { index: 0, id: "Vertical", selected: true},
                 { index: 1, id: "Horizontal", selected: false},
             ],
+
+            // Range Slider Data
+            // --------------------------------------------------------------------------
+            
+            StepSizeValue: 0, 
+
+
             // These were for rendering, they have no semantic value to the data structure
 
             States: {
@@ -247,9 +257,8 @@ export default {
             this.loadLayout();
         },
 
-        testfnc(input){
-        //   console.log("Moved up!", input);
-          return 5;
+        updateStepSize(newValue){
+            this.$GlobalStates.value.edit.dragStepSize = newValue; 
         },
 
         resetSelected(){
@@ -267,13 +276,6 @@ export default {
 
 // 
 // ---------------------------------------------------------------------------------------------------------
-
-// RANGE SLIDER prop functions
-// ---------------------------------------------------------------------------------------------------------
-
-        returnDragStepSizeData(){
-            return  ['a','b','c']
-        }
 
 // Watchers
 // ---------------------------------------------------------------------------------------------------------
@@ -409,7 +411,13 @@ export default {
 
     <!-- Step size slider -->
     <WindowContainerDivider
-    class="container-divider"> 
+    class="container-divider">
+    
+    <!-- 
+        TODO
+        Within the container, have an option to enable and disable it.
+    -->
+
     <template #header>
         <h4 class="inline">
             Drag step size
@@ -419,7 +427,8 @@ export default {
         <template #content>
             <div class="container-content-margin-top">
                 <RangeSlider
-                    input_Data=""/>
+                    :parent_Fnc_Data="updateStepSize"
+                    :input_Data="[0.05,0.125,0.25, 0.33, 0.5]"/>
             </div>
         </template>
 
