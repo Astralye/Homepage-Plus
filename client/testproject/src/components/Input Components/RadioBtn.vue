@@ -21,9 +21,7 @@ export default {
 
         REQUIREMENTS:        
         > This is placed in a parent container
-        > Per radio object, parent contains these :
-
-        1. Selected state 
+        > A parent to contain a selected state 
         _______________________________________
             state_name: Array
                 [
@@ -36,13 +34,11 @@ export default {
                 ]
             }
 
-        2. Function returning object of functions to run
+        > Prop data MUST be structured as such:
+            That means only two functions are allowed, 
+            One for the checked and clicked condition.
 
-            > The code will NOT work if the data is structured differently than below
-                That means only two functions are allowed. 
-                One for the checked condition and clicked condition.
-
-            > fncName MUST be a parent function that returns a | boolean |
+        > fncName MUST be a parent function that returns a | boolean |
         _______________________________________________
             
             checkedFncDetails
@@ -67,21 +63,22 @@ export default {
             required: true,
         },
         parent_Fnc_Data: {
-            type: String,
+            type: Object,
             default: "",
             required: true,
         }
     },
     created() {
         this.m_ParentVariableData = this.$parent.$parent.$data[this.parent_Variable_String];
-
-        if(this.$parent.$parent[this.parent_Fnc_Data] === undefined) { 
+        
+        if(this.$parent.$parent[this.parent_Fnc_Data.checkedFncDetails.fncName] === undefined ||
+           this.$parent.$parent[this.parent_Fnc_Data.clickedFncDetails.fncName] === undefined) { 
             console.warn(`ERROR (RadioBtn.vue): There is no parent function named '${this.parent_Fnc_Data}'`);
             return;
         }
 
         // Runs the parent function of the prop name to return an object
-        this.m_functions = this.$parent.$parent[this.parent_Fnc_Data]();
+        this.m_functions = this.parent_Fnc_Data;
     },
 
     // This needs to be as generalizable as it can be so that it can be used anywhere
@@ -100,6 +97,7 @@ export default {
                 return;
             }
 
+            
             // Runs the parent function with the correct parameter
             switch(checkedFnc.parameterType){
                 case "index":{

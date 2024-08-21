@@ -265,42 +265,17 @@ export default {
             this.States.selectedContainer.evenlySpaced = checked;
         },
 
-// RADIO BUTTON PROP FUNCTIONS
-// -------------------------------------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------------------------------------------
 
-        returnContainerDivisionFnc(){
-            return  {
-                
-                    checkedFncDetails:
-                    {
-                        fncName: 'changeSelectedContainerDivision',
-                        parameterType: "index",
-                    },
-                    clickedFncDetails:
-                    {
-                        fncName: 'selectAndModifyContainer',
-                        parameterType: "object",
-                    }
-                    };
-        },
+// RANGE SLIDER prop functions
+// ---------------------------------------------------------------------------------------------------------
 
-        returnDivisionTypeFnc(){
-            return  {
-                    checkedFncDetails:
-                    {
-                        fncName: 'changeSelectedDivisionType',
-                        parameterType: 'index',
-                    },
-
-                    clickedFncDetails:
-                    {
-                        fncName: 'updateDivision',
-                        parameterType: "id",
-                    }
-                    };
+        returnDragStepSizeData(){
+            return  ['a','b','c']
         }
 
-// 
+// Watchers
 // ---------------------------------------------------------------------------------------------------------
     },
     watch: {
@@ -338,7 +313,20 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="DivisionType"
-                parent_Fnc_Data="returnDivisionTypeFnc"
+                :parent_Fnc_Data="
+                {
+                    checkedFncDetails:
+                    {
+                        fncName: 'changeSelectedDivisionType',
+                        parameterType: 'index',
+                    },
+
+                    clickedFncDetails:
+                    {
+                        fncName: 'updateDivision',
+                        parameterType: 'id',
+                    }
+                }"
                 >
             </RadioButton>
         </template>
@@ -362,7 +350,18 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="ContainerDivision"
-                parent_Fnc_Data="returnContainerDivisionFnc"
+                :parent_Fnc_Data="{
+                    checkedFncDetails:
+                    {
+                        fncName: 'changeSelectedContainerDivision',
+                        parameterType: 'index',
+                    },
+                    clickedFncDetails:
+                    {
+                        fncName: 'selectAndModifyContainer',
+                        parameterType: 'object',
+                    }
+                    }"
                 >
             </RadioButton>
         </template>
@@ -396,8 +395,6 @@ export default {
                 @change="setSpacingCheckmark(check)"
                 :checked="this.States.selectedContainer.evenlySpaced"
                 >
-
-                <!-- Need to write logic to make the checkbox work with the container value. -->
                     
                 <label class="selection fullWidth"></label>
             </div>
@@ -421,7 +418,8 @@ export default {
 
         <template #content>
             <div class="container-content-margin-top">
-                <RangeSlider/>
+                <RangeSlider
+                    input_Data=""/>
             </div>
         </template>
 
