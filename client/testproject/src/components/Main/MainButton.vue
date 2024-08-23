@@ -20,14 +20,6 @@ export default{
         imageLocation(fileName) {
             return new URL(`${fileName}`, "http://localhost:5173/src/assets/").href; 
         },
-
-        // This opens a blank window with no content.
-        helloBtn() {
-            this.$emit('openWindowTab',"edit");
-        },
-        helloBtn2() {
-            this.$emit('openWindowTab',"settings");
-        }
     }
 }
 </script>
@@ -37,14 +29,14 @@ export default{
 <IconButton
     message="Edit"
     :icon="imageLocation(editIcon)"
-    @click="helloBtn"
+    @click="this.$emit('openWindowTab','edit')"
     >
 </IconButton>
 
 <IconButton
     message="Settings"
     :icon="imageLocation(settingIcon)"
-    @click="helloBtn2"
+    @click="this.$emit('openWindowTab','settings')"
     > 
 </IconButton>
 

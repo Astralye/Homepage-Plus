@@ -22,7 +22,6 @@ export default{
     On hover darken.
 */
 button{
-    width: 80px;
     border-width: 0;
     background-color: transparent;
 }
