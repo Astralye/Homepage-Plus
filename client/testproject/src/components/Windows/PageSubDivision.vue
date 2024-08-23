@@ -1,6 +1,6 @@
 
 <script>
-import SingleButton from '../Window Components/SingleButton.vue';
+import SingleButton from '../Input Components/SingleButton.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
@@ -49,6 +49,11 @@ export default {
     },
 
     methods: {
+
+/*
+        I will need to do some re-arraging and refactoring as this file is a mess.
+*/
+
         toggleSelectionMode() {
 
             this.$GlobalStates.value.containerSelectionMode = !this.$GlobalStates.value.containerSelectionMode;
@@ -57,42 +62,75 @@ export default {
         },
 
 
-        // Maybe make this funciton smaller?
-        modifyContainer(divisions){
-            let divType = "Vertical"; // Default value of children
+// Tree, recursion and Global Object functions
+// -------------------------------------------------------------------------------------------------------------------------
 
+        // Function copied from Container.
+        // Not sure how to access the function, so I just put it here.
+        getLevelData(currentLevelData, Level, ID){
+                
+            // Input level is the current level data
+            if(Level == currentLevelData.level ){
+                return currentLevelData;
+            }
+
+            // Retrieve child data
+            var childData = currentLevelData.containerData; // if no children, move up stack.
+            if(childData.length === 0 ) return null; 
+            
+            // Looks at children
+            for(let i = 0; i < childData.length; i++){
+                let item = childData[i];
+
+                // Base case (Found item)
+                if(item.id == ID){ return item; }
+
+                // Base case (Nothing found and no siblings)
+                else if(item.NoChildren === 0 && childData.length <= 1) { return null; }
+                
+                // Base case (Has children)
+                else{
+                    var tmp = this.getLevelData(item, Level + 1, ID);
+                    // If any item is found, return up stack.
+                    if(tmp !== null){ return tmp; }
+                }
+            }
+            return null; // Not found in children, move up stack.
+        },
+    
+        // Generate new child ID from the index and parent level
+        generateID(level, index){ return `${level}`.concat(String.fromCharCode(64 + 1 + index)); },
+
+// Container Modifiers
+// -------------------------------------------------------------------------------------------------------------------------
+
+        // Add or remove children depending on the number of divisions
+        modifyContainer(divisions){
+            const divType = "Vertical"; // Default value of children
+
+            // Container data
             const current_containerLevel = this.States.selectedContainer.level;
             const current_containerID = this.States.selectedContainer.id;
+            const childLevel = current_containerLevel + 1;
 
-            let container = this.findLevelData(this.$ContainerData.value, current_containerLevel, current_containerID);
-
+            let container = this.getLevelData(this.$ContainerData.value, current_containerLevel, current_containerID);
             let difference = divisions - container.NoChildren;
             let siblingContainers = container.containerData; 
 
             // If positive -1 from value, if already 0 return 0
-            let noSiblings =  ( divisions - 1 > 0) ? divisions - 1 : 0; 
+            const noSiblings =  ( divisions - 1 > 0) ? divisions - 1 : 0; 
 
             // Positive, add containers
             if(difference > 0){
-
-                // Parent container has no children,
-                // Start from scratch
-                if(siblingContainers.length === 0 ){
-                    console.log("none!")
-                }
-
-                // Stores the last current index of the siblings
                 var latestIndex;
-                let childLevel = current_containerLevel + 1;
-                container.NoChildren = divisions;
-
+ 
+                container.NoChildren = divisions; // Stores the last current index of the siblings
                 siblingContainers.forEach( (cont,index) => { latestIndex = index; });
 
                 for(let i = 0; i < divisions; i++){
                     if(i < latestIndex+1){ continue; } // If the current index is not the last available
 
-                    let newID = current_containerID + this.createID(childLevel, i);
-
+                    let newID = current_containerID + this.generateID(childLevel, i);
                     container.containerData.push({
                         level: childLevel,
                         divisionType: divType,
@@ -111,52 +149,13 @@ export default {
                 difference = Math.abs(difference);
                 container.NoChildren -= difference;
                 for(let i = 0; i < difference; i++){ container.containerData.pop(); }
-
             }
             // Update sibling value
             container.containerData.forEach( (data) => { data.siblings = noSiblings;});
-            // Do nothing if 0
-        },
-
-        // Generate ID from the index and parent level
-        createID(level, index){ return `${level}`.concat(String.fromCharCode(64 + 1 + index)); },
-
-        // Function copied from Container.
-        // Was not sure how to access the function, so I just put it here.
-        findLevelData(currentLevelData, Level, ID){
-
-            // Input level is the current level data
-            if(Level == currentLevelData.level ){
-                // console.log("Item found at current level:", currentLevelData.level, Level );
-                return currentLevelData;
-            }
-
-            // Retrieve child data
-            var childData = currentLevelData.containerData; // if no children, move up stack.
-            if(childData.length === 0 ) return null; 
-            // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
-            
-            // Looks at children
-            for(let i = 0; i < childData.length; i++){
-                let item = childData[i];
-
-                // Base case (Found item)
-                if(item.id == ID){ return item; }
-
-                // Base case (Nothing found and no siblings)
-                else if(item.NoChildren === 0 && childData.length <= 1) { return null; }
-
-                // Base case (Has children)
-                else{
-                    var tmp = this.findLevelData(item, Level + 1, ID);
-                    if(tmp !== null){ return tmp; } // If any item is found, return up stack.
-                }
-            }
-            return null; // Not found in children, move up stack.
         },
 
         // Selects a clicked container and deselect previous container
-        selectContainer(container){
+        isNewlySelected(container){
             if(container.selected){ return false; }
 
             // Resets all the other values
@@ -165,56 +164,73 @@ export default {
             return true;
         },
 
-        selectAndModifyContainer(container){
-            return this.selectContainer(container) ? this.modifyContainer(container.index) : null ;
+        // Function for determining user click behaviour on a container
+        selectAndModifyContainer(container){ return this.isNewlySelected(container) ? this.modifyContainer(container.index) : null ;},
+
+        // On delete or load layout, we need to currently unselect all the user clicked containers
+        resetSelected(){
+            this.States.selectedContainer.level = 0;
+            this.States.id = "0A";
+            this.$GlobalStates.value.edit.containerSelected = "0A";
         },
-
-
-
-        // Update division type of container
-        updateDivision(type){
-        
-            const current_containerLevel = this.States.selectedContainer.level;
-            const current_containerID = this.States.selectedContainer.id;
-
-            let parentContainer = this.findLevelData(this.$ContainerData.value, current_containerLevel,current_containerID);
-            parentContainer.divisionType = type;
-        },
-
-        changeSelectedContainer(newContainerID){
-            var level = Number(newContainerID.charAt(newContainerID.length - 2));
-            this.States.selectedContainer.level = level;
-            this.States.selectedContainer.id = newContainerID;
-            
-            let evenSplit = this.findLevelData(this.$ContainerData.value, level, newContainerID).evenSplit;
-            this.States.selectedContainer.evenlySpaced = evenSplit;
-        },
-
-        changeSelectedContainerDivision(index){
-            let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            
-            // If has children, display
-
-            // Cant combine this into a single if statement for some reason.
-            if(container.NoChildren !== 0) {
-                if(container.NoChildren-1 === index){
-                    return true;
-                }
-            }
-            // If no children, select first
-            else if (index === 0) {return true;}
-            return false;
-        },
-
 
         // True on a selected container
-        changeSelectedDivisionType(index){
-            let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+        isDivisionVertical(index){
+            const container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
 
             if(container.divisionType === "Vertical" && index === 0){ return true;}
             if(container.divisionType === "Horizontal" && index === 1){ return true;}
             return false;
         },
+
+// Update value functions
+// -------------------------------------------------------------------------------------------------------------------------
+
+        // Update division type of container on click.
+        updateDivision(type){
+            const current_containerLevel = this.States.selectedContainer.level;
+            const current_containerID = this.States.selectedContainer.id;
+
+            let parentContainer = this.getLevelData(this.$ContainerData.value, current_containerLevel,current_containerID);
+            parentContainer.divisionType = type;
+        },
+
+        // Update selected radio values from watching the global variable 
+        updateSelectedContainer(newContainerID){
+            const level = Number(newContainerID.charAt(newContainerID.length - 2));
+            this.States.selectedContainer.level = level;
+            this.States.selectedContainer.id = newContainerID;
+            
+            const evenSplit = this.getLevelData(this.$ContainerData.value, level, newContainerID).evenSplit;
+            this.States.selectedContainer.evenlySpaced = evenSplit;
+        },
+
+        updateSelectedContainerDivision(index){
+            let container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            
+            // Cant combine this into a single if statement for some reason.
+            if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
+            return false;
+        },
+
+        // Update stepsize
+        updateStepSize(newValue){ this.$GlobalStates.value.edit.dragStepSize = newValue; },
+        
+        // Update state of checkmark
+        updateSpacingCheckmark(checked){
+            let container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            container.evenSplit = checked;
+            this.States.selectedContainer.evenlySpaced = checked;
+        },
+
+/*
+TODO
+
+Move to different component
+*/
+// localstorage functions
+// ------------------------------------------------------------------------------------------------------------------------
+
         saveLayout(){
             let containerObj = this.$ContainerData.value;
             
@@ -256,25 +272,6 @@ export default {
             // Revert back
             this.loadLayout();
         },
-
-        updateStepSize(newValue){
-            this.$GlobalStates.value.edit.dragStepSize = newValue; 
-        },
-
-        resetSelected(){
-            // Whenever we delete or load layout, we need to currently unselect all the user clicked containers
-            this.States.selectedContainer.level = 0;
-            this.States.id = "0A";
-            this.$GlobalStates.value.edit.containerSelected = "0A";
-        },
-        setSpacingCheckmark(checked){
-            // let checkValue = this.States.selectedContainer.evenlySpaced;
-            let container = this.findLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            container.evenSplit = checked;
-            this.States.selectedContainer.evenlySpaced = checked;
-        },
-
-// 
 // ---------------------------------------------------------------------------------------------------------
 
 // Watchers
@@ -283,8 +280,7 @@ export default {
     watch: {
         '$GlobalStates.value.edit.containerSelected':{
             handler(val, oldval){
-                this.changeSelectedContainer(val);
-                this.changeSelectedContainerDivision();
+                this.updateSelectedContainer(val);
             }
         },
     }
@@ -292,10 +288,11 @@ export default {
 }
 </script>
 
-<!-- The idea is the user can subdivide the page however they like 
+<!-- 
+    The idea is the user can subdivide the page however they like 
     The page would auto contain one large container and this would be able
     To be subdivided, and allowed to create more containers.
-    -->
+-->
 <template>
 
     <SingleButton
@@ -303,7 +300,8 @@ export default {
         <h2> Select Container </h2>
     </SingleButton>
 
-    <!-- Division Type -->
+<!-- Division Type
+-------------------------------------------------------------------------------------------------------->
     <WindowContainerDivider
         class="container-divider">
         <template #header> 
@@ -315,11 +313,10 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="DivisionType"
-                :parent_Fnc_Data="
-                {
+                :parent_Fnc_Data="{
                     checkedFncDetails:
                     {
-                        fncName: 'changeSelectedDivisionType',
+                        fncName: 'isDivisionVertical',
                         parameterType: 'index',
                     },
 
@@ -340,7 +337,8 @@ export default {
         </template>
     </WindowContainerDivider>
 
-    <!-- No. divisions -->
+<!-- No. divisions
+-------------------------------------------------------------------------------------------------------->
     <WindowContainerDivider
         class="container-divider"> 
         <template #header> 
@@ -355,7 +353,7 @@ export default {
                 :parent_Fnc_Data="{
                     checkedFncDetails:
                     {
-                        fncName: 'changeSelectedContainerDivision',
+                        fncName: 'updateSelectedContainerDivision',
                         parameterType: 'index',
                     },
                     clickedFncDetails:
@@ -375,7 +373,8 @@ export default {
         </template>
     </WindowContainerDivider>
 
-    <!-- Toggle Even spacing -->
+<!-- Toggle even spacing
+-------------------------------------------------------------------------------------------------------->
     <WindowContainerDivider
         class="container-divider"> 
         <template #header>
@@ -394,7 +393,7 @@ export default {
                 value="EvenSpacing"
                 class="EvenSpacing"
                 v-model="check"
-                @change="setSpacingCheckmark(check)"
+                @change="updateSpacingCheckmark(check)"
                 :checked="this.States.selectedContainer.evenlySpaced"
                 >
                     
@@ -409,7 +408,8 @@ export default {
         </template>
     </WindowContainerDivider>
 
-    <!-- Step size slider -->
+<!-- Step size Slider
+-------------------------------------------------------------------------------------------------------->
     <WindowContainerDivider
     class="container-divider">
     
@@ -441,7 +441,8 @@ export default {
     </WindowContainerDivider>
 
 
-<!--   REMOVE LATER  -->
+<!-- localstorage. Need to refactor into its own component before removing.
+------------------------------------------------------------------------------------------------------------>
 
     <div>
         <button
