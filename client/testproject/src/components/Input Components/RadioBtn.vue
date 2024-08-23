@@ -69,14 +69,14 @@ export default {
         }
     },
     created() {
-        this.m_ParentVariableData = this.$parent.$parent.$data[this.parent_Variable_String];
         
         if(this.$parent.$parent[this.parent_Fnc_Data.checkedFncDetails.fncName] === undefined ||
-           this.$parent.$parent[this.parent_Fnc_Data.clickedFncDetails.fncName] === undefined) { 
+        this.$parent.$parent[this.parent_Fnc_Data.clickedFncDetails.fncName] === undefined) { 
             console.warn(`ERROR (RadioBtn.vue): There is no parent function named '${this.parent_Fnc_Data}'`);
             return;
         }
-
+        
+        this.m_ParentVariableData = this.$parent.$parent.$data[this.parent_Variable_String];
         // Runs the parent function of the prop name to return an object
         this.m_functions = this.parent_Fnc_Data;
     },

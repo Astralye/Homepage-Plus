@@ -2,7 +2,7 @@
     <SingleButton
       @click="toggleSelectionMode" 
       class="center">
-      <h2> Select Container </h2>
+      <h2 class="single-button-dark"> Select Container </h2>
     </SingleButton>
 
     <WindowContainerDivider>
@@ -17,7 +17,18 @@
       <template #content>
         <RadioButton
             parent_Variable_String="LayoutType"
-            parent_Fnc_Data="returnLayoutTypeFnc">
+            :parent_Fnc_Data="{
+              checkedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              },
+              clickedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              }
+            }">
         </RadioButton>  
       </template>
     </WindowContainerDivider>
@@ -33,7 +44,10 @@
       </template>
 
       <template #content>
-        <RangeSlider/>
+        <RangeSlider
+          :input_Data="['0.5x','1x', '2x', '3x']"
+          :m_function="tmp";
+        />
       </template>
 
     </WindowContainerDivider>
@@ -50,7 +64,18 @@
       <template #content>
         <RadioButton
             parent_Variable_String="ContentAlign"
-            parent_Fnc_Data="returnLayoutTypeFnc">
+            :parent_Fnc_Data="{
+              checkedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              },
+              clickedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              }
+            }">
         </RadioButton>  
       </template>
     </WindowContainerDivider>
@@ -70,7 +95,18 @@
         </h4>
         <RadioButton
             parent_Variable_String="OrientationLeftRight"
-            parent_Fnc_Data="returnLayoutTypeFnc">
+            :parent_Fnc_Data="{
+              checkedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              },
+              clickedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              }
+            }">
         </RadioButton>  
 
         <h4>
@@ -78,7 +114,18 @@
         </h4>
         <RadioButton
             parent_Variable_String="OrientationTopBottom"
-            parent_Fnc_Data="returnLayoutTypeFnc">
+            :parent_Fnc_Data="{
+              checkedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              },
+              clickedFncDetails:
+              {
+                  fncName: 'tmp',
+                  parameterType: 'index',
+              }
+              }">
         </RadioButton>  
       </template>
     </WindowContainerDivider>
@@ -89,7 +136,7 @@
 
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
-import SingleButton from '../Window Components/SingleButton.vue';
+import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 
@@ -133,25 +180,6 @@ export default {
     },
 
     methods: {
-
-// RADIO BUTTON PROP FUNCTIONS
-// -------------------------------------------------------------------------------------------------
-
-      // TEMPORARY 
-      returnLayoutTypeFnc(){
-        return  {
-          checkedFncDetails:
-          {
-              fncName: 'tmp',
-              parameterType: "index",
-          },
-          clickedFncDetails:
-          {
-              fncName: 'tmp',
-              parameterType: "index",
-          }
-          };
-      },
 
 // -------------------------------------------------------------------------------------------------
 

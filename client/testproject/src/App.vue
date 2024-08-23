@@ -185,7 +185,7 @@ export default{
             <Window 
                 v-if="this.toggleTab[0].toggle"
                 title="Edit"
-                width="150"
+                :width="175"
                 @close-window="openWindowTab"
                 @focusTab="focusClickedTab">
                 <template v-slot:window-content>
@@ -198,6 +198,7 @@ export default{
             <Window 
                 v-if="this.toggleTab[1].toggle"
                 title="Settings"
+                :width="400"
                 @close-window="openWindowTab"
                 @focusTab="focusClickedTab">
 
@@ -214,6 +215,7 @@ export default{
             <Window
                 v-if="this.EditBtns[0].toggle"
                 title="Layout"
+                :width="325"
                 @close-window="test"
                 @focusTab="focusClickedTab">
                 <template v-slot:window-content>
@@ -229,6 +231,7 @@ export default{
             <Window
                 v-if="this.EditBtns[1].toggle"
                 title="Containers"
+                :width="350"
                 @close-window="test"
                 @focusTab="focusClickedTab">
                 <template v-slot:window-content>

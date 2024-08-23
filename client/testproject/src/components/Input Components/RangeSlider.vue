@@ -36,17 +36,8 @@ export default {
             default: [],
             required: true,
         },
-
-        // parent_Variable_String: {
-        //     type: String,
-        //     default: "",
-        //     required: true,
-        // },
-
-        // Temporary
-        // May need to be an object later
-        parent_Fnc_Data: {
-            type: String,
+        m_function: {
+            type: Function,
             default: "",
             required: true,
         }
@@ -89,7 +80,7 @@ export default {
             let position = val / this.m_SliderData.stepSize;
             this.m_SliderData.value = this.input_Data[position];
 
-            this.parent_Fnc_Data(this.m_SliderData.value);
+            this.m_function(this.m_SliderData.value);
         }
     }
 }

@@ -297,13 +297,12 @@ Move to different component
 
     <SingleButton
         @click="toggleSelectionMode" class="center">
-        <h2> Select Container </h2>
+        <h2 class="single-button-dark"> Select Container </h2>
     </SingleButton>
 
 <!-- Division Type
 -------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider
-        class="container-divider">
+    <WindowContainerDivider>
         <template #header> 
             <h2 class="inline">
                 Division type
@@ -339,11 +338,10 @@ Move to different component
 
 <!-- No. divisions
 -------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider
-        class="container-divider"> 
+    <WindowContainerDivider> 
         <template #header> 
             <h2 class="inline">
-                Container Divisions
+                No. Container Divisions
             </h2>
         </template>
 
@@ -375,11 +373,10 @@ Move to different component
 
 <!-- Toggle even spacing
 -------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider
-        class="container-divider"> 
+    <WindowContainerDivider> 
         <template #header>
             <h3 class="inline">
-                Even spacing
+                Toggle Even Spacing
             </h3>
         </template>
 
@@ -410,8 +407,7 @@ Move to different component
 
 <!-- Step size Slider
 -------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider
-    class="container-divider">
+    <WindowContainerDivider>
     
     <!-- 
         TODO
@@ -427,7 +423,7 @@ Move to different component
         <template #content>
             <div class="container-content-margin-top">
                 <RangeSlider
-                    :parent_Fnc_Data="updateStepSize"
+                    :m_function="updateStepSize"
                     :input_Data="[0.05,0.125,0.25, 0.33, 0.5]"/>
             </div>
         </template>
@@ -481,13 +477,6 @@ Move to different component
 
 .inline{
     display: inline;
-}
-
-.container-divider{
-    margin: 3px;
-}
-.container-divider:not(:last-child){
-    margin-bottom: 6px;
 }
 
 .center{

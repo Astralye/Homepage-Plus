@@ -124,7 +124,7 @@
 @import '../../assets/base.css';
 
 .header-title__line-height--small{
-    line-height: 1.0;
+    line-height: 1.1;
 }
 
 .header-container{
@@ -137,20 +137,12 @@
     
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
-    
-    color: black;
 
     padding: var(--window-padding);
-    
-    /* Todo:
-        Window width and height variable
-        -> Set shadow width + height
-        -> Set header width 
-    */
 }
 
 .headerContent{
-    margin-top: 3px;
+    margin-top: 2px;
 }
 
 .exitBtn{
