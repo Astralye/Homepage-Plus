@@ -1,4 +1,9 @@
 <template>
+    <!-- 
+     Functionality comes from passing an 
+     @click event from the parent container 
+     Removes the need to pass a prop
+     -->
     <button role="button" class="button-name">
         <slot> </slot>
     </button>

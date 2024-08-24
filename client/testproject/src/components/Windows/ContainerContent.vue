@@ -1,6 +1,6 @@
 <template>
     <SingleButton
-      @click="toggleSelectionMode" 
+      @click="activateSelectionMode" 
       class="center">
       <h2 class="single-button-dark"> Select Container </h2>
     </SingleButton>
@@ -182,6 +182,11 @@ export default {
     methods: {
 
 // -------------------------------------------------------------------------------------------------
+
+      activateSelectionMode() {
+          this.$GlobalStates.value.containerSelectionMode = true;
+      },
+
 
       tmp(){
         console.log("Clicked!");

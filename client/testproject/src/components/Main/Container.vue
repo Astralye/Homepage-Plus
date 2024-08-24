@@ -206,6 +206,7 @@
                 if(this.m_ContainerData.id === null) {return;}
                 this.$GlobalStates.value.edit.containerSelected = this.m_ContainerData.id;
                 this.$GlobalStates.value.edit.enabled = true;
+                this.$GlobalStates.value.containerSelectionMode = false;
             },
 
             // Boolean, store if container was clicked.
@@ -564,9 +565,15 @@
                     'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
             'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
             class="grid-template"
-            @mouseover.self="m_isHover=true"
+            @mouseover.self="m_isHover = this.$GlobalStates.value.containerSelectionMode"
             @mouseout.self="m_isHover=false"
-            @click.self="this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null">
+            @click.self="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null">
+
+<!-- Tmp comment
+Check if the 'select container statement is true'
+If not, disable the mouse over and click.self functionality.
+-->
+
 
                 <template v-if="this.m_ContainerData.NoChildren > 0">
                     

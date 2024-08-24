@@ -50,15 +50,8 @@ export default {
 
     methods: {
 
-/*
-        I will need to do some re-arraging and refactoring as this file is a mess.
-*/
-
-        toggleSelectionMode() {
-
-            this.$GlobalStates.value.containerSelectionMode = !this.$GlobalStates.value.containerSelectionMode;
-            // this.States.isSelectingContainer = !this.States.isSelectingContainer;
-            // this.$emit('Container-Select');
+        activateSelectionMode() {
+            this.$GlobalStates.value.containerSelectionMode = true;
         },
 
 
@@ -141,7 +134,6 @@ export default {
                         unevenFRData: "",
                         containerData: []
                     });
-                    this.toggleSelectionMode();
                 }
             }
             // Negative, remove containers
@@ -296,7 +288,7 @@ Move to different component
 <template>
 
     <SingleButton
-        @click="toggleSelectionMode" class="center">
+        @click="activateSelectionMode" class="center">
         <h2 class="single-button-dark"> Select Container </h2>
     </SingleButton>
 
