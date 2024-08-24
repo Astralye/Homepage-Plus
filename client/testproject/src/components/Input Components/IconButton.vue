@@ -2,7 +2,6 @@
 export default{
     props: {
         message: String,
-        icon: { String, required: true }
     }
 }
 </script>
@@ -10,7 +9,7 @@ export default{
 <template>
     <div class="container left-margin">
         <button class="center">
-            <img class="iconSize" :src="icon" alt="Image not found">
+            <slot> </slot>
             <p> {{ message }} </p>
         </button>
     </div>
