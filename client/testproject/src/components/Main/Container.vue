@@ -521,10 +521,8 @@
 // --------------------------------------------------------------------------------------------------------------
 
         watch: {
-            '$GlobalStates.value.edit.containerSelected':{
-                handler(val,oldval){
-                    this.isStoredClick();
-                }
+            '$GlobalStates.value.edit.containerSelected'(val, oldval){
+                this.isStoredClick();
             },
             '$GlobalStates.value.edit.windowSize':{
                 handler(val,oldval){

@@ -164,6 +164,7 @@ export default {
             this.States.selectedContainer.level = 0;
             this.States.id = "0A";
             this.$GlobalStates.value.edit.containerSelected = "0A";
+            this.$GlobalStates.value.edit.resetSelect = false;
         },
 
         // True on a selected container
@@ -214,68 +215,19 @@ export default {
             this.States.selectedContainer.evenlySpaced = checked;
         },
 
-/*
-TODO
-
-Move to different component
-*/
-// localstorage functions
-// ------------------------------------------------------------------------------------------------------------------------
-
-        saveLayout(){
-            let containerObj = this.$ContainerData.value;
-            
-            let container_serialized = JSON.stringify(containerObj);
-            localStorage.setItem("containerData", container_serialized);
-        },
-        loadLayout(){
-            const containerData = JSON.parse(localStorage.getItem("containerData"));
-
-            if(containerData === null) {
-                console.log ("No data!"); 
-                return;
-            }
-
-            this.$GlobalStates.clickLoad = true; 
-            this.$ContainerData.value = containerData;
-            this.resetSelected();
-        },
-        deleteLayout(){
-            // Show prompt 'are you sure you want to delete?'
-            
-            let baseObject = {
-                level: 0,
-                divisionType: "Vertical",
-                id: "0A",
-                NoChildren: 0,
-                siblings: 0,
-                evenSplit: "true",
-                unevenFRData: "",
-                containerData: [
-                ]
-            }
-
-            this.$ContainerData.value = baseObject;
-            this.saveLayout();
-            this.resetSelected();
-        },
-        cancelLayout(){
-            // Revert back
-            this.loadLayout();
-        },
-// ---------------------------------------------------------------------------------------------------------
-
 // Watchers
 // ---------------------------------------------------------------------------------------------------------
     },
     watch: {
-        '$GlobalStates.value.edit.containerSelected':{
-            handler(val, oldval){
-                this.updateSelectedContainer(val);
+        '$GlobalStates.value.edit.containerSelected'(val, oldval){
+            this.updateSelectedContainer(val);
+        },
+        '$GlobalStates.value.edit.resetSelect'(val, oldval){
+            if(val){
+                this.resetSelected();
             }
         },
     }
-    
 }
 </script>
 
@@ -427,29 +379,6 @@ Move to different component
     </template>
     </WindowContainerDivider>
 
-
-<!-- localstorage. Need to refactor into its own component before removing.
------------------------------------------------------------------------------------------------------------->
-
-    <div>
-        <button
-        @click="saveLayout"> Save!</button>
-    </div>
-    
-    <div>
-        <button
-        @click="loadLayout"> Load!</button>
-    </div>
-
-    <div>
-        <button
-        @click="cancelLayout"> Cancel!</button>
-    </div>
-    
-    <div>
-        <button
-        @click="deleteLayout"> Delete layout!</button>
-    </div>
 </template>
 
 <style scoped>

@@ -19,9 +19,10 @@ app.config.globalProperties.$GlobalStates = ref( {
             height: 0,
         },
         dragStepSize: 0.25,
+        resetSelect: false,
     },
     clickLoad: false,
-    containerSelectionMode: false
+    containerSelectionMode: false,
 });
 
 // Each container ID is
