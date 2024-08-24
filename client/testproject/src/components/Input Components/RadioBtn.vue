@@ -64,12 +64,11 @@ export default {
         },
         parent_Fnc_Data: {
             type: Object,
-            default: "",
+            default: {},
             required: true,
         }
     },
     created() {
-        
         if(this.$parent.$parent[this.parent_Fnc_Data.checkedFncDetails.fncName] === undefined ||
         this.$parent.$parent[this.parent_Fnc_Data.clickedFncDetails.fncName] === undefined) { 
             console.warn(`ERROR (RadioBtn.vue): There is no parent function named '${this.parent_Fnc_Data}'`);

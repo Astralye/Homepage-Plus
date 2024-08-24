@@ -20,13 +20,13 @@
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'isLayoutChecked',
+                  parameterType: 'id',
               },
               clickedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'changeLayout',
+                  parameterType: 'id',
               }
             }">
         </RadioButton>  
@@ -45,9 +45,8 @@
 
       <template #content>
         <RangeSlider
-          :input_Data="['0.5x','1x', '2x', '3x']"
-          :m_function="tmp";
-        />
+          :m_function="changeIconSize"
+          :input_Data="['0.5x','1x', '2x', '3x']"/>
       </template>
 
     </WindowContainerDivider>
@@ -67,13 +66,13 @@
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'isAlignchecked',
+                  parameterType: 'id',
               },
               clickedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'changeAlign',
+                  parameterType: 'id',
               }
             }">
         </RadioButton>  
@@ -98,13 +97,13 @@
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'isXAxisChecked',
+                  parameterType: 'id',
               },
               clickedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'changeXAxis',
+                  parameterType: 'id',
               }
             }">
         </RadioButton>  
@@ -117,13 +116,13 @@
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'isYaxisChecked',
+                  parameterType: 'id',
               },
               clickedFncDetails:
               {
-                  fncName: 'tmp',
-                  parameterType: 'index',
+                  fncName: 'changeYAxis',
+                  parameterType: 'id',
               }
               }">
         </RadioButton>  
@@ -174,24 +173,71 @@ export default {
                 { index: 1, id: "Right", selected: false},
         ],
         
-// -------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
         
       }
     },
 
     methods: {
 
-// -------------------------------------------------------------------------------------------------
-
       activateSelectionMode() {
           this.$GlobalStates.value.containerSelectionMode = true;
       },
 
-
-      tmp(){
-        console.log("Clicked!");
+// Radio button functions
+// ----------------------------------------------------------------------------------------------------------------------------
+      
+      // Function prop values, States whether the value should be checked.
+      isLayoutChecked(id){ return this.isPropertyChecked(this.LayoutType, id); },
+      isAlignchecked(id){ return this.isPropertyChecked(this.ContentAlign, id);},
+      isXAxisChecked(id){ return this.isPropertyChecked(this.OrientationLeftRight, id); },
+      isYaxisChecked(id){ return this.isPropertyChecked(this.OrientationTopBottom, id); },
+      
+      // Generalized radio selected value
+      isPropertyChecked(stateVariable, id){
+        for(let i = 0; i < stateVariable.length; i++ ){ if(stateVariable[i].id === id) { return stateVariable[i].selected; } }
         return false;
       },
+
+      // On click, updates the selected value
+      changeLayout(id){ if(id.selected){ return; } this.changeSelectedValue(this.LayoutType, id);},
+      changeAlign(id){ if(id.selected){ return; } this.changeSelectedValue(this.ContentAlign, id);},
+      changeXAxis(id){ if(id.selected){ return; } this.changeSelectedValue(this.OrientationLeftRight, id);},
+      changeYAxis(id){ if(id.selected){ return; } this.changeSelectedValue(this.OrientationTopBottom, id);},
+
+      // Changes the property value of a given id to true and everything to false
+      changeSelectedValue(valueType, idValue){
+        valueType.forEach(element => { 
+          if(element.id == idValue){ element.selected = true;}
+          else{element.selected = false} 
+        });
+      },
+// ------------------------------------------------------------------------------------------------------------------------------
+
+// Slider Function
+// ------------------------------------------------------------------------------------------------------------------------------
+
+      
+      changeIconSize(value){
+        // Temporary
+        console.log(value);
+      },
+
+// ------------------------------------------------------------------------------------------------------------------------------
+
+// Container Modifier
+// ------------------------------------------------------------------------------------------------------------------------------
+
+/*
+      I think at this point I need to consider saving this data to the localstorage
+
+      TLDR Implement save and loading universally
+*/
+
+
+// ------------------------------------------------------------------------------------------------------------------------------
+
+
     }
 }
 </script>

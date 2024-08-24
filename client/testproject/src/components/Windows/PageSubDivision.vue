@@ -200,7 +200,6 @@ export default {
         updateSelectedContainerDivision(index){
             let container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
             
-            // Cant combine this into a single if statement for some reason.
             if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
             return false;
         },
