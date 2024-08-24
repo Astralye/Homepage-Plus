@@ -91,44 +91,69 @@
 
         <!-- Header -->
         <div 
-            class="header" 
+            class="header flex" 
             
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
-                <div class="header-container flex">
-                    <div class="headerContent">
-                        <h1 class="header-title__line-height--small"> {{ title }} </h1>
+
+                <!--  Title -->
+                <div class="header-Title flex">
+                    <div class="margin-right flex align-center">
+                        <slot name="window-icon"> </slot>
                     </div>
-                    <button 
-                        class="headerContent exitBtn noselect"
-                        @click="$emit('closeWindow', `${title}`)"
-                        @mouseenter.self="windowHover = false"
-                        >
-                        X
-                    </button>
+
+                    <h1 class="header-title__line-height--small flex align-center"> 
+                        {{ title }} 
+                    </h1>
                 </div>
+
+                <!-- Exit button -->
+                <button 
+                    class="header-Button align-center flex"
+                    @click="$emit('closeWindow', `${title}`)"
+                    @mouseenter.self="windowHover = false"
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 -960 960 960" width="auto" fill="#CCCCCC">
+                        <path d="m259-206-52-53 220-221-220-221 52-53 221 221 221-221 52 53-220 221 220 221-52 53-221-221-221 221Z"/>
+                    </svg>
+                </button>
         </div>
 
         <!-- Main content -->
         <div
-        class="wind-container noselect">
+        class="wind-container">
             <slot name="window-content"></slot>
         </div>
     </div>
     
 </template>
 
+<style>
+
+.margin-y-auto{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.margin-x-auto{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+</style>
+
 <style scoped>
 @import '../../assets/base.css';
 
 .header-title__line-height--small{
+    position: relative;
     line-height: 1.1;
 }
 
-.header-container{
-    padding: var(--window-padding);
+.margin-right{
+    margin-right: 0.5em;
 }
 
 .wind-container{
@@ -141,31 +166,21 @@
     padding: var(--window-padding);
 }
 
-.headerContent{
-    margin-top: 2px;
-}
-
-.exitBtn{
-    color: white;
-    height: 30px;
-    width: 30px;
-    font-size: 24px;
-    font-family: var(--font-family);
-    text-align: center;
-    border-radius: 5px;
-}
-
-.header{
-    background-color: var(--Secondary-background-colour);
-    padding-top: 2px;
-}
-
 .flex{
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
-    height: 100%;
     justify-content: space-between;
+}
+
+.align-center{
+    align-items: center;
+}
+
+
+.header{
+    background-color: var(--Secondary-background-colour);
+    padding: var(--window-padding);
 }
 
 .header:hover{
