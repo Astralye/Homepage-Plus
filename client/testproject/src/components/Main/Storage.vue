@@ -58,6 +58,11 @@ export default {
                 body: "",
                 footer: "",
                 confirmed: false
+            },
+            localStorageVarNames: {
+                layoutDataName: "layoutData",
+                displayData: "containerDisplayData",
+                containerContent: "containerContentData", 
             }
         }
     },
@@ -70,10 +75,10 @@ export default {
             this.modal.show = true; 
         },
         saveLayout(){
-            let containerObj = this.$ContainerData.value;
-        
+            let containerObj = this.$layoutData.value;
+
             let container_serialized = JSON.stringify(containerObj);
-            localStorage.setItem("containerData", container_serialized);
+            localStorage.setItem(this.localStorageVarNames.layoutDataName, container_serialized);
             
             this.showPopup("Saved");
         },
@@ -96,11 +101,11 @@ export default {
                 siblings: 0,
                 evenSplit: "true",
                 unevenFRData: "",
-                containerData: []
+                childContainers: []
             }
 
             // Reset Container Object
-            this.$ContainerData.value = baseObject;
+            this.$layoutData.value = baseObject;
             this.saveLayout();
             
             // Reset selected
@@ -111,9 +116,6 @@ export default {
         // Load from localstorage
         cancelEdit(){
 
-            // ALERT 
-            // ARE YOU SURE YOU WANT TO CANCEL
-
             // Tmp
             // Show message
             this.openModal(
@@ -123,15 +125,15 @@ export default {
 
             if(!this.modal.confirmed){ return; }
 
-            const containerData = JSON.parse(localStorage.getItem("containerData"));
+            const layoutData = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
 
-            if(containerData === null) {
+            if(layoutData === null) {
                 console.log("No data!"); 
                 return;
             }
 
             this.$GlobalStates.clickLoad = true; 
-            this.$ContainerData.value = containerData;
+            this.$layoutData.value = layoutData;
 
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;

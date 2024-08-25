@@ -161,8 +161,8 @@
             // Applies any changed data to the container
             setCurrentContainer(){
                 this.m_ContainerData.level = this.nest_level;
-                let tmpID = (this.nest_level === 0) ? this.$ContainerData.value.id : this.parent_ID.concat(this.createID());
-                let tmpContainer = this.getLevelData(this.$ContainerData.value, this.m_ContainerData.level, tmpID);
+                let tmpID = (this.nest_level === 0) ? this.$layoutData.value.id : this.parent_ID.concat(this.createID());
+                let tmpContainer = this.getLevelData(this.$layoutData.value, this.m_ContainerData.level, tmpID);
 
                 // Set the current container data
                 if(tmpContainer == null){
@@ -188,7 +188,7 @@
                 }
 
                 // Check if the container is the final container to be rendered
-                let lastRenderContainer = this.isFinalNode(this.getLevelData(this.$ContainerData.value, 0, "0A"), this.m_ContainerData.id);
+                let lastRenderContainer = this.isFinalNode(this.getLevelData(this.$layoutData.value, 0, "0A"), this.m_ContainerData.id);
                 // Turn off Load rendering
                 if( lastRenderContainer && this.$GlobalStates.clickLoad) { this.$GlobalStates.clickLoad = false;}
                 
@@ -221,7 +221,7 @@
             },
             getParentObj(){
                 let parentID = this.m_ContainerData.id.substring(0, this.m_ContainerData.id.length - 2);
-                return this.getLevelData(this.$ContainerData.value, this.m_ContainerData.level - 1, parentID);
+                return this.getLevelData(this.$layoutData.value, this.m_ContainerData.level - 1, parentID);
             },
             
             isFirstSibling(){ return (this.getSiblingNumber() === 0) ? true : false; },
@@ -257,11 +257,11 @@
             isFinalNode(parentObject, childID){
                 if( parentObject.NoChildren === 0 ) { return false; } // if no children;
 
-                let lastChild = parentObject.containerData[ parentObject.containerData.length - 1];
+                let lastChild = parentObject.childContainers[ parentObject.childContainers.length - 1];
                 let count = 0;
                 while(true){
-                    if(lastChild.containerData.length !== 0){
-                        lastChild = lastChild.containerData[lastChild.containerData.length - 1];
+                    if(lastChild.childContainers.length !== 0){
+                        lastChild = lastChild.childContainers[lastChild.childContainers.length - 1];
                         count++;
                         if(count === 100) { break; } // Avoid a potential infinite loop
                         continue;
@@ -282,7 +282,7 @@
                 }
 
                 // Retrieve child data
-                var childData = currentLevelData.containerData; // if no children, move up stack.
+                var childData = currentLevelData.childContainers; // if no children, move up stack.
                 if(childData.length === 0 ) return null; 
                 // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
                 
@@ -382,7 +382,7 @@
                 const difference = this.calculateMouseDifference(parentObj.divisionType);
 
                 // console.log(`Diffrence: ${difference}, ${this.m_pxThreshold}`);
-                let siblingData = parentObj.containerData;
+                let siblingData = parentObj.childContainers;
                 let siblingIndex;
 
                 let isMoveContainer = false;
@@ -460,7 +460,7 @@
                 else{ this.m_rowData = tmpString; } 
 
                 // Updates the global container values
-                let globalLevelData = this.getLevelData(this.$ContainerData.value, this.m_ContainerData.level, this.m_ContainerData.id)
+                let globalLevelData = this.getLevelData(this.$layoutData.value, this.m_ContainerData.level, this.m_ContainerData.id)
                 globalLevelData.unevenFRData = tmpString;
 
             },
@@ -535,7 +535,7 @@
                 this.m_StepSize = val;
             },
             // When the values in the container data change
-            '$ContainerData.value': {
+            '$layoutData.value': {
                 handler(val, oldVal){
                     this.setComponentDOMValues();
                     this.setCurrentContainer();

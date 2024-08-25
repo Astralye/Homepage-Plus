@@ -40,9 +40,9 @@ export default {
 
             States: {
                 selectedContainer: {
-                    level: this.$ContainerData.value.level,
-                    id: this.$ContainerData.value.id,
-                    evenlySpaced: this.$ContainerData.value.evenlySpaced
+                    level: this.$layoutData.value.level,
+                    id: this.$layoutData.value.id,
+                    evenlySpaced: this.$layoutData.value.evenlySpaced
                 }
             }
         }
@@ -68,7 +68,7 @@ export default {
             }
 
             // Retrieve child data
-            var childData = currentLevelData.containerData; // if no children, move up stack.
+            var childData = currentLevelData.childContainers; // if no children, move up stack.
             if(childData.length === 0 ) return null; 
             
             // Looks at children
@@ -106,9 +106,11 @@ export default {
             const current_containerID = this.States.selectedContainer.id;
             const childLevel = current_containerLevel + 1;
 
-            let container = this.getLevelData(this.$ContainerData.value, current_containerLevel, current_containerID);
+            let container = this.getLevelData(this.$layoutData.value, current_containerLevel, current_containerID);
             let difference = divisions - container.NoChildren;
-            let siblingContainers = container.containerData; 
+            let siblingContainers = container.childContainers; 
+
+            console.log(container);
 
             // If positive -1 from value, if already 0 return 0
             const noSiblings =  ( divisions - 1 > 0) ? divisions - 1 : 0; 
@@ -124,7 +126,7 @@ export default {
                     if(i < latestIndex+1){ continue; } // If the current index is not the last available
 
                     let newID = current_containerID + this.generateID(childLevel, i);
-                    container.containerData.push({
+                    container.childContainers.push({
                         level: childLevel,
                         divisionType: divType,
                         id: newID,
@@ -132,7 +134,7 @@ export default {
                         siblings: noSiblings,
                         evenSplit: true,
                         unevenFRData: "",
-                        containerData: []
+                        childContainers: []
                     });
                 }
             }
@@ -140,10 +142,10 @@ export default {
             else if(difference < 0){
                 difference = Math.abs(difference);
                 container.NoChildren -= difference;
-                for(let i = 0; i < difference; i++){ container.containerData.pop(); }
+                for(let i = 0; i < difference; i++){ container.childContainers.pop(); }
             }
             // Update sibling value
-            container.containerData.forEach( (data) => { data.siblings = noSiblings;});
+            container.childContainers.forEach( (data) => { data.siblings = noSiblings;});
         },
 
         // Selects a clicked container and deselect previous container
@@ -169,7 +171,7 @@ export default {
 
         // True on a selected container
         isDivisionVertical(index){
-            const container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            const container = this.getLevelData(this.$layoutData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
 
             if(container.divisionType === "Vertical" && index === 0){ return true;}
             if(container.divisionType === "Horizontal" && index === 1){ return true;}
@@ -184,7 +186,7 @@ export default {
             const current_containerLevel = this.States.selectedContainer.level;
             const current_containerID = this.States.selectedContainer.id;
 
-            let parentContainer = this.getLevelData(this.$ContainerData.value, current_containerLevel,current_containerID);
+            let parentContainer = this.getLevelData(this.$layoutData.value, current_containerLevel,current_containerID);
             parentContainer.divisionType = type;
         },
 
@@ -194,12 +196,12 @@ export default {
             this.States.selectedContainer.level = level;
             this.States.selectedContainer.id = newContainerID;
             
-            const evenSplit = this.getLevelData(this.$ContainerData.value, level, newContainerID).evenSplit;
+            const evenSplit = this.getLevelData(this.$layoutData.value, level, newContainerID).evenSplit;
             this.States.selectedContainer.evenlySpaced = evenSplit;
         },
 
         updateSelectedContainerDivision(index){
-            let container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            let container = this.getLevelData(this.$layoutData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
             
             if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
             return false;
@@ -210,7 +212,7 @@ export default {
         
         // Update state of checkmark
         updateSpacingCheckmark(checked){
-            let container = this.getLevelData(this.$ContainerData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            let container = this.getLevelData(this.$layoutData.value, this.States.selectedContainer.level , this.States.selectedContainer.id);
             container.evenSplit = checked;
             this.States.selectedContainer.evenlySpaced = checked;
         },

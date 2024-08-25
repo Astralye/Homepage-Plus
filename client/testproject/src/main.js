@@ -25,9 +25,11 @@ app.config.globalProperties.$GlobalStates = ref( {
     containerSelectionMode: false,
 });
 
-// Each container ID is
-// PARENTID + "Level + A/B/C/D"
-app.config.globalProperties.$ContainerData = ref({
+// Due to watchers and recursive size, variables are split up
+// Page layout config. Root container
+app.config.globalProperties.$layoutData = ref({
+
+    // Container metadata
     level: 0,
     divisionType: "Vertical",
     id: "0A",
@@ -35,8 +37,15 @@ app.config.globalProperties.$ContainerData = ref({
     siblings: 0,
     evenSplit: true,
     unevenFRData: "",
-    containerData: [
+
+    // Child container
+    childContainers: [
     ],
+});
+
+// Container display config. 
+app.config.globalProperties.$displayData = ref({
+
 });
 
 app.mount('#app')
