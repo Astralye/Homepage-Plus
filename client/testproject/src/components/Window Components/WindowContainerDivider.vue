@@ -1,6 +1,6 @@
 <template>
-    <div class="container-divider">
-        <div class="center-align margin-bottom">
+    <div class="window-content-divider">
+        <div class="center-align header-margin">
             <slot name="header"></slot>
             <slot name="tooltip"></slot>
         </div>
@@ -11,6 +11,12 @@
     </div>
 </template>
 
+<style>
+.window-content-divider{
+    margin: 1em 0.5em;
+}
+</style>
+
 <style scoped>
 
 .center-align{
@@ -19,8 +25,8 @@
     align-items: center;
 }
 
-.margin-bottom{
-    margin-bottom: 2px
+.header-margin{
+    margin-bottom: 0.25em;
 }
 
 </style>

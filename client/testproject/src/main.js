@@ -8,18 +8,20 @@ const app = createApp(App);
 
 // app.config.globalProperties is a global variable
 // the next value is the name of the variable
-
-    // For window priority 
-    // Window click should bring it forward
-    // Using a stack to store the window
-    // Position in array determines z-index.
     
 app.config.globalProperties.$windowStack = ref([]);
 app.config.globalProperties.$GlobalStates = ref( {
     edit: {
         enabled: false,
-        containerSelected: null // ID of the container selected
+        containerSelected: null, // ID of the container selected
+        windowSize: {
+            width: 0,
+            height: 0,
+        },
+        dragStepSize: 0.25,
+        resetSelect: false,
     },
+    clickLoad: false,
     containerSelectionMode: false,
 });
 
@@ -31,6 +33,8 @@ app.config.globalProperties.$ContainerData = ref({
     id: "0A",
     NoChildren: 0,
     siblings: 0,
+    evenSplit: true,
+    unevenFRData: "",
     containerData: [
     ],
 });

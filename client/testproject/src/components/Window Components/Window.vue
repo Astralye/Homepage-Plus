@@ -91,95 +91,96 @@
 
         <!-- Header -->
         <div 
-            class="header" 
+            class="header flex" 
             
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
-                <div class="header-container flex">
-                    <div class="headerContent">
-                        <h1 class="header-title__line-height--small"> {{ title }} </h1>
+
+                <!--  Title -->
+                <div class="header-Title flex">
+                    <div class="margin-right flex align-center">
+                        <slot name="window-icon"> </slot>
                     </div>
-                    <button 
-                        class="headerContent exitBtn noselect"
-                        @click="$emit('closeWindow', `${title}`)"
-                        @mouseenter.self="windowHover = false"
-                        >
-                        X
-                    </button>
+
+                    <h1 class="header-title__line-height--small flex align-center"> 
+                        {{ title }} 
+                    </h1>
                 </div>
+
+                <!-- Exit button -->
+                <button 
+                    class="header-Button align-center flex"
+                    @click="$emit('closeWindow', `${title}`)"
+                    @mouseenter.self="windowHover = false"
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 -960 960 960" width="auto" fill="#CCCCCC">
+                        <path d="m259-206-52-53 220-221-220-221 52-53 221 221 221-221 52 53-220 221 220 221-52 53-221-221-221 221Z"/>
+                    </svg>
+                </button>
         </div>
 
         <!-- Main content -->
         <div
-        class="wind-container noselect">
+        class="wind-container">
             <slot name="window-content"></slot>
         </div>
     </div>
     
 </template>
 
-<style scoped>
-/*
-    Make sure to include 
-    @import '../assets/base.css';
-    to use the styled variables
-*/
-@import '../assets/base.css';
+<style>
 
-.header-title__line-height--small{
-    line-height: 1.0;
+.margin-y-auto{
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
-.header-container{
-    padding: var(--window-padding);
+.margin-x-auto{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+</style>
+
+<style scoped>
+@import '../../assets/base.css';
+
+.header-title__line-height--small{
+    position: relative;
+    line-height: 1.1;
+}
+
+.margin-right{
+    margin-right: 0.5em;
 }
 
 .wind-container{
     background-color: var(--Tertiary-background-colour);
     height: auto;
     
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-
-    color: black;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
 
     padding: var(--window-padding);
-
-    /* Todo:
-        Window width and height variable
-        -> Set shadow width + height
-        -> Set header width 
-    */
-}
-
-.headerContent{
-    margin-top: 3px;
-}
-
-.exitBtn{
-    color: white;
-    height: 30px;
-    width: 30px;
-    font-size: 24px;
-    font-family: var(--font-family);
-    text-align: center;
-    border-radius: 5px;
-}
-
-.header{
-    background-color: var(--Secondary-background-colour);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
 }
 
 .flex{
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
-    height: 100%;
     justify-content: space-between;
+}
+
+.align-center{
+    align-items: center;
+}
+
+
+.header{
+    background-color: var(--Secondary-background-colour);
+    padding: var(--window-padding);
 }
 
 .header:hover{
@@ -192,9 +193,13 @@
     position: absolute;
     top: 0;
     left: 0;
+    box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.3), -3px -3px 20px rgba(0, 0, 0, 0.2);
     z-index: 30;
+
     border-radius: 10px;
-    box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.4);
+    border-style: solid;
+    border-width: 3px;
+    border-color: var(--Secondary-background-colour);
 }
 
 </style>
