@@ -62,9 +62,11 @@ export default {
             localStorageVarNames: {
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
-                containerContent: "containerContentData", 
             }
         }
+    },
+    created(){
+        this.loadData();
     },
     methods: {
 
@@ -75,10 +77,8 @@ export default {
             this.modal.show = true; 
         },
         saveLayout(){
-            let containerObj = this.$layoutData.value;
-
-            let container_serialized = JSON.stringify(containerObj);
-            localStorage.setItem(this.localStorageVarNames.layoutDataName, container_serialized);
+            localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(this.$layoutData.value));
+            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(this.$containerData.value));
             
             this.showPopup("Saved");
         },
@@ -93,7 +93,8 @@ export default {
 
             if(!this.modal.confirmed){ return; }
 
-            let baseObject = {
+            // Reset Container Object
+            this.$layoutData.value = {
                 level: 0,
                 divisionType: "Vertical",
                 id: "0A",
@@ -103,11 +104,12 @@ export default {
                 unevenFRData: "",
                 childContainers: []
             }
-
-            // Reset Container Object
-            this.$layoutData.value = baseObject;
+    
+            // reset containerData
+            this.$containerData.value = {};
+    
             this.saveLayout();
-            
+
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
             this.showPopup("deleted");
@@ -125,15 +127,7 @@ export default {
 
             if(!this.modal.confirmed){ return; }
 
-            const layoutData = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
-
-            if(layoutData === null) {
-                console.log("No data!"); 
-                return;
-            }
-
-            this.$GlobalStates.clickLoad = true; 
-            this.$layoutData.value = layoutData;
+            this.loadData();
 
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
@@ -142,6 +136,18 @@ export default {
 
             // Could also try and toggle off the global enabled.
             // Turn off the edit mode.
+        },
+
+        loadData(){
+            const layoutData = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
+            const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
+
+            if(layoutData === null) { console.log("No Layout Data!"); return; }
+            if(displayData === null) { console.log("No displayData!"); return;}
+
+            this.$layoutData.value = layoutData;
+            this.$containerData.value = displayData;
+            this.$GlobalStates.clickLoad = true; 
         },
 
         // Above the containers, show a message showing what the user has clicked.

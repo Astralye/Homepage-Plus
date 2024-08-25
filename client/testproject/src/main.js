@@ -21,7 +21,8 @@ app.config.globalProperties.$GlobalStates = ref( {
         dragStepSize: 0.25,
         resetSelect: false,
     },
-    clickLoad: false,
+    isInitialize: false,
+    isRenderFinalNode: false,
     containerSelectionMode: false,
 });
 
@@ -43,9 +44,9 @@ app.config.globalProperties.$layoutData = ref({
     ],
 });
 
-// Container display config. 
-app.config.globalProperties.$displayData = ref({
+// Container display config.
+// This is built, maintained on runtime if there is not prior saved data for this
+app.config.globalProperties.$containerData = ref({});
 
-});
 
 app.mount('#app')

@@ -108,9 +108,7 @@ export default {
 
             let container = this.getLevelData(this.$layoutData.value, current_containerLevel, current_containerID);
             let difference = divisions - container.NoChildren;
-            let siblingContainers = container.childContainers; 
-
-            console.log(container);
+            let siblingContainers = container.childContainers;
 
             // If positive -1 from value, if already 0 return 0
             const noSiblings =  ( divisions - 1 > 0) ? divisions - 1 : 0; 
