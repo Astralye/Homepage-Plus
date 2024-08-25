@@ -23,35 +23,72 @@
             </button>
         </div>
     </Transition>
+
+    <Transition name="modal">
+        <Modal 
+            v-if="modal.show"
+            @close="modal.show = false"
+            @accept="modal.show = false; modal.confirmed = true">
+            <template v-slot:header>
+                {{ modal.header }}
+            </template>
+            <template v-slot:body>
+                {{ modal.body }}
+            </template>
+            <template v-slot:footer>
+                {{ modal.footer }}
+            </template>
+        </Modal>
+    </Transition>
 </template>
 
 <script>
-    export default {
-        components:{
+import Modal from './Modal.vue';
 
-        },
-        data(){
-            return {
-                iconSize: "5em",
+export default {
+    components:{
+        Modal
+    },
+    data(){
+        return {
+            iconSize: "5em",
+            modal:{
+                show: false,
+                header: "",
+                body: "",
+                footer: "",
+                confirmed: false
             }
+        }
+    },
+    methods: {
+
+        openModal(header, body, footer){
+            this.modal.header = header;
+            this.modal.body = body;
+            this.modal.footer = footer;
+            this.modal.show = true; 
         },
-        methods: {
-            saveLayout(){
-                let containerObj = this.$ContainerData.value;
+        saveLayout(){
+            let containerObj = this.$ContainerData.value;
+        
+            let container_serialized = JSON.stringify(containerObj);
+            localStorage.setItem("containerData", container_serialized);
             
-                let container_serialized = JSON.stringify(containerObj);
-                localStorage.setItem("containerData", container_serialized);
-                
-                this.showPopup("Saved");
-            },
+            this.showPopup("Saved");
+        },
 
-            // These functions should be call other functions from different areas and process them 
-            deleteLayout(){
+        // These functions should be call other functions from different areas and process them 
+        deleteLayout(){
 
-                // ALERT 
-                // ARE YOU SURE YOU WANT TO DELETE
+            this.openModal(
+                "Delete layout",
+                "Are you sure you want to delete this layout? \n This cannot be undone.",
+            );
 
-                let baseObject = {
+            if(!this.modal.confirmed){ return; }
+
+            let baseObject = {
                 level: 0,
                 divisionType: "Vertical",
                 id: "0A",
@@ -60,46 +97,77 @@
                 evenSplit: "true",
                 unevenFRData: "",
                 containerData: []
-                }
-
-                // Reset Container Object
-                this.$ContainerData.value = baseObject;
-                
-                // Reset selected
-                this.$GlobalStates.value.edit.resetSelect = true;
-                this.showPopup("deleted");
-            },
-            // Load from localstorage
-            cancelEdit(){
-
-                // ALERT 
-                // ARE YOU SURE YOU WANT TO CANCEL
-
-                const containerData = JSON.parse(localStorage.getItem("containerData"));
-
-                if(containerData === null) {
-                    console.log("No data!"); 
-                    return;
-                }
-
-                this.$GlobalStates.clickLoad = true; 
-                this.$ContainerData.value = containerData;
-
-                // Reset selected
-                this.$GlobalStates.value.edit.resetSelect = true;
-                this.showPopup("cancelled");
-            },
-
-            // Above the containers, show a message showing what the user has clicked.
-            // E.g ___ Successfully.
-            showPopup(message){
-                console.log(message);
             }
+
+            // Reset Container Object
+            this.$ContainerData.value = baseObject;
+            this.saveLayout();
+            
+            // Reset selected
+            this.$GlobalStates.value.edit.resetSelect = true;
+            this.showPopup("deleted");
+            this.modal.confirmed = false;
+        },
+        // Load from localstorage
+        cancelEdit(){
+
+            // ALERT 
+            // ARE YOU SURE YOU WANT TO CANCEL
+
+            // Tmp
+            // Show message
+            this.openModal(
+                "Cancel layout",
+                "Are you sure you want to cancel? \n Any unsaved changes will be lost",
+            );
+
+            if(!this.modal.confirmed){ return; }
+
+            const containerData = JSON.parse(localStorage.getItem("containerData"));
+
+            if(containerData === null) {
+                console.log("No data!"); 
+                return;
+            }
+
+            this.$GlobalStates.clickLoad = true; 
+            this.$ContainerData.value = containerData;
+
+            // Reset selected
+            this.$GlobalStates.value.edit.resetSelect = true;
+            this.showPopup("cancelled");
+            this.modal.confirmed = false;
+
+            // Could also try and toggle off the global enabled.
+            // Turn off the edit mode.
+        },
+
+        // Above the containers, show a message showing what the user has clicked.
+        // E.g ___ Successfully.
+        showPopup(message){
+            console.log(message);
         }
     }
+}
 </script>
 
 <style scoped>
+@import '../../assets/base.css';
+
+  
+.modal-enter {
+    opacity: 0;
+}
+
+.modal-leave-active {
+    opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+}
 
 .action-container{
     display: flex;
