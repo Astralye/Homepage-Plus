@@ -1,5 +1,5 @@
 <script>
-import { isProxy, toRaw } from 'vue';
+import { containerData } from '../../Data/containerData.js'
 
 export default {
     name: "recursive-container",
@@ -29,7 +29,7 @@ export default {
 
     data(){
         return{
-
+            containerData,
             // Objects
 
             /*
@@ -90,7 +90,6 @@ export default {
     // Initializer
     // Sets variables from props
     created(){
-        
         this.$GlobalStates.isRenderFinalNode = true;
         this.updateContainerData();
         this.recalculateThreshold();
@@ -100,16 +99,19 @@ export default {
     mounted(){
         this.setComponentDOMValues();
     },
+    updated(){
+        // Need a function to tell if data of the corresponding has been modified.
+        console.log(containerData.data);
+    },
 
-    // Remove values
+
+    /*
+        Note: when using hot-reloading, saving causes unmounted function to run
+        
+        Not sure why, but keep that in mind when values suddenly change on save
+    */
     unmounted(){
-        this.printLayoutInfo();
-        Reflect.deleteProperty(this.$containerData.value[this.m_LayoutData.id])
-        // var tmp = toRaw(this.$containerData.value);
-        // delete tmp[this.m_LayoutData.id];
-        // console.log("obj", tmp);
-        // console.log("ksdjhfjahsdkf", tmp[this.m_LayoutData.id]);
-        console.log("ksdjhfjahsdkf", this.$containerData.value);
+        this.removeGlobalData();
     },
     methods:{
 
@@ -258,65 +260,28 @@ export default {
             }
             return tmpArray;
         },
+
+        // This should remove the values stored in any global data
+        removeGlobalData(){
+            containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
+            
+            // Remove LayoutDat
+            
+        },
         
 // Container Config data
 // --------------------------------------------------------------------------------------------------------
 
+        // Sets the config data on creation
         setContainerConfigData(){
-            if(!this.isLeafNode(this.m_LayoutData)){ 
-                console.log(`${this.m_LayoutData.id} has children. remove value`);    
-                return; 
-            }
-            
-            // Vuejs stores objects as proxys
-            // Unable to find length, and must change to standard object
+            let index = containerData.getIndexFromID(this.m_LayoutData.id);
+            if(index === null) { containerData.addNewID(this.m_LayoutData.id); return; }
 
-            // Convert proxy to normal object
-            const unproxyObject = toRaw(this.$containerData.value);
-
-            let keys = Object.getOwnPropertyNames(unproxyObject);
-            let length = keys.length;
-            var keyExist = false;
-
-            if(length === 0){
-                // Set default value
-                Object.defineProperty(this.$containerData.value, this.m_LayoutData.id, 
-                    {value: {
-                        layoutType: "Grid",
-                        iconSize: "1",
-                        gridData: {
-                            gridDimensions: null,
-                            contentAlign: "Compact",
-                            xAxisDirection: "Left",
-                            yAxisDirection: "Top"
-                        },
-                        ListData: {},
-                        }});
-                console.log("Global object:", this.$containerData.value);
-                return;
-            }
-            keys.forEach(keyID => { if(keyID === this.m_LayoutData.id){ keyExist = true;} });
-            if(keyExist){ return; }
-            
-            console.log(`Key: ${this.m_LayoutData.id} does not exist in global structure, add value.`);
-
-            // Add property
-            Object.defineProperty(this.$containerData.value, this.m_LayoutData.id, 
-                {value: {
-                    layoutType: "Grid",
-                    iconSize: "1",
-                    gridData: {
-                        gridDimensions: null,
-                        contentAlign: "Compact",
-                        xAxisDirection: "Left",
-                        yAxisDirection: "Top"
-                    },
-                    ListData: {},
-                }
-            });
-
-            console.log(this.$containerData.value);
+            // On initialize
+            this.disableConfigOnNonLeaf();
         },
+
+        disableConfigOnNonLeaf(){ if(!this.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
 
 // --------------------------------------------------------------------------------------------------------
 
@@ -606,7 +571,7 @@ export default {
             handler(val, oldVal){
                 this.setComponentDOMValues();
                 this.updateContainerData();
-                this.setContainerConfigData();
+                this.disableConfigOnNonLeaf();
             },
             deep: true
         },

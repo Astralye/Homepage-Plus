@@ -44,6 +44,7 @@
 
 <script>
 import Modal from './Modal.vue';
+import { containerData } from '../../Data/containerData.js'
 
 export default {
     components:{
@@ -51,6 +52,7 @@ export default {
     },
     data(){
         return {
+            containerData,
             iconSize: "5em",
             modal:{
                 show: false,
@@ -78,7 +80,9 @@ export default {
         },
         saveLayout(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(this.$layoutData.value));
-            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(this.$containerData.value));
+            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(containerData.getAllData()));
+
+            console.log(containerData.getAllData());
             
             this.showPopup("Saved");
         },
@@ -106,7 +110,7 @@ export default {
             }
     
             // reset containerData
-            this.$containerData.value = {};
+            containerData.resetData();
     
             this.saveLayout();
 
@@ -146,7 +150,7 @@ export default {
             if(displayData === null) { console.log("No displayData!"); return;}
 
             this.$layoutData.value = layoutData;
-            this.$containerData.value = displayData;
+            containerData.intializeData(displayData); 
             this.$GlobalStates.clickLoad = true; 
         },
 
