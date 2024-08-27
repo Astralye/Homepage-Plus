@@ -90,7 +90,6 @@ export default {
     // Initializer
     // Sets variables from props
     created(){
-        this.$GlobalStates.isRenderFinalNode = true;
         this.updateContainerData();
         this.recalculateThreshold();
 
@@ -101,7 +100,7 @@ export default {
     },
     updated(){
         // Need a function to tell if data of the corresponding has been modified.
-        console.log(containerData.data);
+        // console.log(containerData.data);
     },
 
 
@@ -114,7 +113,6 @@ export default {
         this.removeGlobalData();
     },
     methods:{
-
 // Logging Functions 
 // -----------------------------------------------------------------------------------------------------
         printLayoutInfo(){
@@ -155,6 +153,7 @@ export default {
             }
         },
         setGridNonEven(container){
+            console.log("This should run", container.unevenFRData);
             if(container.divisionType === "Horizontal"){
                 this.m_rowData = container.unevenFRData;
                 this.m_columnData = "1fr";
@@ -265,8 +264,7 @@ export default {
         removeGlobalData(){
             containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
             
-            // Remove LayoutDat
-            
+            // Remove LayoutData
         },
         
 // Container Config data

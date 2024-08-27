@@ -80,9 +80,9 @@ export default {
         },
         saveLayout(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(this.$layoutData.value));
-            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(containerData.getAllData()));
+            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(containerData.allData));
 
-            console.log(containerData.getAllData());
+            // console.log(containerData.allData);
             
             this.showPopup("Saved");
         },
@@ -95,7 +95,7 @@ export default {
                 "Are you sure you want to delete this layout? \n This cannot be undone.",
             );
 
-            if(!this.modal.confirmed){ return; }
+            // if(!this.modal.confirmed){ return; }
 
             // Reset Container Object
             this.$layoutData.value = {
@@ -111,12 +111,10 @@ export default {
     
             // reset containerData
             containerData.resetData();
-    
             this.saveLayout();
-
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
-            this.showPopup("deleted");
+            // this.showPopup("deleted");
             this.modal.confirmed = false;
         },
         // Load from localstorage
@@ -129,14 +127,14 @@ export default {
                 "Are you sure you want to cancel? \n Any unsaved changes will be lost",
             );
 
-            if(!this.modal.confirmed){ return; }
+            // if(!this.modal.confirmed){ return; }
 
             this.loadData();
 
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
-            this.showPopup("cancelled");
             this.modal.confirmed = false;
+            this.showPopup("cancelled");
 
             // Could also try and toggle off the global enabled.
             // Turn off the edit mode.
@@ -149,9 +147,11 @@ export default {
             if(layoutData === null) { console.log("No Layout Data!"); return; }
             if(displayData === null) { console.log("No displayData!"); return;}
 
-            this.$layoutData.value = layoutData;
             containerData.intializeData(displayData); 
+            
+            this.$layoutData.value = layoutData;
             this.$GlobalStates.clickLoad = true; 
+            this.$GlobalStates.isRenderFinalNode = true;
         },
 
         // Above the containers, show a message showing what the user has clicked.
