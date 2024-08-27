@@ -1,5 +1,6 @@
 <script>
 import { containerData } from '../../Data/containerData.js'
+import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 
 export default {
     name: "recursive-container",
@@ -30,6 +31,8 @@ export default {
     data(){
         return{
             containerData,
+            layout,
+            LayoutDataClass,
             // Objects
 
             /*
@@ -113,6 +116,7 @@ export default {
         this.removeGlobalData();
     },
     methods:{
+
 // Logging Functions 
 // -----------------------------------------------------------------------------------------------------
         printLayoutInfo(){
@@ -142,26 +146,19 @@ export default {
 
 // Row + Column Data variable setters
 // -------------------------------------------------------------------------------------------------------
+
         setGridEven(type){
-            if(type === "Horizontal"){
-                this.m_rowData = "1fr ".repeat(this.m_LayoutData.NoChildren);
-                this.m_columnData = "1fr";
-            }
-            else{
-                this.m_columnData = "1fr ".repeat(this.m_LayoutData.NoChildren);
-                this.m_rowData = "1fr";
-            }
+            let repeatedData = "1fr ".repeat(this.m_LayoutData.NoChildren);
+            let normal = "1fr";
+
+            this.m_rowData = (type === "Horizontal")  ? repeatedData : normal;
+            this.m_columnData = (type === "Horizontal")  ? normal : repeatedData;
         },
         setGridNonEven(container){
-            console.log("This should run", container.unevenFRData);
-            if(container.divisionType === "Horizontal"){
-                this.m_rowData = container.unevenFRData;
-                this.m_columnData = "1fr";
-            }
-            else{
-                this.m_rowData = "1fr";
-                this.m_columnData = container.unevenFRData;
-            }
+            let normal = "1fr";
+
+            this.m_rowData = (container.divisionType === "Horizontal")  ? container.unevenFRData : normal;
+            this.m_columnData = (container.divisionType === "Horizontal")  ? normal : container.unevenFRData;
         },
 
 // -------------------------------------------------------------------------------------------------------
@@ -169,102 +166,70 @@ export default {
 // General Container Functions
 // --------------------------------------------------------------------------------------------------------
 
-
-        toggleSelectionMode(){
-            this.m_EditMode = true;
+        isStoredClick(){
+            this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_LayoutData.id) ? false : true;
         },
 
         // Applies any changed data to the container
         updateContainerData(){
-            this.m_LayoutData.level = this.nest_level;
-            let tmpID = (this.nest_level === 0) ? this.$layoutData.value.id : this.parent_ID.concat(this.createID());
-            let tmpContainer = this.getLevelData(this.$layoutData.value, this.m_LayoutData.level, tmpID);
+            let tmpID = (this.nest_level === 0) ? layout.allData.id : this.parent_ID.concat(LayoutDataClass.generateID(this.nest_level, this.child_Instance));
+            let tmpContainer = LayoutDataClass.getLevelData(layout.allData, this.nest_level, tmpID);
 
             if(tmpContainer == null){
+                this.printLayoutInfo();
                 console.error(`ERROR: Container not found. Level: ${this.m_LayoutData.level}, ID: ${tmpID}`);
                 return;
             }
 
-            // Set container component data.
-            this.m_LayoutData.level = tmpContainer.level;
-            this.m_LayoutData.divisionType = tmpContainer.divisionType;
-            this.m_LayoutData.id = tmpContainer.id
-            this.m_LayoutData.NoChildren = tmpContainer.NoChildren;
-            this.m_LayoutData.siblings = tmpContainer.siblings;
-            this.m_LayoutData.evenSplit = tmpContainer.evenSplit;
-            this.m_LayoutData.unevenFRData = tmpContainer.unevenFRData;
+            this.setDataValues(tmpContainer);
+            this.loadFractionalData();
+            this.renderLastContainer();
 
-            // Loads the fractional data 
+            if(!LayoutDataClass.isBaseContainer(this.m_LayoutData.id)){
+                this.m_isVertical = (LayoutDataClass.getParentObj(this.m_LayoutData).divisionType === "Vertical"); 
+            }
+        },
+        
+        // Set container component data.
+        setDataValues(newData){
+            this.m_LayoutData.level = newData.level;
+            this.m_LayoutData.divisionType = newData.divisionType;
+            this.m_LayoutData.id = newData.id
+            this.m_LayoutData.NoChildren = newData.NoChildren;
+            this.m_LayoutData.siblings = newData.siblings;
+            this.m_LayoutData.evenSplit = newData.evenSplit;
+            this.m_LayoutData.unevenFRData = newData.unevenFRData;
+        },
+
+        // Loads the fractional data
+        loadFractionalData(){
             if(this.m_LayoutData.evenSplit){ this.setGridEven(this.m_LayoutData.divisionType); }
             else if(this.$GlobalStates.isRenderFinalNode){ this.setGridNonEven(this.m_LayoutData); }
-            
-            // Check if the container is the final container to be rendered
-            let lastRenderContainer = this.isFinalNode(this.getLevelData(this.$layoutData.value, 0, "0A"), this.m_LayoutData.id);
-            // Turn off Load rendering
+        },
+
+        // Turn off Load rendering
+        // Check if the container is the final container to be rendered
+        renderLastContainer(){
+            let lastRenderContainer = LayoutDataClass.isFinalNode(LayoutDataClass.getLevelData(layout.allData, 0, "0A"), this.m_LayoutData. id);
             if( lastRenderContainer && this.$GlobalStates.isRenderFinalNode) { this.$GlobalStates.isRenderFinalNode = false;}
-
-            this.recalculateThreshold();
-            this.setDragOrientation();
         },
 
-        // Create ID based on the level and child instance
-        createID(){
-            return `${this.m_LayoutData.level}`.concat(String.fromCharCode(64 + 1 + this.child_Instance));
+// Singleton Data Config
+// -------------------------------------------------------------------------------------------------------
+
+        // On Unmount, remove it
+        removeGlobalData(){
+            containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
+            
+            // Remove LayoutData
         },
 
-        // Store container data to global variable
+        // Store container data on click to singleton
         storeClickedContainer(){
             if(this.m_LayoutData.id === null) {return;}
             this.$GlobalStates.value.edit.containerSelected = this.m_LayoutData.id;
             this.$GlobalStates.value.edit.enabled = true;
             this.$GlobalStates.value.containerSelectionMode = false;
-        },
-
-        // Boolean, store if container was clicked.
-        isStoredClick(){
-            this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_LayoutData.id) ? false : true;
-        },
-
-        // Sibling identifier, A,B,C,D
-        getSiblingNumber(){
-            let LastValue = this.m_LayoutData.id.substring(this.m_LayoutData.id.length - 1).toLowerCase();
-            return LastValue.charCodeAt(0) - 97;
-        },
-        getParentObj(){
-            let parentID = this.m_LayoutData.id.substring(0, this.m_LayoutData.id.length - 2);
-            return this.getLevelData(this.$layoutData.value, this.m_LayoutData.level - 1, parentID);
-        },
-        
-        isFirstSibling(){ return (this.getSiblingNumber() === 0) ? true : false; },
-        isLastSibling(){ return (this.getSiblingNumber() === this.getParentObj().NoChildren - 1) ? true : false; },
-        isBaseContainer(){ return this.m_LayoutData.id === "0A" ? true : false; },
-        setDragOrientation(){
-            if(this.isBaseContainer()){ return;} // Base 
-            this.m_isVertical = (this.getParentObj().divisionType === "Vertical") ? true : false; 
-        },
-        
-        /*
-            Due to rendering the order of the division varies
-            Vertical -> Extra at the start
-            Horizontal -> Extra at the end
-        */
-        isExtraContainerValue(){ return !this.m_isVertical ? !this.isLastSibling() : !this.isFirstSibling(); },
-        getGridData(data){
-            let splitData = data.split(" ");
-            let tmpArray = [];
-            splitData.pop();
-
-            for(let i = 0; i < splitData.length; i++){
-                tmpArray.push(Number(splitData[i].substring(0,splitData[i].length-2)));
-            }
-            return tmpArray;
-        },
-
-        // This should remove the values stored in any global data
-        removeGlobalData(){
-            containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
-            
-            // Remove LayoutData
         },
         
 // Container Config data
@@ -275,80 +240,31 @@ export default {
             let index = containerData.getIndexFromID(this.m_LayoutData.id);
             if(index === null) { containerData.addNewID(this.m_LayoutData.id); return; }
 
-            // On initialize
             this.disableConfigOnNonLeaf();
         },
 
-        disableConfigOnNonLeaf(){ if(!this.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
+        disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
 
 // --------------------------------------------------------------------------------------------------------
-
-// Recurrsion and tree based functions
-// --------------------------------------------------------------------------------------------------------
-        
-        // Check if the child is the last container in the tree
-        isFinalNode(parentObject, childID){
-            if( parentObject.NoChildren === 0 ) { return false; } // if no children;
-
-            let lastChild = parentObject.childContainers[ parentObject.childContainers.length - 1];
-            let count = 0;
-            while(true){
-                if(lastChild.childContainers.length !== 0){
-                    lastChild = lastChild.childContainers[lastChild.childContainers.length - 1];
-                    count++;
-                    if(count === 100) { break; } // Avoid a potential infinite loop
-                    continue;
-                }
-                break;
-            }
-            return (lastChild.id === childID) ? true : false;
-        },
-
-        // Depth-first search recurrsion function
-        // Finds the corresponding data from the level and ID
-        getLevelData(currentLevelData, Level, ID){
-            
-            // Input level is the current level data
-            if(Level == currentLevelData.level ){
-                // console.log("Item found at current level:", currentLevelData.level, Level );
-                return currentLevelData;
-            }
-
-            // Retrieve child data
-            var childData = currentLevelData.childContainers; // if no children, move up stack.
-            if(childData.length === 0 ) return null; 
-            // console.log("nest:", this.nest_level,  "current Level: ", currentLevelData.level, "Looking for ID:",ID);
-            
-            // Looks at children
-            for(let i = 0; i < childData.length; i++){
-                let item = childData[i];
-                // console.log("Looking at:", item.id);
-
-                // Base case (Found item)
-                if(item.id == ID){ return item; }
-
-                // Base case (Nothing found and no siblings)
-                else if(item.NoChildren === 0 && childData.length <= 1) { return null; }
-                
-                // Base case (Has children)
-                else{
-                    var tmp = this.getLevelData(item, Level + 1, ID);
-                    // If any item is found, return up stack.
-                    if(tmp !== null){ return tmp; }
-                }
-            }
-            return null; // Not found in children, move up stack.
-        },
-
-        isLeafNode(layoutData){
-            return layoutData.NoChildren === 0 ? true : false;
-        },
-
-// ---------------------------------------------------------------------------------------------------------
 
 // Divider drag functions
 // ---------------------------------------------------------------------------------------------------------
 
+       /*
+            Due to rendering the order of the division varies
+            Vertical -> Extra at the start
+            Horizontal -> Extra at the end
+        */
+        displayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
+
+        // Grid fr values
+        getGridData(data){
+            let splitData = data.split(" ");
+            let tmpArray = [];
+            splitData.pop(); // Remove empty space
+            splitData.forEach(string => { tmpArray.push(Number(string.substring(0,string.length-2))); });
+            return tmpArray;
+        },
 
         // Start event on mouse down on divider.
         // End event on mouse up regardless of position.
@@ -413,7 +329,7 @@ export default {
         },
 
         moveContainer(){
-            let parentObj = this.getParentObj();
+            let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
 
             const difference = this.calculateMouseDifference(parentObj.divisionType);
@@ -460,13 +376,11 @@ export default {
         updateParentColumnRow(data){
             let siblingIndex = data.index;
             let baseIndex = siblingIndex - 1;
-            let siblingValue;
-            let baseValue;
 
             let arrayData = (data.type === "Vertical") ? this.getGridData(this.m_columnData) : this.getGridData(this.m_rowData);
 
-            siblingValue = arrayData[siblingIndex];
-            baseValue = arrayData[baseIndex];
+            let siblingValue = arrayData[siblingIndex];
+            let baseValue = arrayData[baseIndex];
 
             // False -> Left or Down
             // True -> Right or Up
@@ -492,7 +406,7 @@ export default {
             else{ this.m_rowData = tmpString; } 
 
             // Updates the global container values
-            let globalLevelData = this.getLevelData(this.$layoutData.value, this.m_LayoutData.level, this.m_LayoutData.id)
+            let globalLevelData = LayoutDataClass.getLevelData(layout.allData, this.m_LayoutData.level, this.m_LayoutData.id)
             globalLevelData.unevenFRData = tmpString;
 
         },
@@ -565,14 +479,15 @@ export default {
             this.m_StepSize = val;
         },
         // When the values in the container data change
-        '$layoutData.value': {
-            handler(val, oldVal){
+        'layout':{
+            handler(val, oldval){
                 this.setComponentDOMValues();
+                this.recalculateThreshold();
                 this.updateContainerData();
                 this.disableConfigOnNonLeaf();
             },
-            deep: true
-        },
+            deep: true,
+        }
 
     }
 }
@@ -622,8 +537,7 @@ If not, disable the mouse over and click.self functionality.
         
         <!-- Divider -->
         <template v-if="this.render_divider">
-            <div v-if="this.$GlobalStates.value.edit.enabled && 
-                      !this.isBaseContainer() && this.isExtraContainerValue()"
+            <div v-if="this.$GlobalStates.value.edit.enabled && this.displayDivider()"
             :class="{
                 'page-drag-Horizontal': ( !this.m_isVertical),
                 'page-drag-Vertical': (this.m_isVertical)}"

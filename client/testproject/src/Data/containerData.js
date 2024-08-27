@@ -14,7 +14,7 @@ import { reactive } from 'vue'
 
     containerData.data should not be used explicitly outside this file.
 */
-class containerDataClass{
+class ContainerDataClass{
   constructor(){ this.resetData(); }
   get allData(){ return this.data; }
 
@@ -54,7 +54,7 @@ class containerDataClass{
   generateDefaultLayout(idGenerated){
       return {
       ID: idGenerated,
-      layoutType: "Grid",
+      layoutType: "List",
       iconSize: "1",
       display: true, // If it is not a leaf node, disable it
       gridData: {
@@ -99,5 +99,5 @@ class containerDataClass{
 
 }
 
-const containerDataInstance = new containerDataClass;
+const containerDataInstance = new ContainerDataClass;
 export const containerData = reactive(containerDataInstance);

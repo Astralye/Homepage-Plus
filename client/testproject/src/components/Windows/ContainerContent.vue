@@ -133,6 +133,7 @@
 
 <script>
 
+import { containerData } from '../../Data/containerData.js';
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
@@ -147,9 +148,20 @@ export default {
         RadioButton,
         RangeSlider
     },
+
+    // This needs to know what I have selected
+    // Load from local storage
+    update(){
+      console.log(this.currentObject);
+      // console.log(this.$GlobalStates)
+      // this.currentObject = this.$GlobalStates.value.edit.containerSelected;
+      // console.log(this.currentObject);
+      // let object = containerData.getObjectFromID()
+    },
     data(){
       return{
-
+        containerData,
+        currentObject: this.$GlobalStates.value.edit.containerSelected,
 // Radio button variables
 // ------------------------------------------------------------------------------------------------
 
@@ -174,12 +186,10 @@ export default {
         ],
         
 // ----------------------------------------------------------------------------------------------------------------------------
-        
       }
     },
 
     methods: {
-
       activateSelectionMode() {
           this.$GlobalStates.value.containerSelectionMode = true;
       },
@@ -225,20 +235,7 @@ export default {
 
 // ------------------------------------------------------------------------------------------------------------------------------
 
-// Container Modifier
-// ------------------------------------------------------------------------------------------------------------------------------
-
-/*
-      I think at this point I need to consider saving this data to the localstorage
-
-      TLDR Implement save and loading universally
-*/
-
-
-// ------------------------------------------------------------------------------------------------------------------------------
-
-
-    }
+    },
 }
 </script>
 

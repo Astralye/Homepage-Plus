@@ -45,6 +45,7 @@
 <script>
 import Modal from './Modal.vue';
 import { containerData } from '../../Data/containerData.js'
+import { layout } from '../../Data/layoutData.js';
 
 export default {
     components:{
@@ -53,6 +54,8 @@ export default {
     data(){
         return {
             containerData,
+            layout,
+
             iconSize: "5em",
             modal:{
                 show: false,
@@ -79,7 +82,7 @@ export default {
             this.modal.show = true; 
         },
         saveLayout(){
-            localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(this.$layoutData.value));
+            localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
             localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(containerData.allData));
 
             // console.log(containerData.allData);
@@ -96,21 +99,11 @@ export default {
             );
 
             // if(!this.modal.confirmed){ return; }
-
-            // Reset Container Object
-            this.$layoutData.value = {
-                level: 0,
-                divisionType: "Vertical",
-                id: "0A",
-                NoChildren: 0,
-                siblings: 0,
-                evenSplit: "true",
-                unevenFRData: "",
-                childContainers: []
-            }
     
-            // reset containerData
+            // Reset data
             containerData.resetData();
+            layout.resetData();
+
             this.saveLayout();
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
@@ -147,9 +140,9 @@ export default {
             if(layoutData === null) { console.log("No Layout Data!"); return; }
             if(displayData === null) { console.log("No displayData!"); return;}
 
+            layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
             
-            this.$layoutData.value = layoutData;
             this.$GlobalStates.clickLoad = true; 
             this.$GlobalStates.isRenderFinalNode = true;
         },

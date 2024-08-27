@@ -26,24 +26,6 @@ app.config.globalProperties.$GlobalStates = ref( {
     containerSelectionMode: false,
 });
 
-// Due to watchers and recursive size, variables are split up
-// Page layout config. Root container
-app.config.globalProperties.$layoutData = ref({
-
-    // Container metadata
-    level: 0,
-    divisionType: "Vertical",
-    id: "0A",
-    NoChildren: 0,
-    siblings: 0,
-    evenSplit: true,
-    unevenFRData: "",
-
-    // Child container
-    childContainers: [
-    ],
-});
-
 
 
 app.mount('#app')
