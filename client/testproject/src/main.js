@@ -26,6 +26,4 @@ app.config.globalProperties.$GlobalStates = ref( {
     containerSelectionMode: false,
 });
 
-
-
 app.mount('#app')

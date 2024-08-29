@@ -92,6 +92,7 @@ class ContainerDataClass{
 
   // Grid Getters
 
+  getLayoutType(objectID) { return this.getObjectFromID(objectID).layoutType; }
   getGridDimension(objectID) { return this.getObjectFromID(objectID).gridData.gridDimensions; };
   getGridAlign(objectID) { return this.getObjectFromID(objectID).gridData.contentAlign; };
   getXDirection(objectID) { return this.getObjectFromID(objectID).gridData.xAxisDirection; };
