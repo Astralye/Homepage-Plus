@@ -2,6 +2,7 @@
 import { containerData } from '../../Data/containerData.js'
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { mouseData } from '../../Data/mouseData.js';
+import { ContainerDividerClass } from '../Functions/containerDivider.js';
 
 export default {
     name: "recursive-container",
@@ -34,6 +35,7 @@ export default {
             containerData,
             layout,
             LayoutDataClass,
+            ContainerDividerClass,
             mouseData,
 
             // Objects
@@ -235,7 +237,6 @@ export default {
         setContainerConfigData(){
             let index = containerData.getIndexFromID(this.m_LayoutData.id);
             if(index === null) { containerData.addNewID(this.m_LayoutData.id); return; }
-
             this.disableConfigOnNonLeaf();
         },
 
@@ -246,24 +247,20 @@ export default {
 // Divider drag functions
 // ---------------------------------------------------------------------------------------------------------
 
-       /*
+        /*
             Due to rendering the order of the division varies
             Vertical -> Extra at the start
             Horizontal -> Extra at the end
         */
         displayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
 
-        // Grid fr values
-        getGridData(data){
-            let splitData = data.split(" ");
-            let tmpArray = [];
-            splitData.pop(); // Remove empty space
-            splitData.forEach(string => { tmpArray.push(Number(string.substring(0,string.length-2))); });
-            return tmpArray;
-        },
+        /* 
+            This runs N times for N containers on window resize 
+            Modifies (in px) the threshold of mouse position to move per stepsize
+        */
+        recalculateThreshold(){ this.m_pxThreshold = ContainerDividerClass.calculateThreshold(this.m_LayoutData, this.$parent.$data, this.m_StepSize); },
 
-        // Start event on mouse down on divider.
-        // End event on mouse up regardless of position.
+        // Start event on mouse down on divider. End event on mouse up.
         onMouseHold(event, holding){
             this.m_isMoveContainer = true;
             
@@ -283,172 +280,31 @@ export default {
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
         },
 
-        // Put this in own function.
-        
-        // Find difference in coordinates of mouse and divider center
-        calculateMouseDifference(division){
-            const divider = this.$refs["divider"].getBoundingClientRect();
-            // Absolute value need to convert to relative position
-
-            let relMouseCoord = { x: 0, y: 0 };
-            let relDividerCoord = { x: 0, y: 0 };
-
-            // Calculation values
-            let dividerSize;
-            let mousePos;
-            let dividerCoord;
-
-            let mouse = mouseData.Coordinates;
-
-            relMouseCoord.x = mouse.x - this.$parent.$data.m_ComponentData.x;
-            relMouseCoord.y = mouse.y - this.$parent.$data.m_ComponentData.y;
-
-            relDividerCoord.x = divider.x - this.$parent.$data.m_ComponentData.x;
-            relDividerCoord.y = divider.y - this.$parent.$data.m_ComponentData.y;
-
-            // console.log(`Rel Mouse Coord: ${relMouseCoord.x}, ${relMouseCoord.y}`,
-            //             `\nRel Divider Coord: ${relDividerCoord.x}, ${relDividerCoord.y}`);
-
-            if(division === "Vertical"){
-                mousePos = relMouseCoord.x;
-                dividerCoord = relDividerCoord.x;
-                dividerSize = divider.width / 2;
-            }
-            else{
-                mousePos = relMouseCoord.y;
-                dividerCoord = relDividerCoord.y;
-                dividerSize = divider.height / 2;
-            }
-
-            return mousePos - dividerCoord - dividerSize;
-        },
-
-
-        // Put this in own function.
-
+        // If drag passes threshold, update parent row/column data
         moveContainer(){
 
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
 
-            const difference = this.calculateMouseDifference(parentObj.divisionType);
-
-            let siblingData = parentObj.childContainers;
-            let siblingIndex;
-
-            let isMoveContainer = false;
-            let isPositive = false;
-
-            // Find the adjacent sibling
-            for(let i = 0; i < siblingData.length; i++){
-                if(siblingData[i].id == this.m_LayoutData.id){
-                    siblingIndex = i;
-                    break;
-                }
-            }
-
-            // Horizontal divisions, Extra container removed is the start, count after
-            if(!this.m_isVertical){ siblingIndex += 1;};
-
-            // Determines whether to run move function
-            if(Math.abs(difference) >= this.m_pxThreshold){
-                isMoveContainer = true;
-                if( difference < 0) { isPositive = true;}
-            }
-            // isPositive = True -> Right or Up
-            // isPositive = False -> Left or Down
-
-            // Data sent to parent
-            let data = {
-                index: siblingIndex,
-                type: parentObj.divisionType,
-                direction: isPositive
-            };
-
+            const difference = ContainerDividerClass.calculateMouseDifference( parentObj.divisionType, 
+                this.$refs["divider"].getBoundingClientRect(), 
+                mouseData.Coordinates, 
+                this.$parent.$data.m_ComponentData
+            );
+            
+            const data = ContainerDividerClass.movementData(parentObj, this.m_LayoutData.id, this.m_isVertical, this.m_pxThreshold, difference);
             // Run parent function
-            if(isMoveContainer){ this.$emit('drag', data);}
+            if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
 
-
-        // Put this in own function.
-
-        // This function only runs at the parents container
-        // because it modifies the css variable.
-        updateParentColumnRow(data){
-            let siblingIndex = data.index;
-            let baseIndex = siblingIndex - 1;
-
-            let arrayData = (data.type === "Vertical") ? this.getGridData(this.m_columnData) : this.getGridData(this.m_rowData);
-
-            let siblingValue = arrayData[siblingIndex];
-            let baseValue = arrayData[baseIndex];
-
-            // False -> Left or Down
-            // True -> Right or Up
-            if(data.direction){
-                baseValue -= this.m_StepSize;
-                siblingValue += this.m_StepSize;
-            }
-            else{
-                baseValue += this.m_StepSize;
-                siblingValue -= this.m_StepSize;
-            }
-
-            // Set back the values 
-            arrayData[siblingIndex] = siblingValue;
-            arrayData[baseIndex] = baseValue;
-
-            // Convert back to string.
-            let tmpString = "";
-            for(let i = 0; i < arrayData.length; i++){ tmpString += String(arrayData[i]) + "fr "; }
-            
-            // Set the corresponding data 
-            if(data.type === "Vertical"){ this.m_columnData = tmpString; } 
-            else{ this.m_rowData = tmpString; } 
+        // Only runs at the parent container to modify css variable
+        updateParentColumnRow(data){            
+            let newColumnData = ContainerDividerClass.updateParentConfig(data, this.m_StepSize, this.m_columnData, this.m_rowData);
+            if(data.type === "Vertical"){ this.m_columnData = newColumnData; } else { this.m_rowData = newColumnData; } 
 
             // Updates the global container values
             let globalLevelData = LayoutDataClass.getLevelData(layout.allData, this.m_LayoutData.level, this.m_LayoutData.id)
-            globalLevelData.unevenFRData = tmpString;
-
-        },
-
-        /*
-            This runs every N times for N containers when resized
-            Modifies (in px) the threshold of mouse position to move per stepsize
-        */
-        recalculateThreshold(){
-            let width;
-            let height;
-
-            let margin = 8;
-            let divisionStatement;
-
-            let thresholdOffset = -4;
-            
-            if(this.m_LayoutData.id === "0A") {
-                divisionStatement = this.m_LayoutData.divisionType;
-
-                width = window.innerWidth - ( 2 * margin);
-                height = window.innerHeight - ( 2 * margin);
-            }
-            else{
-                const parentComponent = this.$parent.$data.m_ComponentData;
-                divisionStatement = this.$parent.$data.m_LayoutData.divisionType;
-
-                // Dimension without margin
-                width = parentComponent.width - (2 * margin);
-                height = parentComponent.height - (2 * margin);
-            }
-
-            // if vertical, use width,
-            let container_px = (divisionStatement === "Vertical") ? width : height;
-            
-
-            let totalContainers = this.m_LayoutData.siblings + 1;
-            let pxPerFractionalUnit = container_px / totalContainers;
-            let pxPerStep = pxPerFractionalUnit * this.m_StepSize;
-
-            this.m_pxThreshold = pxPerStep + thresholdOffset;
+            globalLevelData.unevenFRData = newColumnData;
         },
 
         // Allows child components to calculate relative coordinates.
