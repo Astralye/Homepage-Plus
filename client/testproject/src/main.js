@@ -21,22 +21,9 @@ app.config.globalProperties.$GlobalStates = ref( {
         dragStepSize: 0.25,
         resetSelect: false,
     },
-    clickLoad: false,
+    isInitialize: false,
+    isRenderFinalNode: false,
     containerSelectionMode: false,
-});
-
-// Each container ID is
-// PARENTID + "Level + A/B/C/D"
-app.config.globalProperties.$ContainerData = ref({
-    level: 0,
-    divisionType: "Vertical",
-    id: "0A",
-    NoChildren: 0,
-    siblings: 0,
-    evenSplit: true,
-    unevenFRData: "",
-    containerData: [
-    ],
 });
 
 app.mount('#app')

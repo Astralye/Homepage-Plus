@@ -44,6 +44,8 @@
 
 <script>
 import Modal from './Modal.vue';
+import { containerData } from '../../Data/containerData.js'
+import { layout } from '../../Data/layoutData.js';
 
 export default {
     components:{
@@ -51,6 +53,9 @@ export default {
     },
     data(){
         return {
+            containerData,
+            layout,
+
             iconSize: "5em",
             modal:{
                 show: false,
@@ -58,8 +63,15 @@ export default {
                 body: "",
                 footer: "",
                 confirmed: false
+            },
+            localStorageVarNames: {
+                layoutDataName: "layoutData",
+                displayData: "containerDisplayData",
             }
         }
+    },
+    created(){
+        this.loadData();
     },
     methods: {
 
@@ -70,10 +82,10 @@ export default {
             this.modal.show = true; 
         },
         saveLayout(){
-            let containerObj = this.$ContainerData.value;
-        
-            let container_serialized = JSON.stringify(containerObj);
-            localStorage.setItem("containerData", container_serialized);
+            localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
+            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(containerData.allData));
+
+            // console.log(containerData.allData);
             
             this.showPopup("Saved");
         },
@@ -86,33 +98,20 @@ export default {
                 "Are you sure you want to delete this layout? \n This cannot be undone.",
             );
 
-            if(!this.modal.confirmed){ return; }
+            // if(!this.modal.confirmed){ return; }
+    
+            // Reset data
+            containerData.resetData();
+            layout.resetData();
 
-            let baseObject = {
-                level: 0,
-                divisionType: "Vertical",
-                id: "0A",
-                NoChildren: 0,
-                siblings: 0,
-                evenSplit: "true",
-                unevenFRData: "",
-                containerData: []
-            }
-
-            // Reset Container Object
-            this.$ContainerData.value = baseObject;
             this.saveLayout();
-            
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
-            this.showPopup("deleted");
+            // this.showPopup("deleted");
             this.modal.confirmed = false;
         },
         // Load from localstorage
         cancelEdit(){
-
-            // ALERT 
-            // ARE YOU SURE YOU WANT TO CANCEL
 
             // Tmp
             // Show message
@@ -121,25 +120,31 @@ export default {
                 "Are you sure you want to cancel? \n Any unsaved changes will be lost",
             );
 
-            if(!this.modal.confirmed){ return; }
+            // if(!this.modal.confirmed){ return; }
 
-            const containerData = JSON.parse(localStorage.getItem("containerData"));
-
-            if(containerData === null) {
-                console.log("No data!"); 
-                return;
-            }
-
-            this.$GlobalStates.clickLoad = true; 
-            this.$ContainerData.value = containerData;
+            this.loadData();
 
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
-            this.showPopup("cancelled");
             this.modal.confirmed = false;
+            this.showPopup("cancelled");
 
             // Could also try and toggle off the global enabled.
             // Turn off the edit mode.
+        },
+
+        loadData(){
+            const layoutData = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
+            const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
+
+            if(layoutData === null) { console.log("No Layout Data!"); return; }
+            if(displayData === null) { console.log("No displayData!"); return;}
+
+            layout.initializeData(layoutData);
+            containerData.intializeData(displayData); 
+            
+            this.$GlobalStates.clickLoad = true; 
+            this.$GlobalStates.isRenderFinalNode = true;
         },
 
         // Above the containers, show a message showing what the user has clicked.

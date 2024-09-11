@@ -1,84 +1,93 @@
 <script>
-    export default {
-        props: {
-            title: String,
 
-            width: {
-                type: Number,
-                default: 300
-            },
+import { mouseData } from '../../Data/mouseData';
+
+export default {
+    props: {
+        title: String,
+
+        width: {
+            type: Number,
+            default: 300
         },
-        emits: ['closeWindow', 'focusTab'],
-        data() {
-            return{
-                windowHover: false,
+    },
+    emits: ['closeWindow', 'focusTab'],
+    data() {
+        return{
+            windowHover: false,
 
-                positions: {
-                    clientX: undefined,
-                    clientY: undefined,
-                    movementX: 0,
-                    movementY: 0
-                },
-                
-                windowWidth: `${this.width}px`
-            }
-        },
-        watch: {
-
-            // When the array changes, update all the other z-index values
-            // indirectly update values.
-            '$windowStack.value': {
-                handler(val, oldval){
-                    this.updateZIndex();
-                },
-            deep: true
-            }
-        },
-        methods: {          
-            updateZIndex(){
-                let tmpArray = this.$windowStack.value;
-                let name = this.title.toLowerCase();
-                
-                let index = tmpArray.indexOf(name);
-
-                if(index > -1){
-                    index += 10; // always in front
-                    this.$refs.draggableContainer.style.zIndex = index;
-                }
+            positions: {
+                clientX: undefined,
+                clientY: undefined,
             },
-            dragMouseDown: function ( event ){
-
-                if(!this.windowHover) {return; }
-                event.preventDefault();
-
-                // Get mouse location
-                this.positions.clientX = event.clientX;
-                this.positions.clientY = event.clientY;
-
-                // register on mouse move and mouse up events
-                document.onmousemove = this.elementDrag;
-                document.onmouseup = this.closeDragElement;
-
-            },
-            elementDrag: function (event) {
-                event.preventDefault();
-
-                this.positions.movementX = this.positions.clientX - event.clientX
-                this.positions.movementY = this.positions.clientY - event.clientY
-                this.positions.clientX = event.clientX
-                this.positions.clientY = event.clientY
-
-                this.$refs.draggableContainer.style.top = (this.$refs.draggableContainer.offsetTop - this.positions.movementY) + 'px'
-                this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - this.positions.movementX) + 'px'
             
+            windowWidth: `${this.width}px`
+        }
+    },
+    watch: {
+
+        // When the array changes, update all the other z-index values
+        // indirectly update values.
+        '$windowStack.value': {
+            handler(val, oldval){
                 this.updateZIndex();
             },
-            closeDragElement () {
-                document.onmouseup = null;
-                document.onmousemove = null;
+        deep: true
+        }
+    },
+    methods: {          
+        updateZIndex(){
+            let tmpArray = this.$windowStack.value;
+            let name = this.title.toLowerCase();
+            
+            let index = tmpArray.indexOf(name);
+
+            if(index > -1){
+                index += 10; // always in front
+                this.$refs.draggableContainer.style.zIndex = index;
             }
+        },
+        dragMouseDown: function ( event ){
+
+            if(!this.windowHover) {return; }
+            event.preventDefault();
+            
+            // Get current mouse location
+            this.positions.clientX = event.clientX;
+            this.positions.clientY = event.clientY;
+
+            // register on mouse move and mouse up events
+            mouseData.movementFunctions( [ this.elementDrag ]);
+            mouseData.mouseUpFunctions([ this.closeDragElement ]);
+            
+            mouseData.enableTracking();
+            mouseData.enableMouseUp();
+        },
+        elementDrag(){
+
+            // Stored mouse coordinates
+            let mouse = mouseData.Coordinates;
+
+            // Difference of last mouse position
+            let movementX = this.positions.clientX - mouse.x;
+            let movementY = this.positions.clientY - mouse.y;
+
+            // Store mouse position of current frame 
+            this.positions.clientX = mouse.x;
+            this.positions.clientY = mouse.y;
+
+            // Update style coordinate
+            this.$refs.draggableContainer.style.top = (this.$refs.draggableContainer.offsetTop - movementY) + 'px'
+            this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - movementX) + 'px'
+        
+            this.updateZIndex();
+        },
+        closeDragElement() {
+            mouseData.disableMouseUp();
+            mouseData.disableTracking();
         }
     }
+}
 </script>
 
 <template>
