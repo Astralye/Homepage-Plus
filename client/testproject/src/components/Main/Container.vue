@@ -1,6 +1,7 @@
 <script>
 import { containerData } from '../../Data/containerData.js'
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
+import { mouseData } from '../../Data/mouseData.js';
 
 export default {
     name: "recursive-container",
@@ -33,6 +34,8 @@ export default {
             containerData,
             layout,
             LayoutDataClass,
+            mouseData,
+
             // Objects
 
             /*
@@ -101,15 +104,8 @@ export default {
     mounted(){
         this.setComponentDOMValues();
     },
-    updated(){
-        // Need a function to tell if data of the corresponding has been modified.
-        // console.log(containerData.data);
-    },
-
-
     /*
         Note: when using hot-reloading, saving causes unmounted function to run
-        
         Not sure why, but keep that in mind when values suddenly change on save
     */
     unmounted(){
@@ -273,40 +269,39 @@ export default {
             
             document.addEventListener('mouseup', function(e) {
                 this.m_isMoveContainer = false;
-                document.onmousemove = null;
                 this.m_cursor = "default";
-                document.documentElement.style.setProperty("--cursor", this.m_cursor);
+                mouseData.disableTracking();
+                document.documentElement.style.setProperty("--cursor", this.m_cursor); 
 
             }, { once: true });
 
-            document.onmousemove = this.trackMousePosition;
+            // document.onmousemove = this.trackMousePosition;
+            mouseData.movementFunctions( [this.moveContainer ]);
+            mouseData.enableTracking();
 
             this.m_cursor = (this.$parent.$data.m_LayoutData.divisionType === "Vertical") ? "col-resize" : "row-resize";
-            document.documentElement.style.setProperty("--cursor", this.m_cursor);
+            document.documentElement.style.setProperty("--cursor", this.m_cursor); 
         },
 
-        // Store absolute mouse position
-        trackMousePosition: function(event){
-            this.m_MouseCoordinate.x = event.pageX;
-            this.m_MouseCoordinate.y = event.pageY;
-            this.moveContainer();
-        },
-
+        // Put this in own function.
+        
         // Find difference in coordinates of mouse and divider center
         calculateMouseDifference(division){
             const divider = this.$refs["divider"].getBoundingClientRect();
             // Absolute value need to convert to relative position
 
             let relMouseCoord = { x: 0, y: 0 };
-            let relDividerCoord = { x: 0, y:0 };
+            let relDividerCoord = { x: 0, y: 0 };
 
             // Calculation values
             let dividerSize;
             let mousePos;
             let dividerCoord;
 
-            relMouseCoord.x = this.m_MouseCoordinate.x - this.$parent.$data.m_ComponentData.x;
-            relMouseCoord.y = this.m_MouseCoordinate.y - this.$parent.$data.m_ComponentData.y;
+            let mouse = mouseData.Coordinates;
+
+            relMouseCoord.x = mouse.x - this.$parent.$data.m_ComponentData.x;
+            relMouseCoord.y = mouse.y - this.$parent.$data.m_ComponentData.y;
 
             relDividerCoord.x = divider.x - this.$parent.$data.m_ComponentData.x;
             relDividerCoord.y = divider.y - this.$parent.$data.m_ComponentData.y;
@@ -328,7 +323,11 @@ export default {
             return mousePos - dividerCoord - dividerSize;
         },
 
+
+        // Put this in own function.
+
         moveContainer(){
+
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
 
@@ -370,6 +369,8 @@ export default {
             if(isMoveContainer){ this.$emit('drag', data);}
         },
 
+
+        // Put this in own function.
 
         // This function only runs at the parents container
         // because it modifies the css variable.
