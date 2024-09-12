@@ -21,7 +21,7 @@ class ContainerDataClass{
   printData() { console.log(`data:`, this.data); };
 
   // Basic array functions
-  resetData() {this.data = [this.generateDefaultLayout("0A")]; };
+  resetData() { this.data = [this.generateDefaultLayout("0A")]; };
   intializeData(inputData){ this.data = inputData; };
 
   // Add to data
@@ -44,7 +44,7 @@ class ContainerDataClass{
       if(inputID === null) { return null;}
       
       for(let i = 0; i < this.data.length; i++){
-      if(this.data[i].ID === inputID) { return i;}
+        if(this.data[i].ID === inputID) { return i;}
       }
       return null;
   };
@@ -54,11 +54,11 @@ class ContainerDataClass{
   generateDefaultLayout(idGenerated){
       return {
       ID: idGenerated,
-      layoutType: "List",
+      layoutType: "Grid",
       iconSize: "1",
       display: true, // If it is not a leaf node, disable it
       gridData: {
-          gridDimensions: null,
+          gridDimensions: "1,1",
           contentAlign: "Compact",
           xAxisDirection: "Left",
           yAxisDirection: "Top"

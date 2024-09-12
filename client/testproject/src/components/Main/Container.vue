@@ -3,6 +3,7 @@ import { containerData } from '../../Data/containerData.js'
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
+import { GridModificationClass } from '../Functions/gridModification.js';
 
 export default {
     name: "recursive-container",
@@ -32,13 +33,16 @@ export default {
 
     data(){
         return{
-            containerData,
-            layout,
+            // Static class functionality
             LayoutDataClass,
             ContainerDividerClass,
-            mouseData,
+            GridModificationClass,
 
             // Objects
+            containerData,
+            layout,
+            mouseData,
+
 
             /*
                 Each component stores data of the container.
@@ -100,11 +104,14 @@ export default {
     created(){
         this.updateContainerData();
         this.recalculateThreshold();
-
         this.setContainerConfigData();
     },
     mounted(){
         this.setComponentDOMValues();
+    },
+    beforeUpdate(){
+        this.setComponentDOMValues();
+        this.updateGridDimension();
     },
     /*
         Note: when using hot-reloading, saving causes unmounted function to run
@@ -236,8 +243,21 @@ export default {
         // Sets the config data on creation
         setContainerConfigData(){
             let index = containerData.getIndexFromID(this.m_LayoutData.id);
-            if(index === null) { containerData.addNewID(this.m_LayoutData.id); return; }
-            this.disableConfigOnNonLeaf();
+            if(index !== null) {  this.disableConfigOnNonLeaf(); return; }
+
+            // Calculate new grid value.
+            containerData.addNewID(this.m_LayoutData.id);
+        },
+        updateGridDimension(){
+            let data = containerData.getObjectFromID(this.m_LayoutData.id);
+            if(!data.display){ return; } // If it is not the top layer do not modify.
+
+            // tmp
+            let iconSize = 75;
+
+            let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
+            
+            console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
         },
 
         disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
@@ -315,6 +335,12 @@ export default {
             this.m_ComponentData.y = data.y;
             this.m_ComponentData.width = data.width;
             this.m_ComponentData.height = data.height;
+            // Updates any grid information in the parent.
+
+            // BUG!
+            // Because the updates of the values are sequential, it updates the grid dimensions BEFORE any new child containers are added.
+            // I either need a way of updating the grid only after ALL the containers have been added or
+            // something else
         }
     },
 
@@ -338,10 +364,10 @@ export default {
         // When the values in the container data change
         'layout':{
             handler(val, oldval){
-                this.setComponentDOMValues();
-                this.recalculateThreshold();
                 this.updateContainerData();
+                this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
+                this.setComponentDOMValues();
             },
             deep: true,
         }
