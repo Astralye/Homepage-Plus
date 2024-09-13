@@ -1,9 +1,4 @@
-
 export class ContainerDividerClass{
-    static testfnc(){
-        console.log("hello world");
-    }
-
     static calculateMouseDifference(divisionType, dividerElement, mouseCoordinates, parentComponentData){
         // Absolute value need to convert to relative position
 

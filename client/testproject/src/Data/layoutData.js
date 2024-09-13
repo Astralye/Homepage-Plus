@@ -120,6 +120,19 @@ export class LayoutDataClass{
         return LayoutDataClass.getLevelData(layout.allData, containerData.level - 1, parentID);
     }
 
+    static getChildrenObj(containerData){
+        let newLevel = containerData.level + 1;
+        let newID;
+        let childrenArray = [];
+        
+        for(let i = 0; i < containerData.NoChildren; i++){
+            newID = containerData.id + LayoutDataClass.generateID(newLevel, i);
+            childrenArray.push(LayoutDataClass.getLevelData(layout.allData, newLevel, newID));
+        }
+        
+        return childrenArray;
+    }
+
     static isFirstSibling(id){ return (LayoutDataClass.getSiblingNumber(id) === 0) };
     static isLastSibling(containerData){ return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(containerData).NoChildren - 1) };
     static isBaseContainer(id){ return id === "0A" };
