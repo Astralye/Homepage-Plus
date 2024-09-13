@@ -177,7 +177,7 @@ export default {
             let tmpID = (this.nest_level === 0) ? layout.allData.id : this.parent_ID.concat(LayoutDataClass.generateID(this.nest_level, this.child_Instance));
             let tmpContainer = LayoutDataClass.getLevelData(layout.allData, this.nest_level, tmpID);
 
-            if(tmpContainer == null){
+            if(tmpContainer === null){
                 this.printLayoutInfo();
                 console.error(`ERROR: Container not found. Level: ${this.m_LayoutData.level}, ID: ${tmpID}`);
                 return;
@@ -342,9 +342,7 @@ export default {
 
         All this just for contiguous row + column updating...
     */
-        p_storeParentID(){
-            this.$GlobalStates.value.parentIDGridUpdate = this.m_LayoutData.id;
-        },
+        p_storeParentID(){ this.$GlobalStates.value.parentIDGridUpdate = this.m_LayoutData.id; },
 
         // Reset only after last sibling.
         updateContainerGrid(){
@@ -354,8 +352,7 @@ export default {
             this.$nextTick(() => {
                 this.setComponentDOMValues();
                 this.updateGridDimension();
-            })
-
+            });
         },
 
 // --------------------------------------------------------------------------------------------------------
@@ -377,6 +374,9 @@ export default {
             if(parentObj === null) { return; }
             else if(parentObj.id === val){ this.updateContainerGrid(); }
         },
+
+        'm_LayoutData.unevenFRData'(){ this.p_storeParentID(); },
+        'm_LayoutData.divisionType'(){ this.p_storeParentID(); },
         // &&&&
 
         '$GlobalStates.value.edit.containerSelected'(val, oldval){
@@ -386,6 +386,8 @@ export default {
             handler(val,oldval){
                 this.setComponentDOMValues();
                 this.recalculateThreshold();
+                
+                if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
             },
             deep: true
         },
