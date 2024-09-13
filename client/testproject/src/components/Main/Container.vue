@@ -30,6 +30,7 @@ export default {
     // x_Y -> props
     // m_xY -> member values
     // xY -> local variables
+    // p_xY -> Parent functions
 
     data(){
         return{
@@ -108,10 +109,6 @@ export default {
     },
     mounted(){
         this.setComponentDOMValues();
-    },
-    beforeUpdate(){
-        this.setComponentDOMValues();
-        this.updateGridDimension();
     },
     /*
         Note: when using hot-reloading, saving causes unmounted function to run
@@ -237,33 +234,6 @@ export default {
             this.$GlobalStates.value.containerSelectionMode = false;
         },
         
-// Container Config data
-// --------------------------------------------------------------------------------------------------------
-
-        // Sets the config data on creation
-        setContainerConfigData(){
-            let index = containerData.getIndexFromID(this.m_LayoutData.id);
-            if(index !== null) {  this.disableConfigOnNonLeaf(); return; }
-
-            // Calculate new grid value.
-            containerData.addNewID(this.m_LayoutData.id);
-        },
-        updateGridDimension(){
-            let data = containerData.getObjectFromID(this.m_LayoutData.id);
-            if(!data.display){ return; } // If it is not the top layer do not modify.
-
-            // tmp
-            let iconSize = 75;
-
-            let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
-            
-            console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
-        },
-
-        disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
-
-// --------------------------------------------------------------------------------------------------------
-
 // Divider drag functions
 // ---------------------------------------------------------------------------------------------------------
 
@@ -292,7 +262,6 @@ export default {
 
             }, { once: true });
 
-            // document.onmousemove = this.trackMousePosition;
             mouseData.movementFunctions( [this.moveContainer ]);
             mouseData.enableTracking();
 
@@ -311,14 +280,13 @@ export default {
                 mouseData.Coordinates, 
                 this.$parent.$data.m_ComponentData
             );
-            
             const data = ContainerDividerClass.movementData(parentObj, this.m_LayoutData.id, this.m_isVertical, this.m_pxThreshold, difference);
             // Run parent function
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
 
         // Only runs at the parent container to modify css variable
-        updateParentColumnRow(data){            
+        p_updateColumnRow(data){            
             let newColumnData = ContainerDividerClass.updateParentConfig(data, this.m_StepSize, this.m_columnData, this.m_rowData);
             if(data.type === "Vertical"){ this.m_columnData = newColumnData; } else { this.m_rowData = newColumnData; } 
 
@@ -336,18 +304,81 @@ export default {
             this.m_ComponentData.width = data.width;
             this.m_ComponentData.height = data.height;
             // Updates any grid information in the parent.
+        },
 
-            // BUG!
-            // Because the updates of the values are sequential, it updates the grid dimensions BEFORE any new child containers are added.
-            // I either need a way of updating the grid only after ALL the containers have been added or
-            // something else
-        }
+// Container Config data
+// --------------------------------------------------------------------------------------------------------
+
+        // Sets the config data on creation
+        setContainerConfigData(){
+            let index = containerData.getIndexFromID(this.m_LayoutData.id);
+            if(index !== null) {  this.disableConfigOnNonLeaf(); return; }
+
+            // Calculate new grid value.
+            containerData.addNewID(this.m_LayoutData.id);
+        },
+        updateGridDimension(){
+            let data = containerData.getObjectFromID(this.m_LayoutData.id);
+            if(!data.display){ return; } // If it is not the top layer do not modify.
+
+            // tmp
+            let iconSize = 75;
+
+            let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
+            
+            console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
+        },
+
+        disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
+
+    /*
+        Because the updates of the values are sequential, it updates the grid dimensions BEFORE any new child containers are added.
+        Fixed by only updating values in parent component via iteration only after the last child component is made.
+    
+        1. global variable which stores the PARENT ID.
+        2. Watcher on the global variable.
+        3. Watcher function check if the value is the PARENT isParentContainer()
+        4. If so, run the update grid.
+
+        All this just for contiguous row + column updating...
+    */
+        p_storeParentID(){
+            this.$GlobalStates.value.parentIDGridUpdate = this.m_LayoutData.id;
+        },
+
+        // Reset only after last sibling.
+        updateContainerGrid(){
+            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$GlobalStates.value.parentIDGridUpdate = null; }
+            
+            // $ref returns null on tick, look at next tick to update values
+            this.$nextTick(() => {
+                this.setComponentDOMValues();
+                this.updateGridDimension();
+            })
+
+        },
+
+// --------------------------------------------------------------------------------------------------------
+
     },
-
 // Watchers
 // --------------------------------------------------------------------------------------------------------------
 
     watch: {
+
+        // update grid layout
+        // &&&&&
+        'm_LayoutData.siblings'(val, oldval){
+            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
+        },
+        '$GlobalStates.value.parentIDGridUpdate'(val,oldval){
+            if(val === null) { return; }
+            let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
+            if(parentObj === null) { return; }
+            else if(parentObj.id === val){ this.updateContainerGrid(); }
+        },
+        // &&&&
+
         '$GlobalStates.value.edit.containerSelected'(val, oldval){
             this.isStoredClick();
         },
@@ -368,6 +399,11 @@ export default {
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
                 this.setComponentDOMValues();
+
+                // // For updating orientation
+                // this.$nextTick(() => {
+                //     this.updateGridDimension();
+                // });
             },
             deep: true,
         }
@@ -401,7 +437,6 @@ Check if the 'select container statement is true'
 If not, disable the mouse over and click.self functionality.
 -->
 
-
                 <template v-if="this.m_LayoutData.NoChildren > 0">
                     
                     <!-- Recurrsion, uses data to determine how many to render -->
@@ -411,7 +446,7 @@ If not, disable the mouse over and click.self functionality.
                         :parent_ID="this.m_LayoutData.id"
                         :child_Instance="n-1"
                         :render_divider="true"
-                        @drag="updateParentColumnRow"
+                        @drag="p_updateColumnRow"
                         />
 
                 </template>
