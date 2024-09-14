@@ -4,9 +4,13 @@ import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
+import Gridlayout from './GridLayout.vue'
 
 export default {
     name: "recursive-container",
+    components: {
+        Gridlayout
+    },
     props: {
         nest_level: {
             type: Number,
@@ -319,15 +323,18 @@ export default {
         },
         updateGridDimension(){
             let data = containerData.getObjectFromID(this.m_LayoutData.id);
+
             if(data === undefined) { return; }
             if(!data.display){ return; } // If it is not the top layer do not modify.
 
             // tmp
-            let iconSize = 75;
+            let iconSize = 100;
 
             let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
+            containerData.setGridDimension(this.m_LayoutData.id, `${dimension.rows},${dimension.columns}`);
             
-            console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
+            // console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
+            
         },
 
         disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
@@ -429,20 +436,14 @@ export default {
             <div 
             :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
                     'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
-            'selected-container': this.m_isStoredClick && this.$GlobalStates.value.edit.enabled  }"
-            class="grid-template"
+            'selected-container': (this.m_isStoredClick && this.$GlobalStates.value.edit.enabled),
+            'grid-template' : this.m_LayoutData.NoChildren > 0 }"
             @mouseover.self="m_isHover = this.$GlobalStates.value.containerSelectionMode"
             @mouseout.self="m_isHover=false"
             @click.self="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null">
 
-<!-- Tmp comment
-Check if the 'select container statement is true'
-If not, disable the mouse over and click.self functionality.
--->
-
+                <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="this.m_LayoutData.NoChildren > 0">
-                    
-                    <!-- Recurrsion, uses data to determine how many to render -->
                     <Container 
                         v-for="n in this.m_LayoutData.NoChildren" 
                         :nest_level="nest_level+1"
@@ -451,7 +452,11 @@ If not, disable the mouse over and click.self functionality.
                         :render_divider="true"
                         @drag="p_updateColumnRow"
                         />
+                </template>
 
+                <template v-if="this.m_LayoutData.NoChildren === 0">
+                    <Gridlayout
+                        :componentID="m_LayoutData.id"/>
                 </template>
             </div>
         </div>
