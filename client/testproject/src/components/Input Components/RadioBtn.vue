@@ -87,11 +87,7 @@ export default {
     },
     // This needs to be as generalizable as it can be so that it can be used anywhere
     methods: {
-
-        checkEnabled(){
-            console.log(this.enable_Radio);
-            this.cursor = (this.enable_Radio === null) ? "not-allowed" : "pointer";
-        },
+        checkEnabled(){ this.cursor = (this.enable_Radio === null) ? "not-allowed" : "pointer"; },
 
         runParentFunction(index, object, type){
             const checkedFnc = (type === "click") ? this.m_functions.clickedFncDetails : this.m_functions.checkedFncDetails;
@@ -126,11 +122,7 @@ export default {
             return result;
         }
     },
-    watch: {
-        'enable_Radio'(val){
-            this.checkEnabled();
-        }
-    }
+    watch: { 'enable_Radio'(){ this.checkEnabled(); } }
 }
 </script>
 

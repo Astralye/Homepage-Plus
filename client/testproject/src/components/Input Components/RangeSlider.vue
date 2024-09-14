@@ -64,9 +64,9 @@ export default {
                 return;
             }
 
-            this.m_SliderData.blocks = this.input_Data.length - 1;
-            this.m_SliderData.stepSize = Math.round(100 / this.m_SliderData.blocks);
-            this.m_SliderData.max = this.m_SliderData.blocks * this.m_SliderData.stepSize;
+            this.m_SliderData.blocks    = this.input_Data.length - 1;
+            this.m_SliderData.stepSize  = Math.round(100 / this.m_SliderData.blocks);
+            this.m_SliderData.max       = this.m_SliderData.blocks * this.m_SliderData.stepSize;
             this.m_SliderData.divisions = this.input_Data.length;
 
             // this.printSliderData();

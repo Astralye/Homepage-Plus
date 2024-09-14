@@ -77,13 +77,13 @@ export default {
 
         openModal(header, body, footer){
             this.modal.header = header;
-            this.modal.body = body;
+            this.modal.body   = body;
             this.modal.footer = footer;
-            this.modal.show = true; 
+            this.modal.show   = true; 
         },
         saveLayout(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
-            localStorage.setItem(this.localStorageVarNames.displayData, JSON.stringify(containerData.allData));
+            localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
 
             // console.log(containerData.allData);
             
@@ -107,8 +107,8 @@ export default {
             this.saveLayout();
             // Reset selected
             this.$GlobalStates.value.edit.resetSelect = true;
-            // this.showPopup("deleted");
             this.modal.confirmed = false;
+            // this.showPopup("deleted");
         },
         // Load from localstorage
         cancelEdit(){
@@ -134,11 +134,11 @@ export default {
         },
 
         loadData(){
-            const layoutData = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
+            const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
             const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
 
-            if(layoutData === null) { console.log("No Layout Data!"); return; }
-            if(displayData === null) { console.log("No displayData!"); return;}
+            if(layoutData  === null) { console.log("No Layout Data!"); return; }
+            if(displayData === null) { console.log("No Display Data!"); return;}
 
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 

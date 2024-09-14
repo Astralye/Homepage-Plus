@@ -32,14 +32,13 @@ export default {
             handler(val, oldval){
                 this.updateZIndex();
             },
-        deep: true
+            deep: true
         }
     },
     methods: {          
         updateZIndex(){
             let tmpArray = this.$windowStack.value;
             let name = this.title.toLowerCase();
-            
             let index = tmpArray.indexOf(name);
 
             if(index > -1){
@@ -58,7 +57,7 @@ export default {
 
             // register on mouse move and mouse up events
             mouseData.movementFunctions( [ this.elementDrag ]);
-            mouseData.mouseUpFunctions([ this.closeDragElement ]);
+            mouseData.mouseUpFunctions ( [ this.closeDragElement ]);
             
             mouseData.enableTracking();
             mouseData.enableMouseUp();
@@ -77,8 +76,8 @@ export default {
             this.positions.clientY = mouse.y;
 
             // Update style coordinate
-            this.$refs.draggableContainer.style.top = (this.$refs.draggableContainer.offsetTop - movementY) + 'px'
-            this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - movementX) + 'px'
+            this.$refs.draggableContainer.style.top  = (this.$refs.draggableContainer.offsetTop  - movementY) + 'px';
+            this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - movementX) + 'px';
         
             this.updateZIndex();
         },

@@ -2,7 +2,7 @@ export class ContainerDividerClass{
     static calculateMouseDifference(divisionType, dividerElement, mouseCoordinates, parentComponentData){
         // Absolute value need to convert to relative position
 
-        let relMouseCoord = { x: 0, y: 0 };
+        let relMouseCoord   = { x: 0, y: 0 };
         let relDividerCoord = { x: 0, y: 0 };
 
         // Calculation values
@@ -36,24 +36,23 @@ export class ContainerDividerClass{
     static calculateThreshold(layoutData, parentData, stepSize){
         let width;
         let height;
-
-        let margin = 8;
         let divisionStatement;
 
+        let margin = 8;
         let thresholdOffset = -4; // Arbitrary number
         
         if(layoutData.id === "0A") {
             divisionStatement = layoutData.divisionType;
 
-            width = window.innerWidth - ( 2 * margin);
+            width  = window.innerWidth  - ( 2 * margin);
             height = window.innerHeight - ( 2 * margin);
         }
         else{
             const parentComponent = parentData.m_ComponentData;
-            divisionStatement = parentData.m_LayoutData.divisionType;
+            divisionStatement     = parentData.m_LayoutData.divisionType;
 
             // Dimension without margin
-            width = parentComponent.width - (2 * margin);
+            width  = parentComponent.width  - (2 * margin);
             height = parentComponent.height - (2 * margin);
         }
 
@@ -68,31 +67,31 @@ export class ContainerDividerClass{
     }
 
     static updateParentConfig(data, stepSize, columnData, rowData){
+        let tmpString = "";
         let siblingIndex = data.index;
         let baseIndex = siblingIndex - 1;
-        
+
         let arrayData = (data.type === "Vertical") ? ContainerDividerClass.getGridData(columnData) : ContainerDividerClass.getGridData(rowData);
 
         let siblingValue = arrayData[siblingIndex];
-        let baseValue = arrayData[baseIndex];
+        let baseValue    = arrayData[baseIndex];
 
         // False -> Left or Down
         // True -> Right or Up
         if(data.direction){
-            baseValue -= stepSize;
+            baseValue    -= stepSize;
             siblingValue += stepSize;
         }
         else{
-            baseValue += stepSize;
             siblingValue -= stepSize;
+            baseValue    += stepSize;
         }
 
         // Set back the values 
         arrayData[siblingIndex] = siblingValue;
-        arrayData[baseIndex] = baseValue;
+        arrayData[baseIndex]    = baseValue;
 
         // Convert back to string.
-        let tmpString = "";
         for(let i = 0; i < arrayData.length; i++){ tmpString += String(arrayData[i]) + "fr "; }
 
         return tmpString;

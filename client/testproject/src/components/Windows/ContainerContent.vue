@@ -163,23 +163,23 @@ export default {
 // ------------------------------------------------------------------------------------------------
 
         LayoutType: [
-                { index: 0, id: "Grid", selected: true},
-                { index: 1, id: "List", selected: false},
+                { index: 0, id: "Grid",    selected: true},
+                { index: 1, id: "List",    selected: false},
         ],
 
         ContentAlign: [
                 { index: 0, id: "Compact", selected: true},
-                { index: 1, id: "Free", selected: false},
+                { index: 1, id: "Free",    selected: false},
         ],
 
         OrientationTopBottom: [
-                { index: 0, id: "Top", selected: true},
-                { index: 1, id: "Bottom", selected: false},
+                { index: 0, id: "Top",     selected: true},
+                { index: 1, id: "Bottom",  selected: false},
         ],
 
         OrientationLeftRight: [
-                { index: 0, id: "Left", selected: true},
-                { index: 1, id: "Right", selected: false},
+                { index: 0, id: "Left",    selected: true},
+                { index: 1, id: "Right",   selected: false},
         ],
         
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -188,19 +188,16 @@ export default {
 
     methods: {
       noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
-
-      activateSelectionMode() {
-          this.$GlobalStates.value.containerSelectionMode = true;
-      },
+      activateSelectionMode() { this.$GlobalStates.value.containerSelectionMode = true; },
 
 // Radio button functions
 // ----------------------------------------------------------------------------------------------------------------------------
       
       // Function prop values, States whether the value should be checked.
-      isLayoutChecked(id){ return this.isPropertyChecked(this.LayoutType, id); },
-      isAlignchecked(id){ return this.isPropertyChecked(this.ContentAlign, id);},
-      isXAxisChecked(id){ return this.isPropertyChecked(this.OrientationLeftRight, id); },
-      isYaxisChecked(id){ return this.isPropertyChecked(this.OrientationTopBottom, id); },
+      isLayoutChecked(id){ return this.isPropertyChecked(this.LayoutType,           id); },
+      isAlignchecked(id) { return this.isPropertyChecked(this.ContentAlign,         id); },
+      isXAxisChecked(id) { return this.isPropertyChecked(this.OrientationLeftRight, id); },
+      isYaxisChecked(id) { return this.isPropertyChecked(this.OrientationTopBottom, id); },
       
       // Generalized radio selected value
       isPropertyChecked(stateVariable, id){
@@ -209,10 +206,10 @@ export default {
       },
 
       // On click, updates the selected value
-      changeLayout(id){ if(id.selected){ return; } this.changeSelectedValue(this.LayoutType, "setLayout",id);},
-      changeAlign(id){ if(id.selected){ return; } this.changeSelectedValue(this.ContentAlign, "setGridAlign", id);},
-      changeXAxis(id){ if(id.selected){ return; } this.changeSelectedValue(this.OrientationLeftRight, "setXDirection", id);},
-      changeYAxis(id){ if(id.selected){ return; } this.changeSelectedValue(this.OrientationTopBottom, "setYDirection",id);},
+      changeLayout(id){ if(id.selected){ return; } this.changeSelectedValue(this.LayoutType,           "setLayout",     id);},
+      changeAlign(id) { if(id.selected){ return; } this.changeSelectedValue(this.ContentAlign,         "setGridAlign",  id);},
+      changeXAxis(id) { if(id.selected){ return; } this.changeSelectedValue(this.OrientationLeftRight, "setXDirection", id);},
+      changeYAxis(id) { if(id.selected){ return; } this.changeSelectedValue(this.OrientationTopBottom, "setYDirection", id);},
 
       // Changes the property value of a given id to true and everything to false
       changeSelectedValue(valueType, functionPrefix, idValue){
@@ -240,10 +237,10 @@ export default {
 
       // Sets the component selected values to the object data
       loadData(){
-        this.modifyValue(this.LayoutType, containerData.getLayoutType(this.m_CurrentID));
-        this.modifyValue(this.ContentAlign, containerData.getGridAlign(this.m_CurrentID));
+        this.modifyValue(this.LayoutType,           containerData.getLayoutType(this.m_CurrentID));
+        this.modifyValue(this.ContentAlign,         containerData.getGridAlign (this.m_CurrentID));
         this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(this.m_CurrentID));
-        this.modifyValue(this.OrientationTopBottom,  containerData.getYDirection(this.m_CurrentID));
+        this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(this.m_CurrentID));
       },
 
 // ------------------------------------------------------------------------------------------------------------------------------
