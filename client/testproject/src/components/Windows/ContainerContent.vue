@@ -17,6 +17,7 @@
       <template #content>
         <RadioButton
             parent_Variable_String="LayoutType"
+            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -63,6 +64,7 @@
       <template #content>
         <RadioButton
             parent_Variable_String="ContentAlign"
+            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -94,6 +96,7 @@
         </h4>
         <RadioButton
             parent_Variable_String="OrientationLeftRight"
+            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -113,6 +116,7 @@
         </h4>
         <RadioButton
             parent_Variable_String="OrientationTopBottom"
+            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -183,6 +187,8 @@ export default {
     },
 
     methods: {
+      noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
+
       activateSelectionMode() {
           this.$GlobalStates.value.containerSelectionMode = true;
       },

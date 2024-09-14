@@ -24,6 +24,7 @@ app.config.globalProperties.$GlobalStates = ref( {
     isInitialize: false,
     isRenderFinalNode: false,
     containerSelectionMode: false,
+    parentIDGridUpdate: "",
 });
 
 app.mount('#app')
