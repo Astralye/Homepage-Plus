@@ -3,7 +3,8 @@ export default {
     data() {
         return{
             m_ParentVariableData: null,
-            m_functions: {}
+            m_functions: {},
+            m_cursor: "not-allowed",
         }
     },
     /*
@@ -66,6 +67,10 @@ export default {
             type: Object,
             default: {},
             required: true,
+        },
+        enable_Radio:{
+            type: Object,
+            default: null,
         }
     },
     created() {
@@ -78,10 +83,15 @@ export default {
         this.m_ParentVariableData = this.$parent.$parent.$data[this.parent_Variable_String];
         // Runs the parent function of the prop name to return an object
         this.m_functions = this.parent_Fnc_Data;
+        this.checkEnabled();
     },
-
     // This needs to be as generalizable as it can be so that it can be used anywhere
     methods: {
+
+        checkEnabled(){
+            console.log(this.enable_Radio);
+            this.cursor = (this.enable_Radio === null) ? "not-allowed" : "pointer";
+        },
 
         runParentFunction(index, object, type){
             const checkedFnc = (type === "click") ? this.m_functions.clickedFncDetails : this.m_functions.checkedFncDetails;
@@ -115,6 +125,11 @@ export default {
 
             return result;
         }
+    },
+    watch: {
+        'enable_Radio'(val){
+            this.checkEnabled();
+        }
     }
 }
 </script>
@@ -124,6 +139,7 @@ export default {
         <template v-for="(object, index) in this.m_ParentVariableData" :key="index">
             <label 
                 class="radio"
+                :style="{ 'cursor': cursor }"
                 :for="this.m_ParentVariableData[index].id"
                 @click="this.runParentFunction(index, object, 'click')">
                 
@@ -182,7 +198,6 @@ export default {
 
 .radio-inputs .radio .name {
     display: flex;
-    cursor: pointer;
     align-items: center;
     justify-content: center;
     border-radius: 0.5rem;

@@ -63,8 +63,6 @@ export default {
 
         // Selects a clicked container and deselect previous container
         isNewlySelected(container){
-            if(container.selected){ return false; }
-
             // Resets all the other values
             this.ContainerDivision.forEach(cont => { cont.selected = false; });
             container.selected = true;
@@ -73,6 +71,8 @@ export default {
 
         // Function for determining user click behaviour on a container
         selectAndModifyContainer(container){ 
+            if(this.noSelect()) { return; } // Do not allow button presses when no selection
+
             if(this.isNewlySelected(container)){
                 let cont = this.States.selectedContainer;
                 layout.modifyContainer(container.index, cont.level, cont.id);
@@ -81,14 +81,18 @@ export default {
 
         // On delete or load layout, we need to currently unselect all the user clicked containers
         resetSelected(){
-            this.States.selectedContainer.level = 0;
-            this.States.id = "0A";
-            this.$GlobalStates.value.edit.containerSelected = "0A";
+            this.States.selectedContainer.level = layout.allData.level;
+            this.States.selectedContainer.id = layout.allData.id;
+            this.$GlobalStates.value.edit.containerSelected = null;
             this.$GlobalStates.value.edit.resetSelect = false;
         },
 
+        noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
+
         // True on a selected container
         isDivisionVertical(index){
+            if(this.noSelect()) { return; } // Do not allow button presses when no selection
+
             const container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
 
             if(container.divisionType === "Vertical" && index === 0){ return true;}
@@ -110,6 +114,7 @@ export default {
 
         // Update selected radio values from watching the global variable 
         updateSelectedContainer(newContainerID){
+            if(this.noSelect()){ return; }
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
             this.States.selectedContainer.level = level;
             this.States.selectedContainer.id = newContainerID;
@@ -175,6 +180,7 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="DivisionType"
+                :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
                 :parent_Fnc_Data="{
                     checkedFncDetails:
                     {
@@ -211,6 +217,7 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="ContainerDivision"
+                :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
                 :parent_Fnc_Data="{
                     checkedFncDetails:
                     {

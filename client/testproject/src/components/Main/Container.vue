@@ -319,6 +319,7 @@ export default {
         },
         updateGridDimension(){
             let data = containerData.getObjectFromID(this.m_LayoutData.id);
+            if(data === undefined) { return; }
             if(!data.display){ return; } // If it is not the top layer do not modify.
 
             // tmp

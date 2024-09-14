@@ -69,34 +69,32 @@ class ContainerDataClass{
 
   // Setters
 
-  setLayoutGrid(objectID){ this.getObjectFromID(objectID).layoutType = "Grid" };
-  setLayoutList(objectID){ this.getObjectFromID(objectID).layoutType = "List" };
+  setLayoutGrid(objectID){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "Grid" }};
+  setLayoutList(objectID){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "List" }};
 
-  modifyIconSize(objectID, newValue){ this.getObjectFromID(objectID).iconSize = newValue; };
+  modifyIconSize(objectID, newValue){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.iconSize = newValue; }};
 
-  disableDisplay(objectID){ this.getObjectFromID(objectID).display = false; };
-  enableDisplay(objectID){ this.getObjectFromID(objectID).display = true; };
-
+  disableDisplay(objectID){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.display = false; } };
+  enableDisplay(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.display = true; } };
   // Grid setters
 
-  setGridDimension(objectID, val) { this.getObjectFromID(objectID).gridData.gridDimensions = val; };
+  setGridDimension(objectID, val) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridDimensions = val; }};
+  setGridAlignCompact(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.contentAlign = "Compact"}};
+  setGridAlignFree(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.contentAlign = "Free"}};
 
-  setGridAlignCompact(objectID) { this.getObjectFromID(objectID).gridData.contentAlign = "Compact" };
-  setGridAlignFree(objectID) { this.getObjectFromID(objectID).gridData.contentAlign = "Free" };
+  setXDirectionLeft(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.xAxisDirection = "Left"}};
+  setXDirectionRight(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.xAxisDirection = "Right"} };
 
-  setXDirectionLeft(objectID) { this.getObjectFromID(objectID).gridData.xAxisDirection = "Left" };
-  setXDirectionRight(objectID) { this.getObjectFromID(objectID).gridData.xAxisDirection = "Right" };
-
-  setYDirectionTop(objectID) { this.getObjectFromID(objectID).gridData.yAxisDirection = "Top" };
-  setYDirectionBottom(objectID) { this.getObjectFromID(objectID).gridData.yAxisDirection = "Bottom" };
+  setYDirectionTop(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Top"} };
+  setYDirectionBottom(objectID) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Bottom"} };
 
   // Grid Getters
 
-  getLayoutType(objectID) { return this.getObjectFromID(objectID).layoutType; }
-  getGridDimension(objectID) { return this.getObjectFromID(objectID).gridData.gridDimensions; };
-  getGridAlign(objectID) { return this.getObjectFromID(objectID).gridData.contentAlign; };
-  getXDirection(objectID) { return this.getObjectFromID(objectID).gridData.xAxisDirection; };
-  getYDirection(objectID) { return this.getObjectFromID(objectID).gridData.yAxisDirection; };
+  getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;} }
+  getGridDimension(objectID){let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.gridDimensions; }};
+  getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; };}
+  getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; };}
+  getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; };}
 
 }
 
