@@ -123,12 +123,12 @@ export default {
 // -----------------------------------------------------------------------------------------------------
         printLayoutInfo(){
                 console.log("Container Info\n",
-                            "\nLevel: ", this.m_LayoutData.level,
+                            "\nLevel: ",        this.m_LayoutData.level,
                             "\nDivision Type:", this.m_LayoutData.divisionType,
-                            "\nID:", this.m_LayoutData.id,
-                            "\nSiblings:", this.m_LayoutData.siblings,
-                            "\nEven Split?", this.m_LayoutData.evenSplit,
-                            "\nFR data:", this.m_LayoutData.unevenFRData,
+                            "\nID:",            this.m_LayoutData.id,
+                            "\nSiblings:",      this.m_LayoutData.siblings,
+                            "\nEven Split?",    this.m_LayoutData.evenSplit,
+                            "\nFR data:",       this.m_LayoutData.unevenFRData,
                 );
         },
         printMouseCoordinate(){
@@ -139,10 +139,10 @@ export default {
         },
         printParentContainerInfo(){
             console.log("Parent information\n" ,
-                        "\nx:", this.$parent.$data.m_ComponentData.x,
-                        "\ny:", this.$parent.$data.m_ComponentData.y,
+                        "\nx:",      this.$parent.$data.m_ComponentData.x,
+                        "\ny:",      this.$parent.$data.m_ComponentData.y,
                         "\nheight:", this.$parent.$data.m_ComponentData.height,
-                        "\nwidth:", this.$parent.$data.m_ComponentData.width);
+                        "\nwidth:",  this.$parent.$data.m_ComponentData.width);
         },
 // -------------------------------------------------------------------------------------------------------
 
@@ -153,14 +153,14 @@ export default {
             let repeatedData = "1fr ".repeat(this.m_LayoutData.NoChildren);
             let normal = "1fr";
 
-            this.m_rowData = (type === "Horizontal")  ? repeatedData : normal;
+            this.m_rowData    = (type === "Horizontal")  ? repeatedData : normal;
             this.m_columnData = (type === "Horizontal")  ? normal : repeatedData;
         },
         setGridNonEven(container){
             let normal = "1fr";
 
-            this.m_rowData = (container.divisionType === "Horizontal")  ? container.unevenFRData : normal;
-            this.m_columnData = (container.divisionType === "Horizontal")  ? normal : container.unevenFRData;
+            this.m_rowData    = (container.divisionType === "Horizontal") ? container.unevenFRData : normal;
+            this.m_columnData = (container.divisionType === "Horizontal") ? normal : container.unevenFRData;
         },
 
 // -------------------------------------------------------------------------------------------------------
@@ -194,12 +194,12 @@ export default {
         
         // Set container component data.
         setDataValues(newData){
-            this.m_LayoutData.level = newData.level;
+            this.m_LayoutData.level        = newData.level;
             this.m_LayoutData.divisionType = newData.divisionType;
-            this.m_LayoutData.id = newData.id
-            this.m_LayoutData.NoChildren = newData.NoChildren;
-            this.m_LayoutData.siblings = newData.siblings;
-            this.m_LayoutData.evenSplit = newData.evenSplit;
+            this.m_LayoutData.id           = newData.id
+            this.m_LayoutData.NoChildren   = newData.NoChildren;
+            this.m_LayoutData.siblings     = newData.siblings;
+            this.m_LayoutData.evenSplit    = newData.evenSplit;
             this.m_LayoutData.unevenFRData = newData.unevenFRData;
         },
 
@@ -230,8 +230,8 @@ export default {
         storeClickedContainer(){
             if(this.m_LayoutData.id === null) {return;}
             this.$GlobalStates.value.edit.containerSelected = this.m_LayoutData.id;
-            this.$GlobalStates.value.edit.enabled = true;
             this.$GlobalStates.value.containerSelectionMode = false;
+            this.$GlobalStates.value.edit.enabled = true;
         },
         
 // Divider drag functions
@@ -299,9 +299,9 @@ export default {
         setComponentDOMValues(){
             let data = this.$refs["refContainer"].getBoundingClientRect();
             
-            this.m_ComponentData.x = data.x;
-            this.m_ComponentData.y = data.y;
-            this.m_ComponentData.width = data.width;
+            this.m_ComponentData.x      = data.x;
+            this.m_ComponentData.y      = data.y;
+            this.m_ComponentData.width  = data.width;
             this.m_ComponentData.height = data.height;
             // Updates any grid information in the parent.
         },

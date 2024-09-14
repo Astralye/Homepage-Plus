@@ -24,13 +24,13 @@ export default {
             // Radio Button Object Values
             // --------------------------------------------------------------------------
             ContainerDivision: [
-                { index: 1, id: "One", selected: true },
-                { index: 2, id: "Two", selected: false },
+                { index: 1, id: "One",   selected: true },
+                { index: 2, id: "Two",   selected: false },
                 { index: 3, id: "Three", selected: false },
-                { index: 4, id: "Four", selected: false }
+                { index: 4, id: "Four",  selected: false }
             ],
             DivisionType: [
-                { index: 0, id: "Vertical", selected: true},
+                { index: 0, id: "Vertical",   selected: true},
                 { index: 1, id: "Horizontal", selected: false},
             ],
 
@@ -82,9 +82,9 @@ export default {
         // On delete or load layout, we need to currently unselect all the user clicked containers
         resetSelected(){
             this.States.selectedContainer.level = layout.allData.level;
-            this.States.selectedContainer.id = layout.allData.id;
+            this.States.selectedContainer.id    = layout.allData.id;
             this.$GlobalStates.value.edit.containerSelected = null;
-            this.$GlobalStates.value.edit.resetSelect = false;
+            this.$GlobalStates.value.edit.resetSelect       = false;
         },
 
         noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
@@ -95,7 +95,7 @@ export default {
 
             const container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
 
-            if(container.divisionType === "Vertical" && index === 0){ return true;}
+            if(container.divisionType === "Vertical" && index === 0)  { return true;}
             if(container.divisionType === "Horizontal" && index === 1){ return true;}
             return false;
         },
@@ -105,10 +105,7 @@ export default {
 
         // Update division type of container on click.
         updateDivision(type){
-            const current_containerLevel = this.States.selectedContainer.level;
-            const current_containerID = this.States.selectedContainer.id;
-
-            let parentContainer = LayoutDataClass.getLevelData(layout.allData, current_containerLevel,current_containerID);
+            let parentContainer = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
             parentContainer.divisionType = type;
         },
 
@@ -116,10 +113,10 @@ export default {
         updateSelectedContainer(newContainerID){
             if(this.noSelect()){ return; }
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
+            const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
+            
             this.States.selectedContainer.level = level;
             this.States.selectedContainer.id = newContainerID;
-            
-            const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
             this.States.selectedContainer.evenlySpaced = evenSplit;
         },
 
