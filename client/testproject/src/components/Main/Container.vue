@@ -101,6 +101,8 @@ export default {
             m_StepSize: 0.25,
 
             m_cursor: "default",
+
+            m_updateGrid: false,
         }
     },
 
@@ -113,6 +115,9 @@ export default {
     },
     mounted(){
         this.setComponentDOMValues();
+    },
+    updated(){
+        if(this.m_updateGrid){ this.m_updateGrid = false; }
     },
     /*
         Note: when using hot-reloading, saving causes unmounted function to run
@@ -266,7 +271,7 @@ export default {
 
             }, { once: true });
 
-            mouseData.movementFunctions( [this.moveContainer ]);
+            mouseData.movementFunctions( [ this.moveContainer ]);
             mouseData.enableTracking();
 
             this.m_cursor = (this.$parent.$data.m_LayoutData.divisionType === "Vertical") ? "col-resize" : "row-resize";
@@ -327,14 +332,12 @@ export default {
             if(data === undefined) { return; }
             if(!data.display){ return; } // If it is not the top layer do not modify.
 
-            // tmp
-            let iconSize = 100;
-
+            let iconSize = containerData.getIconSize(this.m_LayoutData.id);
+            
             let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
             containerData.setGridDimension(this.m_LayoutData.id, `${dimension.rows},${dimension.columns}`);
-            
+
             // console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
-            
         },
 
         disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
@@ -355,7 +358,9 @@ export default {
         // Reset only after last sibling.
         updateContainerGrid(){
             if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$GlobalStates.value.parentIDGridUpdate = null; }
-            
+
+            this.m_updateGrid = true;
+
             // $ref returns null on tick, look at next tick to update values
             this.$nextTick(() => {
                 this.setComponentDOMValues();
@@ -459,7 +464,9 @@ export default {
                         @mouseover="m_isHover = this.$GlobalStates.value.containerSelectionMode"
                         @mouseout="m_isHover=false"
                         @click="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null"
-                        :componentID="m_LayoutData.id"/>
+                        
+                        :component_ID="m_LayoutData.id"
+                        :update_Grid_Flag="m_updateGrid"/>
                 </template>
             </div>
         </div>

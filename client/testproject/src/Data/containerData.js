@@ -55,7 +55,7 @@ class ContainerDataClass{
       return {
       ID: idGenerated,
       layoutType: "Grid",
-      iconSize: "1",
+      iconSize: "125",
       display: true, // If it is not a leaf node, disable it
       gridData: {
           gridDimensions: "1,1",
@@ -90,6 +90,7 @@ class ContainerDataClass{
 
   // Grid Getters
 
+  getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;} }
   getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;} }
   getGridDimension(objectID){let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.gridDimensions; }};
   getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; };}
