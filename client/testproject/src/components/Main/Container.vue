@@ -456,6 +456,9 @@ export default {
 
                 <template v-if="this.m_LayoutData.NoChildren === 0">
                     <Gridlayout
+                        @mouseover="m_isHover = this.$GlobalStates.value.containerSelectionMode"
+                        @mouseout="m_isHover=false"
+                        @click="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null"
                         :componentID="m_LayoutData.id"/>
                 </template>
             </div>

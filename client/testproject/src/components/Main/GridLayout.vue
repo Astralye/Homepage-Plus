@@ -1,10 +1,6 @@
 <template>
     <div class="fill grid base-margin border-box">
-        <template v-for="(item, index) in 5" :key="index">
-
-            <!-- Bug!
-                When the drag slider tries to become smaller than the size of N containers, it breaks.  
-            -->
+        <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
             <div class="tmpbox"> {{index}} </div>
         </template>
     </div>
@@ -28,8 +24,11 @@ export default {
     data(){
         return{
             m_containerData: null,
-            m_columns: "",
-            m_rows: "",
+            m_Column_Data: "",
+            m_Rows_Data: "",
+
+            m_Rows: 0,
+            m_Columns: 0, 
         }
     },
     methods: {
@@ -38,11 +37,11 @@ export default {
         // Dimension is stored as 'C,R'
         setRowColData(dimString){
             dimString = dimString.split(',');
+            this.m_Rows    = Number(dimString[0]);
+            this.m_Columns = Number(dimString[1]);
 
-            console.log(dimString);
-
-            this.m_columns = "1fr ".repeat(dimString[0]);
-            this.m_rows    = "1fr ".repeat(dimString[1]);
+            this.m_Column_Data = "1fr ".repeat(dimString[0]);
+            this.m_Rows_Data   = "1fr ".repeat(dimString[1]);
         },
 
         setDimension(){
@@ -62,22 +61,32 @@ export default {
 }
 
 .tmpbox{
-    width: 100px;
+    width:  100%;
+    height: 100%;
     background-color: goldenrod;
 }
 
 .fill{
-    width: 100%;
+    width:  100%;
     height: 100%;
 }
 
 .grid{
     display: grid;
-    grid-template-columns: v-bind("m_columns");
-    grid-template-rows:    v-bind("m_rows");
+    grid-template-columns: v-bind("m_Column_Data");
+    grid-template-rows:    v-bind("m_Rows_Data");
 
-    grid-row-gap: 2px;
-    grid-column-gap: 2px;
+    grid-row-gap: 5px;
+    grid-column-gap: 5px;
+
+    /* 
+    
+    grid-row-gap + grid-column-gap has to be calculated manually.
+
+    Static widths for the box causes the program to go all buggy.
+    Instead, change the sizes of the row + column gaps via calculation to ensure the values are static.
+    
+    */
 }
 
 .base-margin{
