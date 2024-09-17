@@ -46,6 +46,7 @@
 import Modal from './Modal.vue';
 import { containerData } from '../../Data/containerData.js'
 import { layout } from '../../Data/layoutData.js';
+import { iconData } from '../../Data/iconData.js';
 
 export default {
     components:{
@@ -55,6 +56,7 @@ export default {
         return {
             containerData,
             layout,
+            iconData,
 
             iconSize: "5em",
             modal:{
@@ -67,6 +69,7 @@ export default {
             localStorageVarNames: {
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
+                iconData: "iconData"
             }
         }
     },
@@ -84,6 +87,7 @@ export default {
         saveLayout(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
             localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
+            localStorage.setItem(this.localStorageVarNames.iconData,    JSON.stringify(iconData.allData));
 
             // console.log(containerData.allData);
             
@@ -103,6 +107,7 @@ export default {
             // Reset data
             containerData.resetData();
             layout.resetData();
+            iconData.resetData();
 
             this.saveLayout();
             // Reset selected
@@ -136,12 +141,15 @@ export default {
         loadData(){
             const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
             const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
+            const dataIcon = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
 
-            if(layoutData  === null) { console.log("No Layout Data!"); return; }
+            if(layoutData  === null) { console.log("No Layout Data!");  return; }
             if(displayData === null) { console.log("No Display Data!"); return;}
+            if(dataIcon === null)    { console.log("No Icon Data!");    return;}
 
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
+            iconData.initializeData(dataIcon);
             
             this.$GlobalStates.clickLoad = true; 
             this.$GlobalStates.isRenderFinalNode = true;
