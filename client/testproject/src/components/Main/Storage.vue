@@ -87,7 +87,7 @@ export default {
         saveLayout(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
             localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
-            localStorage.setItem(this.localStorageVarNames.iconData,    JSON.stringify(iconData.allData));
+            localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
 
             // console.log(containerData.allData);
             
@@ -141,7 +141,7 @@ export default {
         loadData(){
             const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
             const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
-            const dataIcon = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
+            const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
 
             if(layoutData  === null) { console.log("No Layout Data!");  return; }
             if(displayData === null) { console.log("No Display Data!"); return;}
