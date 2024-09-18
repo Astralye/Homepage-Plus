@@ -3,10 +3,56 @@
         ref="container"
         >
         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="grid-item">
-                <div class="flex-center">
-                    {{ index }} 
-                </div>
+            <div class="grid-item flex-center">
+                <template v-if="renderIcon(index)">
+
+                    <!-- Edit mode Icon -->
+                    <template v-if="this.$GlobalStates.value.edit.enabled">
+                        <IconHandler
+                        :icon_data="getIconData(index)"
+                        @mousedown="console.log('drag')"
+                        @mouseup="console.log('drop')"
+                        />
+                    </template>
+                    
+                    <!-- Non-Edit mode Icon -->
+                    <template v-else>
+                        <IconHandler
+                        :icon_data="getIconData(index)"
+                        @mousedown="console.log('Open')"
+                        @mouseup="console.log('Close')"
+                        />
+                    </template>
+
+                    <!-- 
+                    
+                    the icon should have different functionalities
+
+                    In edit mode:
+                        Single click on icon -> Select
+                        Single click on non icon, selection box
+
+                        Right click -> custom context menu.
+                        Double click -> Rename
+
+                        Left click hold -> Drag
+                        Left click hold up -> Drop
+                    
+                    Normal:
+                        Single click
+                        Double click
+
+                        Right Click 
+                        
+                    Misc, Other notes:
+
+                    CTRL + C, CTRL + V
+                    -> copy paste icon. 
+
+                    Mass drag + drop.
+
+                    -->
+                </template>
             </div>
         </template>
     </div>
@@ -14,8 +60,13 @@
 
 <script>
 import { containerData } from '../../Data/containerData';
+import IconHandler from './IconHandler.vue';
+import { iconData } from '../../Data/iconData.js';
 
 export default {
+    components:{
+        IconHandler,
+    },
     props:{
         component_ID: {
             type: String,
@@ -31,12 +82,12 @@ export default {
         this.m_containerData = this.getContainerData();
         this.setDimension();
         this.m_iconSize = containerData.getIconSize(this.component_ID);
-    },
-    beforeUpdate(){
-        console.log(this.update_Grid_Flag)
+        this.setContainerIconData();
     },
     data(){
         return{
+            iconData,
+            
             m_containerData: null,
             
             m_Column_Data: "",
@@ -49,9 +100,48 @@ export default {
             m_Columns: 0, 
 
             m_iconSize: 0,
+
+            m_GroupData: null,
         }
     },
     methods: {
+
+// Coordinate Index
+// -------------------------------------------------------------------------------------------
+        coordinateToIndex(x,y){
+            return (this.m_Columns * y) + x;
+        },
+
+        indexToCoord(index){
+            let x = ( index % this.m_Rows);
+            let y = ~~(index / this.m_Rows); 
+            return {x , y};
+        },
+
+// Icon Functions
+// ------------------------------------------------------------------------------------------
+
+        renderIcon(index){
+            if(this.m_GroupData === null){ return; }
+
+            let coord = this.indexToCoord(index);
+            let data = iconData.getIconData(this.m_GroupData, coord.x, coord.y);
+            // console.log(data);
+
+            if(data === null){ return false; }
+            return true;
+        },
+
+        getIconData(index){
+            let coord = this.indexToCoord(index);
+            return iconData.getIconData(this.m_GroupData, coord.x, coord.y);
+        },
+
+        setContainerIconData(){ this.m_GroupData = iconData.getGroup(this.component_ID); },
+
+// ------------------------------------------------------------------------------------------
+// Grid Functions
+
         getContainerData(){ return containerData.getObjectFromID(this.component_ID); },
 
         // Dimension is stored as 'C,R'
@@ -114,7 +204,7 @@ export default {
 }
 
 .grid-item{
-    border: solid white 1px;
+    border: solid rgba(255, 255, 255, 0.4) 1px;
 }
 
 .fill{
