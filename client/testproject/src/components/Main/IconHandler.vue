@@ -18,7 +18,7 @@ export default {
         },
     },
     created(){
-        console.log(this.icon_data);
+        // console.log(this.icon_data);
     },
     methods: {
     }

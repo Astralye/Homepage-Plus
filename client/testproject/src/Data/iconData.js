@@ -149,11 +149,18 @@ class IconData{
     }
 
     // Based off N index, not the same as compactIndex
-    getIconData(groupArray, iconID){
+    getIconDataFromID(groupArray, iconID){
         for(let i = 0; i < groupArray.length; i++){
             if(groupArray[i].iconID === iconID){ return groupArray[i]; }
         }
         console.error(`Error (iconData.js): index '${compIndex}' not valid.`);
+        return null;
+    }
+
+    getIconDataCompactIndex(groupArray, index){
+        for(let i = 0; i < groupArray.length; i++){
+            if(groupArray[i].compactIndex === index){ return groupArray[i]; }
+        }
         return null;
     }
 

@@ -1,18 +1,24 @@
 <template>
     <div class="fill grid base-margin border-box"
         ref="container"
+        @mouseup="resetSelection"
         >
         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="grid-item flex-center">
+            <div class="grid-item flex-center"
+                @mouseup="checkDropIcon(index)">
                 <template v-if="renderIcon(index)">
 
                     <!-- Edit mode Icon -->
                     <template v-if="this.$GlobalStates.value.edit.enabled">
                         <IconHandler
                         :icon_data="getIconData(index)"
-                        @mousedown="console.log('drag')"
-                        @mouseup="console.log('drop')"
+                        @mousedown="dragAndDrop(index)"
                         />
+
+                        <!-- 
+                            mousedown would have many functions, but for this instance, just a single
+                            mouse click will store the data
+                          -->
                     </template>
                     
                     <!-- Non-Edit mode Icon -->
@@ -62,6 +68,7 @@
 import { containerData } from '../../Data/containerData';
 import IconHandler from './IconHandler.vue';
 import { iconData } from '../../Data/iconData.js';
+import { mouseData } from '../../Data/mouseData.js';
 
 export default {
     components:{
@@ -87,6 +94,8 @@ export default {
     data(){
         return{
             iconData,
+            mouseData,
+            
             
             m_containerData: null,
             
@@ -102,6 +111,8 @@ export default {
             m_iconSize: 0,
 
             m_GroupData: null,
+
+            m_iconID: null
         }
     },
     methods: {
@@ -118,24 +129,132 @@ export default {
             return {x , y};
         },
 
+// Icon Movement
+// ------------------------------------------------------------------------------------------
+
+        edit_Drag_MouseDown(){
+            // Find what it is holding and store it.
+            console.log('holding...');
+            this.$GlobalStates.value.edit.iconDragData = {
+                storedContainer:  this.m_containerData.ID,
+                storedID: this.m_iconID,
+            };
+        },
+
+        edit_Drag_Move(){
+            // console.log('Moving!');
+        },
+
+        resetSelection(){
+            // console.log("reset!");
+            this.$GlobalStates.value.edit.iconDragData = null;
+        },
+
+
+        checkDropIcon(index){
+            if(!this.$GlobalStates.value.edit.iconDragData){ return; }
+
+            let newGroupID = this.m_containerData.ID;
+            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
+
+            if(this.m_GroupData === null){ iconData.createGroup(newGroupID); } // group data does not exist
+
+            // Find group to move to.
+            let moveToGroup    = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
+            let differentGroup = (oldGroupID !== newGroupID);
+
+            if(this.isPositionAvailable(moveToGroup, this.indexToCoord(index))){ 
+                this.dropIcon(this.m_GroupData, moveToGroup, differentGroup, index);
+            }
+        },
+
+        // Free and compact have different requirements.
+
+        // Look at the current group. getIconData return null if free space.
+        isPositionAvailable(group, newCoord){
+            return (iconData.getIconData(group, newCoord.x, newCoord.y) === null);
+        },
+
+        dropIcon(oldGroup, newGroup, differentGroup, newIndex){
+            if(differentGroup){
+                
+            }
+            else{ // Same group
+                let modIconData = iconData.getIconDataFromID(newGroup, this.$GlobalStates.value.edit.iconDragData.storedID);
+                let coord = this.indexToCoord(newIndex);
+                modIconData.coordinate.x = coord.x;
+                modIconData.coordinate.y = coord.y;
+            }
+            console.log('Drop!');
+
+            this.resetSelection();
+        },
+
+
+        dragAndDrop(index){
+            // let iconData = this.getIconData(index);
+            // console.log(iconData);
+
+            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
+            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
+            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
+            
+            mouseData.enableMouseDown();
+            mouseData.enableTracking();
+            mouseData.enableMouseUp();
+
+
+
+            this.m_iconID = this.getIconData(index).iconID;
+        },
+
+        disableDrag(){
+            mouseData.disableMouseDown();
+            mouseData.disableTracking();
+            mouseData.disableMouseUp();
+        },
+
+
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+    // Render Flags
         renderIcon(index){
-            if(this.m_GroupData === null){ return; }
+            if(this.m_GroupData === null){ return false; }
+            return (this.m_containerData.gridData.contentAlign === "Compact") ? this.renderCompact(index) : this.renderFree(index);
+        },
 
+        renderCompact(index){
+            let data = iconData.getIconDataCompactIndex(this.m_GroupData, index);
+            
+            if(data === null){ return false; }
+            return true;
+        },
+        
+        renderFree(index){
             let coord = this.indexToCoord(index);
             let data = iconData.getIconData(this.m_GroupData, coord.x, coord.y);
-            // console.log(data);
 
             if(data === null){ return false; }
             return true;
         },
 
+    // Getters
+
         getIconData(index){
+            return (this.m_containerData.gridData.contentAlign === "Compact") ? this.getCompactIconData(index) : this.getFreeIconData(index);
+        },
+
+        getCompactIconData(index){
+            return iconData.getIconDataCompactIndex(this.m_GroupData, index);
+        },
+
+        getFreeIconData(index){
             let coord = this.indexToCoord(index);
             return iconData.getIconData(this.m_GroupData, coord.x, coord.y);
         },
+
+    // Setters
 
         setContainerIconData(){ this.m_GroupData = iconData.getGroup(this.component_ID); },
 
