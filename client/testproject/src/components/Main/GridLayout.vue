@@ -133,8 +133,7 @@ export default {
 // ------------------------------------------------------------------------------------------
 
         edit_Drag_MouseDown(){
-            // Find what it is holding and store it.
-            console.log('holding...');
+            // Find what it is holding and store it.s
             this.$GlobalStates.value.edit.iconDragData = {
                 storedContainer:  this.m_containerData.ID,
                 storedID: this.m_iconID,
@@ -142,29 +141,32 @@ export default {
         },
 
         edit_Drag_Move(){
-            // console.log('Moving!');
+
         },
 
         resetSelection(){
-            // console.log("reset!");
             this.$GlobalStates.value.edit.iconDragData = null;
         },
 
 
         checkDropIcon(index){
+
             if(!this.$GlobalStates.value.edit.iconDragData){ return; }
 
             let newGroupID = this.m_containerData.ID;
             let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
 
-            if(this.m_GroupData === null){ iconData.createGroup(newGroupID); } // group data does not exist
+            if(this.m_GroupData === null){ 
+                iconData.createGroup(newGroupID); 
+                this.m_GroupData = iconData.getGroup(newGroupID);
+            } // group data does not exist
 
             // Find group to move to.
             let moveToGroup    = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
             let differentGroup = (oldGroupID !== newGroupID);
 
             if(this.isPositionAvailable(moveToGroup, this.indexToCoord(index))){ 
-                this.dropIcon(this.m_GroupData, moveToGroup, differentGroup, index);
+                this.dropIcon(moveToGroup, differentGroup, index);
             }
         },
 
@@ -175,26 +177,35 @@ export default {
             return (iconData.getIconData(group, newCoord.x, newCoord.y) === null);
         },
 
-        dropIcon(oldGroup, newGroup, differentGroup, newIndex){
-            if(differentGroup){
-                
-            }
-            else{ // Same group
-                let modIconData = iconData.getIconDataFromID(newGroup, this.$GlobalStates.value.edit.iconDragData.storedID);
-                let coord = this.indexToCoord(newIndex);
-                modIconData.coordinate.x = coord.x;
-                modIconData.coordinate.y = coord.y;
-            }
-            console.log('Drop!');
+        dropIcon(newGroup, differentGroup, newIndex){
+            let newGroupID = this.m_containerData.ID;
+            
+            if(differentGroup){                
+                let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
+                let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
 
+                iconData.moveIcon(iconID, oldGroupID, newGroupID);
+            }
+
+            (this.m_containerData.gridData.contentAlign === "Free") ? this.setFreeData(newIndex, newGroup) : this.setCompactData(newGroupID);
             this.resetSelection();
         },
 
+        setCompactData(newGroupID){
+            // If at end
+            iconData.initIconIndexing(this.$GlobalStates.value.edit.iconDragData.storedID, newGroupID);
+
+            // If between other values
+        },
+
+        setFreeData(newIndex, newGroup){
+            let modIconData = iconData.getIconDataFromID(newGroup, this.$GlobalStates.value.edit.iconDragData.storedID);
+            let coord = this.indexToCoord(newIndex);
+            modIconData.coordinate.x = coord.x;
+            modIconData.coordinate.y = coord.y;
+        },
 
         dragAndDrop(index){
-            // let iconData = this.getIconData(index);
-            // console.log(iconData);
-
             mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
             mouseData.movementFunctions ([ this.edit_Drag_Move ]);
             mouseData.mouseUpFunctions  ([ this.disableDrag ]);
@@ -202,8 +213,6 @@ export default {
             mouseData.enableMouseDown();
             mouseData.enableTracking();
             mouseData.enableMouseUp();
-
-
 
             this.m_iconID = this.getIconData(index).iconID;
         },
@@ -306,7 +315,8 @@ export default {
         },
         'update_Grid_Flag'(){
             this.calculateGridGap();
-        }
+        },
+        
     }
 }
 </script>

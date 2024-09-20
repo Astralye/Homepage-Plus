@@ -14,12 +14,34 @@ class IconData{
                 containerID: "0A1A", // This will have to be set in the Link maker, for now, just keep it static.
                 iconDataArray: [
                     {
-                        iconID: "ABC",
+                        iconID: "ICONA",
                         coordinate:{
                             x: 2, // tmp values
                             y: 2, // tmp values
                         },
                         compactIndex: 0, // For compact data. Should update when drag and dropping.
+                        iconSize: 1,
+                        iconImage: null,
+                        iconString: "",
+                    },
+                    {
+                        iconID: "ICONB",
+                        coordinate:{
+                            x: 1, // tmp values
+                            y: 1, // tmp values
+                        },
+                        compactIndex: 1, // For compact data. Should update when drag and dropping.
+                        iconSize: 1,
+                        iconImage: null,
+                        iconString: "",
+                    },
+                    {
+                        iconID: "ICONC",
+                        coordinate:{
+                            x: 2, // tmp values
+                            y: 3, // tmp values
+                        },
+                        compactIndex: 2, // For compact data. Should update when drag and dropping.
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
@@ -107,8 +129,9 @@ class IconData{
         }
         
         let oldGroup = this.getGroup(oldContainerID);
-        let iconData = this.getIconData(oldGroup, iconID);
-        let iconIndex = this.getIconIndexOfGroup(oldGroup.iconDataArray, iconID);
+        let iconData = this.getIconDataFromID(oldGroup, iconID);
+
+        let iconIndex = this.getIconIndexOfGroup(oldGroup, iconID);
 
         let newGroup = this.getGroup(newContainerID);
 
@@ -117,8 +140,16 @@ class IconData{
             return;
         }
 
-        newGroup.iconDataArray.push(iconData);
-        oldGroup.iconDataArray.splice(iconIndex, 1);        
+        newGroup.push(iconData);
+        oldGroup.splice(iconIndex, 1);
+    }
+
+    // Add to end
+    initIconIndexing(iconID, groupID){
+        let currentGroup = this.getGroup(groupID);
+        let iconDataValue = this.getIconDataFromID(currentGroup, iconID);
+
+        iconDataValue.compactIndex = currentGroup.length - 1;
     }
 
     createGroup(containerIDString){
@@ -174,7 +205,7 @@ class IconData{
     }
 
     getIconIndexOfGroup(groupArray, iconID){
-        for(let i = 0; i < groupArray; i++){ if(groupArray[i].containerID === iconID){ return i; } }
+        for(let i = 0; i < groupArray.length; i++){ if(groupArray[i].iconID === iconID){ return i; } }
         console.error(`Error (iconData.js): IconID '${iconID}' does not exist`);
         return -1;
     }
