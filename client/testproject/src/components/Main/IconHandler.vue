@@ -1,6 +1,6 @@
 <template>
     <div 
-        class="tmp"
+        class="tmp noselect"
         >
         {{ icon_data.iconID }}
     </div>
@@ -26,6 +26,7 @@ export default {
 </script>
 
 <style scoped>
+@import '../../assets/main.css';
 
 .tmp{
     background-color: rgba(100, 100, 150, 0.4);
