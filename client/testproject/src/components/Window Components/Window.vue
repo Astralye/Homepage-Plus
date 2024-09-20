@@ -99,7 +99,7 @@ export default {
 
         <!-- Header -->
         <div 
-            class="header flex" 
+            class="header flex noselect" 
             
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
