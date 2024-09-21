@@ -19,7 +19,6 @@ class IconData{
                             x: 2, // tmp values
                             y: 2, // tmp values
                         },
-                        compactIndex: 0, // For compact data. Should update when drag and dropping.
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
@@ -30,7 +29,6 @@ class IconData{
                             x: 1, // tmp values
                             y: 1, // tmp values
                         },
-                        compactIndex: 1, // For compact data. Should update when drag and dropping.
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
@@ -41,7 +39,6 @@ class IconData{
                             x: 2, // tmp values
                             y: 3, // tmp values
                         },
-                        compactIndex: 2, // For compact data. Should update when drag and dropping.
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
@@ -119,37 +116,84 @@ class IconData{
         return "abc";
     }
 
+// Coordinate Index
 // -------------------------------------------------------------------------------------------------------------------------
+
+    coordinateToIndex(x,y, columns){
+        return (columns * y) + x;
+    }
+
+    indexToCoord(index, rows){
+        let x = ( index % rows);
+        let y = ~~(index / rows); 
+        return {x , y};
+    }
+
 // Manipulation
+// -------------------------------------------------------------------------------------------------------------------------
+
+    sortGroup(oldContainerID, nColumns){
+        this.getGroup(oldContainerID).sort((objA, objB)=> {
+            if(this.coordinateToIndex(objA.coordinate.x,objA.coordinate.y, nColumns) 
+                < this.coordinateToIndex(objB.coordinate.x, objB.coordinate.y, nColumns)){
+                return -1;
+            }
+
+            if(this.coordinateToIndex(objA.coordinate.x,objA.coordinate.y, nColumns) 
+                > this.coordinateToIndex(objB.coordinate.x, objB.coordinate.y, nColumns)){
+                return 1;
+            }
+
+            return 0;
+        });
+    }
 
     //ID of Icon, old container and new container
-    moveIcon(iconID,oldContainerID, newContainerID){
-        if(!this.checkContainerExist(newContainerID)){ 
-            this.createGroup(newContainerID);
-        }
+    moveIcon(iconID,oldContainerID, newContainerID, nColumns, isFree){
+        if(!this.checkContainerExist(newContainerID)){  this.createGroup(newContainerID); }
         
-        let oldGroup = this.getGroup(oldContainerID);
-        let iconData = this.getIconDataFromID(oldGroup, iconID);
+        let oldGroup  = this.getGroup(oldContainerID);
+        let newGroup  = this.getGroup(newContainerID);
 
+        let iconData  = this.getIconDataFromID(oldGroup, iconID);
         let iconIndex = this.getIconIndexOfGroup(oldGroup, iconID);
-
-        let newGroup = this.getGroup(newContainerID);
 
         if(iconIndex === -1 ){
             console.error(`Error (iconData.js): iconID '${iconIndex}' does not exist within group '${oldContainerID}'`);
             return;
         }
 
-        newGroup.push(iconData);
+        // Determines where to insert the new data
+        if(isFree){
+            let groupArrIndex = this.getPositionalIndex(newGroup, iconData, nColumns);
+            newGroup.splice(groupArrIndex, 0, iconData); // Insert new data at the new index
+        }
+        else{
+            newGroup.push(iconData); // Push to end
+        }
+
         oldGroup.splice(iconIndex, 1);
     }
 
+    // Based on coordinate, get the index of the groupArray in which it is the smallest
+    getPositionalIndex(group, iconData, nColumns){
+        let iconIndex = this.coordinateToIndex(iconData.coordinate.x, iconData.coordinate.y, nColumns);
+        for(let i = 0; i < group.length; i++){    
+            let indexPosition = this.coordinateToIndex(group[i].coordinate.x, group[i].coordinate.y, nColumns);
+            // console.log(iconIndex, indexPosition);
+            if(iconIndex < indexPosition){ return i; }
+        }
+
+        return group.length; // At the end
+    }
+
     // Add to end
-    initIconIndexing(iconID, groupID){
+    setAvailableCoordinate(iconID, groupID, newCoordinate){
         let currentGroup = this.getGroup(groupID);
         let iconDataValue = this.getIconDataFromID(currentGroup, iconID);
 
-        iconDataValue.compactIndex = currentGroup.length - 1;
+        iconDataValue.coordinate.x = newCoordinate.x;
+        iconDataValue.coordinate.y = newCoordinate.y;
     }
 
     createGroup(containerIDString){
@@ -179,26 +223,28 @@ class IconData{
         return null;
     }
 
+    // The Getters that use variable 'groupArray_XX' contains the same data
+    // The values at the end make it easier to identify for debugging.
+
     // Based off N index, not the same as compactIndex
-    getIconDataFromID(groupArray, iconID){
-        for(let i = 0; i < groupArray.length; i++){
-            if(groupArray[i].iconID === iconID){ return groupArray[i]; }
+    getIconDataFromID(groupArray_ID, iconID){
+        for(let i = 0; i < groupArray_ID.length; i++){
+            if(groupArray_ID[i].iconID === iconID){ return groupArray_ID[i]; }
         }
-        console.error(`Error (iconData.js): index '${compIndex}' not valid.`);
+        console.error(`Error (iconData.js): iconID '${iconID}' not valid.`);
         return null;
     }
 
-    getIconDataCompactIndex(groupArray, index){
-        for(let i = 0; i < groupArray.length; i++){
-            if(groupArray[i].compactIndex === index){ return groupArray[i]; }
-        }
-        return null;
+    // Based off Index
+    getIconDataFromIndex(groupArray_Index, index){
+        if(index > groupArray_Index.length) { return null; }
+        return groupArray_Index[index];
     }
 
     // Based off coordinate
-    getIconData(groupArray, x, y){
-        for(let i = 0; i < groupArray.length; i++){
-            if(groupArray[i].coordinate.x === x && groupArray[i].coordinate.y === y){ return groupArray[i]; }
+    getIconData(groupArray_Coordinate, x, y){
+        for(let i = 0; i < groupArray_Coordinate.length; i++){
+            if(groupArray_Coordinate[i].coordinate.x === x && groupArray_Coordinate[i].coordinate.y === y){ return groupArray_Coordinate[i]; }
         }
         // console.error(`Error (iconData.js): Input Coordinates: (${x},${y}) not found`);
         return null;
