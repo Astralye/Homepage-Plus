@@ -1,4 +1,4 @@
-<template>
+getIconData<template>
     <div class="fill grid base-margin border-box"
         ref="container"
         @mouseup="resetSelection"
@@ -85,12 +85,6 @@ export default {
             default: false,
         }
     },
-    created(){
-        this.m_containerData = this.getContainerData();
-        this.setDimension();
-        this.m_iconSize = containerData.getIconSize(this.component_ID);
-        this.setContainerIconData();
-    },
     data(){
         return{
             iconData,
@@ -115,22 +109,118 @@ export default {
             m_iconID: null
         }
     },
+    created(){
+        this.initGrid();
+    },
     methods: {
+
+        initGrid(){
+
+            this.m_containerData = this.getContainerData();
+            this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+
+            if(this.m_GroupData === null){ 
+                iconData.createGroup(this.m_containerData.ID);
+                this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+            } // group data does not exist
+            this.setDimension();
+            this.m_iconSize = containerData.getIconSize(this.component_ID);
+            this.setContainerIconData();
+            
+        },
+
 
 // Coordinate Index
 // -------------------------------------------------------------------------------------------
-        coordinateToIndex(x,y){
-            return (this.m_Columns * y) + x;
-        },
 
-        indexToCoord(index){
-            let x = ( index % this.m_Rows);
-            let y = ~~(index / this.m_Rows); 
-            return {x , y};
+        // Find next available position, Starts from the beginning
+        generateNextCoordinate(groupID){
+            for(let i = 0; i < this.m_Columns * this.m_Rows; i++){
+                let tmpCoord = iconData.indexToCoord(i, this.m_Rows);
+                
+                // If null (no item in location,) set new coordinate.
+                if(!iconData.getIconData(iconData.getGroup(groupID), tmpCoord.x, tmpCoord.y)){ return { x: tmpCoord.x, y: tmpCoord.y }; } 
+            }
+
+            // No spaces available
+            // This should not occur in any case, Dragging to new location requires an empty space
+            // If no empty space, this function should not be run.
+            console.error("Error: No spaces available");
+            return null;
         },
 
 // Icon Movement
 // ------------------------------------------------------------------------------------------
+
+        resetSelection(){
+            this.$GlobalStates.value.edit.iconDragData = null;
+        },
+
+        // Look at the current group. Functions return null if free space.
+        isPositionAvailable(group, index){
+            let newCoord = iconData.indexToCoord(index, this.m_Rows);
+            
+            return (this.m_containerData.gridData.contentAlign === "Free") ? 
+                    (!iconData.getIconData(group, newCoord.x, newCoord.y)) : (!iconData.getIconDataFromIndex(group, index));
+        },
+
+        checkDropIcon(index){
+            if(!this.$GlobalStates.value.edit.iconDragData){ return; }
+
+            let newGroupID = this.m_containerData.ID;
+            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
+            let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
+
+            // Find group to move to.
+            let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
+            let isDifferentGroup = (oldGroupID !== newGroupID);
+
+            if(!this.isPositionAvailable(moveToGroup, index)){ return; }
+
+            this.dropIcon(isDifferentGroup, index, oldGroupID, newGroupID, iconID);
+        },
+
+        dropIcon(isDifferentGroup, newIndex, oldGroupID, newGroupID, iconID){
+
+            let isFree = (this.m_containerData.gridData.contentAlign === "Free");
+            
+            // Only changes the coordinate values FIRST
+            (isFree) ? this.setFreeData(oldGroupID, newIndex) : this.setCompactData(oldGroupID, newGroupID, isDifferentGroup);
+
+            // Move data across
+            (isDifferentGroup) ? iconData.moveIcon(iconID, oldGroupID, newGroupID, this.m_Columns, isFree) :
+                iconData.sortGroup(oldGroupID, this.m_Columns); 
+
+            this.resetSelection();
+        },
+
+        setCompactData(oldGroupID, newGroupID, isDifferentGroup){
+            if(isDifferentGroup){
+                // If at null location
+                let newCoordinate = this.generateNextCoordinate(newGroupID);
+                iconData.setAvailableCoordinate(this.$GlobalStates.value.edit.iconDragData.storedID, oldGroupID, newCoordinate);
+            }
+        },
+
+        setFreeData(groupID, newIndex){
+            let modIconData = iconData.getIconDataFromID(iconData.getGroup(groupID), this.$GlobalStates.value.edit.iconDragData.storedID);
+            let coord = iconData.indexToCoord(newIndex, this.m_Rows);
+            modIconData.coordinate.x = coord.x;
+            modIconData.coordinate.y = coord.y;
+        },
+
+    // Mouse Function
+        dragAndDrop(index){
+            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
+            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
+            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
+            
+            mouseData.enableMouseDown();
+            mouseData.enableTracking();
+            mouseData.enableMouseUp();
+
+            this.m_iconID = this.getIconData(index).iconID;
+        },
 
         edit_Drag_MouseDown(){
             // Find what it is holding and store it.s
@@ -144,85 +234,11 @@ export default {
 
         },
 
-        resetSelection(){
-            this.$GlobalStates.value.edit.iconDragData = null;
-        },
-
-
-        checkDropIcon(index){
-
-            if(!this.$GlobalStates.value.edit.iconDragData){ return; }
-
-            let newGroupID = this.m_containerData.ID;
-            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
-
-            if(this.m_GroupData === null){ 
-                iconData.createGroup(newGroupID); 
-                this.m_GroupData = iconData.getGroup(newGroupID);
-            } // group data does not exist
-
-            // Find group to move to.
-            let moveToGroup    = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
-            let differentGroup = (oldGroupID !== newGroupID);
-
-            if(this.isPositionAvailable(moveToGroup, this.indexToCoord(index))){ 
-                this.dropIcon(moveToGroup, differentGroup, index);
-            }
-        },
-
-        // Free and compact have different requirements.
-
-        // Look at the current group. getIconData return null if free space.
-        isPositionAvailable(group, newCoord){
-            return (iconData.getIconData(group, newCoord.x, newCoord.y) === null);
-        },
-
-        dropIcon(newGroup, differentGroup, newIndex){
-            let newGroupID = this.m_containerData.ID;
-            
-            if(differentGroup){                
-                let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
-                let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
-
-                iconData.moveIcon(iconID, oldGroupID, newGroupID);
-            }
-
-            (this.m_containerData.gridData.contentAlign === "Free") ? this.setFreeData(newIndex, newGroup) : this.setCompactData(newGroupID);
-            this.resetSelection();
-        },
-
-        setCompactData(newGroupID){
-            // If at end
-            iconData.initIconIndexing(this.$GlobalStates.value.edit.iconDragData.storedID, newGroupID);
-
-            // If between other values
-        },
-
-        setFreeData(newIndex, newGroup){
-            let modIconData = iconData.getIconDataFromID(newGroup, this.$GlobalStates.value.edit.iconDragData.storedID);
-            let coord = this.indexToCoord(newIndex);
-            modIconData.coordinate.x = coord.x;
-            modIconData.coordinate.y = coord.y;
-        },
-
-        dragAndDrop(index){
-            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
-            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
-            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
-            
-            mouseData.enableMouseDown();
-            mouseData.enableTracking();
-            mouseData.enableMouseUp();
-
-            this.m_iconID = this.getIconData(index).iconID;
-        },
-
         disableDrag(){
             mouseData.disableMouseDown();
             mouseData.disableTracking();
             mouseData.disableMouseUp();
         },
-
 
 // Icon Functions
 // ------------------------------------------------------------------------------------------
@@ -234,17 +250,19 @@ export default {
         },
 
         renderCompact(index){
-            let data = iconData.getIconDataCompactIndex(this.m_GroupData, index);
-            
-            if(data === null){ return false; }
+            let data = iconData.getIconDataFromIndex(this.m_GroupData, index);
+
+            // Contains no value
+            if(!data){ return false; }
             return true;
         },
         
         renderFree(index){
-            let coord = this.indexToCoord(index);
-            let data = iconData.getIconData(this.m_GroupData, coord.x, coord.y);
+            let coord = iconData.indexToCoord(index, this.m_Rows);
+            let data  = iconData.getIconData(this.m_GroupData, coord.x, coord.y);
 
-            if(data === null){ return false; }
+            // Contains no value
+            if(!data){ return false; }
             return true;
         },
 
@@ -255,11 +273,11 @@ export default {
         },
 
         getCompactIconData(index){
-            return iconData.getIconDataCompactIndex(this.m_GroupData, index);
+            return iconData.getIconDataFromIndex(this.m_GroupData, index);
         },
 
         getFreeIconData(index){
-            let coord = this.indexToCoord(index);
+            let coord = iconData.indexToCoord(index, this.m_Rows);
             return iconData.getIconData(this.m_GroupData, coord.x, coord.y);
         },
 
@@ -316,6 +334,10 @@ export default {
         'update_Grid_Flag'(){
             this.calculateGridGap();
         },
+        'm_GroupData.length'(){
+            // this.
+            // console.log(this.m_containerData.ID,"Modified");
+        }
         
     }
 }
