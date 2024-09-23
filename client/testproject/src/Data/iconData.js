@@ -187,13 +187,12 @@ class IconData{
         return group.length; // At the end
     }
 
-    // Add to end
-    setAvailableCoordinate(iconID, groupID, newCoordinate){
-        let currentGroup = this.getGroup(groupID);
-        let iconDataValue = this.getIconDataFromID(currentGroup, iconID);
+    swapIndices(group, index_A, index_B){
+        [group[index_A], group[index_B]] = [group[index_B], group[index_A]];
+    }
 
-        iconDataValue.coordinate.x = newCoordinate.x;
-        iconDataValue.coordinate.y = newCoordinate.y;
+    moveItemToEnd(group, index){
+        group.push(group.splice(index, 1)[0]);
     }
 
     createGroup(containerIDString){
@@ -242,7 +241,7 @@ class IconData{
     }
 
     // Based off coordinate
-    getIconData(groupArray_Coordinate, x, y){
+    getIconDataFromCoordinate(groupArray_Coordinate, x, y){
         for(let i = 0; i < groupArray_Coordinate.length; i++){
             if(groupArray_Coordinate[i].coordinate.x === x && groupArray_Coordinate[i].coordinate.y === y){ return groupArray_Coordinate[i]; }
         }
@@ -258,7 +257,6 @@ class IconData{
 
     // Assuming the parameter is a object
     getCoordinate(iconObj)  {return iconObj.coordinate; }
-    getCompactIndex(iconObj){return iconObj.compactIndex; }
     getIconSize(iconObj)    {return iconObj.iconSize; }
     getIconImage(iconObj)   {return iconObj.iconImage; }
     getIconString(iconObj)  {return iconObj.iconString; }
@@ -267,28 +265,23 @@ class IconData{
 // Setters
 
     setCoordinate(groupID, iconID, newX,newY){
-        let iconData = this.getGroup(groupID).getIconData(iconID);
+        let iconData = this.getIconDataFromID(this.getGroup(groupID), iconID);
         iconData.coordinate.x = newX;
         iconData.coordinate.y = newY;
     }
 
-    setIndex(groupID, iconID, newCIndex){
-        let iconData = this.getGroup(groupID).getIconData(iconID);
-        iconData.compactIndex = newCIndex;
-    }
-
-    setIconSize(groupID, iconID, newCIndex){
-        let iconData = this.getGroup(groupID).getIconData(iconID);
-        iconData.compactIndex = newCIndex;
+    setIconSize(groupID, iconID, newSize){
+        let iconData = this.getIconDataFromID(this.getGroup(groupID), iconID);
+        iconData.iconSize = newSize;
     }
 
     setIconImage(groupID, iconID, nIconImage){
-        let iconData = this.getGroup(groupID).getIconData(iconID);
+        let iconData = this.getIconDataFromID(this.getGroup(groupID), iconID);
         iconData.iconImage = nIconImage;
     }
 
     setIconString(groupID, iconID, string){
-        let iconData = this.getGroup(groupID).getIconData(iconID);
+        let iconData = this.getIconDataFromID(this.getGroup(groupID), iconID);
         iconData.iconString = string;
     }
 };
