@@ -1,8 +1,19 @@
 <template>
-    <div 
-        class="tmp noselect"
-        >
-        {{ icon_data.iconID }}
+    <div class="center iconContainer noselect">
+
+        <div class="center fit-content">
+            <div class="tmpIcon"
+            @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
+            >
+                
+            </div>
+        </div>
+
+        <div class="center fit-content text-padding">
+            <p>
+                {{ icon_data.iconString }}
+            </p>
+        </div>
     </div>
 </template>
 
@@ -21,6 +32,9 @@ export default {
         // console.log(this.icon_data);
     },
     methods: {
+        openLink(){
+            window.open(this.icon_data.link, '_blank');
+        }
     }
 }
 </script>
@@ -28,9 +42,30 @@ export default {
 <style scoped>
 @import '../../assets/main.css';
 
-.tmp{
-    background-color: rgba(100, 100, 150, 0.4);
+.iconContainer{
     width: 100%;
+}
+
+.text-padding{
+    padding-top: 0.3em;
+}
+
+.tmpIcon{
+    width: 90px;
+    height: 90px;
+    background-color: cadetblue;
+}
+
+.fit-content{
+    max-width: fit-content;
+}
+
+.flex{
+    display: flex;
+}
+
+.center{
+    margin: auto;
 }
 
 </style>
