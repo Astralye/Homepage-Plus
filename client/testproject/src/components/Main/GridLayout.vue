@@ -173,7 +173,7 @@ export default {
             let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
 
             let isFree     = (this.m_containerData.gridData.contentAlign === "Free");
-            let dirIndex   = this.setXDirectionalIndex(index);
+            let dirIndex   = this.directionalIndexHandler(index);
 
             // Find group to move to.
             let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
@@ -221,6 +221,7 @@ export default {
         },
 
     // Mouse Function
+    
         dragAndDrop(index){
             mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
             mouseData.movementFunctions ([ this.edit_Drag_Move ]);
@@ -254,40 +255,52 @@ export default {
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+    // Grid Direction
+
+        // Modifies index depending on direction
+        directionalIndexHandler(index){
+            let modXIndex = (this.m_containerData.gridData.xAxisDirection === "Left") ? index : this.rightLeft(index);
+            return          (this.m_containerData.gridData.yAxisDirection === "Top")  ? modXIndex : this.bottomTop(modXIndex);
+        },
+
+        // Left to right is default index
+        // Rendering from Right to Left
+        rightLeft(index){
+            let n_Columns = (~~(index / this.m_Rows) + 1); // Y coordinate
+            let clampedIndex = (index % this.m_Rows);      // tmp index between 0 - N rows
+            
+            let startValue = (this.m_Rows) * n_Columns;    // Start value
+            return (startValue - (clampedIndex + 1));      // Start value - tmp index;
+        },
+
+        // Top to bottom is default index
+        // Renders from Bottom to top
+        bottomTop(index){
+            let n_Columns = (~~(index / this.m_Rows) + 1); // Y coordinate
+            let clampedIndex = (index % this.m_Rows);      // tmp index between 0 - N rows
+
+            let startValue = (this.m_Columns - n_Columns) * this.m_Rows;
+            return (startValue + clampedIndex);
+        },
+
     // Render Flags
+
         renderIcon(index){
             if(this.m_GroupData === null){ return false; }
             return (this.m_containerData.gridData.contentAlign === "Compact") ? this.renderCompact(index) : this.renderFree(index);
         },
 
-        rightLeft(index){
-            let n_Columns = (~~(index / this.m_Rows) + 1);
-            let maxRowValue = (this.m_Rows) * n_Columns;
-            let clampedIndex = (index % this.m_Rows);
-            return (maxRowValue - (clampedIndex + 1));
-        },
-
-        // Retrieves the index based on the X direction
-        setXDirectionalIndex(index){
-            return (this.m_containerData.gridData.xAxisDirection === "Left") ? index : this.rightLeft(index);
-        },
-
-        compactDirectionalRender(index){
-            return iconData.getIconDataFromIndex(this.m_GroupData, this.setXDirectionalIndex(index));
-        },
-
         renderCompact(index){
             // Contains no value
-            if(!this.compactDirectionalRender(index)){ return false; }
+            if(!iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index))){ return false; }
             return true;
         },
         
         renderFree(index){
             let coord = iconData.indexToCoord(index, this.m_Rows);
-            let data  = iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
 
             // Contains no value
-            if(!data){ return false; }
+            if(!iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y)){ return false; }
             return true;
         },
 
@@ -298,13 +311,7 @@ export default {
         },
 
         getCompactIconData(index){
-
-            if(this.m_containerData.gridData.xAxisDirection === "Left") {return iconData.getIconDataFromIndex(this.m_GroupData, index);}
-            if(this.m_containerData.gridData.xAxisDirection === "Right"){
-                // Reverse the values
-                let XReverseIndex = this.rightLeft(index);
-                return iconData.getIconDataFromIndex(this.m_GroupData, XReverseIndex);
-            }
+            return iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index));
         },
 
         getFreeIconData(index){
