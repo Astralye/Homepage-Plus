@@ -9,27 +9,17 @@ getIconData<template>
                 <template v-if="renderIcon(index)">
 
                     <!-- Edit mode Icon -->
-                    <template v-if="this.$GlobalStates.value.edit.enabled">
-                        <IconHandler
-                        :icon_data="getIconData(index)"
-                        @mousedown="dragAndDrop(index)"
-                        />
+                    <IconHandler
+                    :icon_data="getIconData(index)"
+                    @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                    />
+                    <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
 
                         <!-- 
                             mousedown would have many functions, but for this instance, just a single
                             mouse click will store the data
                           -->
-                    </template>
-                    
-                    <!-- Non-Edit mode Icon -->
-                    <template v-else>
-                        <IconHandler
-                        :icon_data="getIconData(index)"
-                        @mousedown="console.log('Open')"
-                        @mouseup="console.log('Close')"
-                        />
-                    </template>
-
+        
                     <!-- 
                     
                     the icon should have different functionalities
@@ -388,7 +378,7 @@ export default {
 }
 
 .grid-item{
-    border: solid rgba(255, 255, 255, 0.4) 1px;
+    border: solid rgba(255, 255, 255, 0.4) 0.5px;
 }
 
 .fill{

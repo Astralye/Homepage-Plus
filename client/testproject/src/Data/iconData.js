@@ -21,7 +21,8 @@ class IconData{
                         },
                         iconSize: 1,
                         iconImage: null,
-                        iconString: "",
+                        iconString: "Youtube",
+                        link: "https://www.youtube.com/feed/subscriptions",
                     },
                     {
                         iconID: "ICONB",
@@ -31,7 +32,8 @@ class IconData{
                         },
                         iconSize: 1,
                         iconImage: null,
-                        iconString: "",
+                        iconString: "Reddit",
+                        link: "https://www.reddit.com/",
                     },
                     {
                         iconID: "ICONC",
@@ -42,6 +44,7 @@ class IconData{
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
+                        link: "FOLDER",
                     }
                 ]
             }
@@ -77,6 +80,7 @@ class IconData{
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
+                        link: "",
                     }
                 ]
             }
