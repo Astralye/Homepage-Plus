@@ -173,13 +173,14 @@ export default {
             let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
 
             let isFree     = (this.m_containerData.gridData.contentAlign === "Free");
+            let dirIndex   = this.setXDirectionalIndex(index);
 
             // Find group to move to.
             let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
             let isDifferentGroup = (oldGroupID !== newGroupID);
 
-            if(!this.isPositionAvailable(moveToGroup, index, isFree)){ return; }
-            this.dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, index);
+            if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ return; }
+            this.dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, dirIndex);
         },
 
         dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, newIndex){
@@ -266,18 +267,13 @@ export default {
             return (maxRowValue - (clampedIndex + 1));
         },
 
+        // Retrieves the index based on the X direction
+        setXDirectionalIndex(index){
+            return (this.m_containerData.gridData.xAxisDirection === "Left") ? index : this.rightLeft(index);
+        },
+
         compactDirectionalRender(index){
-            if(this.m_containerData.gridData.xAxisDirection === "Left") { return iconData.getIconDataFromIndex(this.m_GroupData, index);}
-            
-            // Reverse the values
-            if(this.m_containerData.gridData.xAxisDirection === "Right"){
-                let XReverseIndex = this.rightLeft(index);
-                return iconData.getIconDataFromIndex(this.m_GroupData, XReverseIndex);
-            }
-
-
-            console.log("here");
-            return true;
+            return iconData.getIconDataFromIndex(this.m_GroupData, this.setXDirectionalIndex(index));
         },
 
         renderCompact(index){
