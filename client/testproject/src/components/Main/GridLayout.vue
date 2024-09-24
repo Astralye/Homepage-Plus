@@ -259,11 +259,30 @@ export default {
             return (this.m_containerData.gridData.contentAlign === "Compact") ? this.renderCompact(index) : this.renderFree(index);
         },
 
-        renderCompact(index){
-            let data = iconData.getIconDataFromIndex(this.m_GroupData, index);
+        rightLeft(index){
+            let n_Columns = (~~(index / this.m_Rows) + 1);
+            let maxRowValue = (this.m_Rows) * n_Columns;
+            let clampedIndex = (index % this.m_Rows);
+            return (maxRowValue - (clampedIndex + 1));
+        },
 
+        compactDirectionalRender(index){
+            if(this.m_containerData.gridData.xAxisDirection === "Left") { return iconData.getIconDataFromIndex(this.m_GroupData, index);}
+            
+            // Reverse the values
+            if(this.m_containerData.gridData.xAxisDirection === "Right"){
+                let XReverseIndex = this.rightLeft(index);
+                return iconData.getIconDataFromIndex(this.m_GroupData, XReverseIndex);
+            }
+
+
+            console.log("here");
+            return true;
+        },
+
+        renderCompact(index){
             // Contains no value
-            if(!data){ return false; }
+            if(!this.compactDirectionalRender(index)){ return false; }
             return true;
         },
         
@@ -283,7 +302,13 @@ export default {
         },
 
         getCompactIconData(index){
-            return iconData.getIconDataFromIndex(this.m_GroupData, index);
+
+            if(this.m_containerData.gridData.xAxisDirection === "Left") {return iconData.getIconDataFromIndex(this.m_GroupData, index);}
+            if(this.m_containerData.gridData.xAxisDirection === "Right"){
+                // Reverse the values
+                let XReverseIndex = this.rightLeft(index);
+                return iconData.getIconDataFromIndex(this.m_GroupData, XReverseIndex);
+            }
         },
 
         getFreeIconData(index){
