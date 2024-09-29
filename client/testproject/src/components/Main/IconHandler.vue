@@ -2,11 +2,10 @@
     <div class="center iconContainer noselect">
 
         <div class="center fit-content">
-            <div class="tmpIcon"
+            <SVGIcon
+            :name="icon_data.iconImage"
             @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
-            >
-                
-            </div>
+            />
         </div>
 
         <div class="center fit-content text-padding">
@@ -18,9 +17,13 @@
 </template>
 
 <script>
+import SVGIcon from '../Input Components/SVGIcon.vue';
 
 // This will be drag and drop.
 export default {
+    components: {
+        SVGIcon
+    },
     props:{
         icon_data: {
             type: Object,
@@ -29,7 +32,6 @@ export default {
         },
     },
     created(){
-        // console.log(this.icon_data);
     },
     methods: {
         openLink(){

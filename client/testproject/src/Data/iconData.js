@@ -20,7 +20,7 @@ class IconData{
                             y: 2, // tmp values
                         },
                         iconSize: 1,
-                        iconImage: null,
+                        iconImage: "youtube",
                         iconString: "Youtube",
                         link: "https://www.youtube.com/feed/subscriptions",
                     },
@@ -31,7 +31,7 @@ class IconData{
                             y: 1, // tmp values
                         },
                         iconSize: 1,
-                        iconImage: null,
+                        iconImage: "reddit",
                         iconString: "Reddit",
                         link: "https://www.reddit.com/",
                     },
