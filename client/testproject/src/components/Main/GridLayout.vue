@@ -4,7 +4,7 @@ getIconData<template>
         @mouseup="resetSelection"
         >
         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="grid-item flex-center"
+            <div class="flex-center"
                 @mouseup="checkDropIcon(index)">
                 <template v-if="renderIcon(index)">
 
