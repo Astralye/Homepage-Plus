@@ -13,7 +13,10 @@
 
 <style>
 .window-content-divider{
-    margin: 1em 0.5em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 1em;
 }
 </style>
 

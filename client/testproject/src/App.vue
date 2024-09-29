@@ -281,6 +281,7 @@ export default{
             <Window
                 v-show="this.EditBtns[3].toggle"
                 title="Link Maker"
+                :width="400"
                 @close-window="test"
                 @focusTab="focusClickedTab">
                 <template v-slot:window-icon>
