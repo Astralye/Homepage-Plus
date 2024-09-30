@@ -51,6 +51,16 @@ class IconData{
         ]
     }
 
+    // For testing purposes, to keep initalized data.
+    // Will be removed later
+    TMP_initData(storageData){
+        this.data = storageData;
+    }
+
+    TMP_resetData(){
+        this.data = [];
+    }
+
     resetData2(){
         this.data = [
             {
@@ -76,7 +86,6 @@ class IconData{
                             x: null,
                             y: null, 
                         },
-                        compactIndex: 0, // For compact data. Should update when drag and dropping.
                         iconSize: 1,
                         iconImage: null,
                         iconString: "",
@@ -89,23 +98,24 @@ class IconData{
 
     checkContainerExist(containerID){
         for(let i = 0; i < this.data.length; i++){ if(this.data[i].containerID === containerID){ return true; } }
+        if(this.isFromStorage(containerID)){ return true; }
         console.warn(`Error (iconData.js): '${containerID}' does not exist`);
         return false;
     }
 
 // Generation
 
-    generateIcon(setX, setY, index, image, string){
+    generateIcon(setX, setY, image, string){
         return {
             iconID: this.generateIconID(),
             coordinate:{
                 x: setX,
                 y: setY,
             },
-            compactIndex: index, // For compact data. Should update when drag and dropping.
             iconSize: 1,
             iconImage: image,
             iconString: string,
+            link: "",
         }
     }
 
@@ -184,7 +194,6 @@ class IconData{
         let iconIndex = this.coordinateToIndex(iconData.coordinate.x, iconData.coordinate.y, nColumns);
         for(let i = 0; i < group.length; i++){    
             let indexPosition = this.coordinateToIndex(group[i].coordinate.x, group[i].coordinate.y, nColumns);
-            // console.log(iconIndex, indexPosition);
             if(iconIndex < indexPosition){ return i; }
         }
 
@@ -214,6 +223,10 @@ class IconData{
         }
     }
 
+    isFromStorage(groupID){
+        return (groupID === "Storage");
+    }
+
 // ----------------------------------------------------------------------------------------------------------------
 // Getters
 
@@ -223,7 +236,7 @@ class IconData{
             if(this.data[i].containerID === inputID){ return this.data[i].iconDataArray; }
         }
         // console.warn(`Error (iconData.js): '${inputID}' does not exist`);
-        return null;
+        return (this.isFromStorage(inputID)) ? iconStorage.allData : null;
     }
 
     // The Getters that use variable 'groupArray_XX' contains the same data
@@ -290,5 +303,8 @@ class IconData{
     }
 };
 
-const iconDataInstance = new IconData;
-export const iconData = reactive(iconDataInstance);
+const iconDataInstance    = new IconData;
+const iconStorageInstance = new IconData;
+
+export const iconData    = reactive(iconDataInstance);
+export const iconStorage = reactive(iconStorageInstance);
