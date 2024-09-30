@@ -22,13 +22,18 @@
                 </template>
         
                 <template #content>
-                    <div class="saved-grid width-full grid"
-                    @mouseup="checkDropIcon">
+                    <div class="saved-grid width-full grid">
                         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-                            <div class="saved-icons grid-item">
-        
+                            <div class="saved-icons grid-item"
+                            @mouseup="checkDropIcon(index)">
+                                
                                 <!-- For rendering any icons saved -->
-                                <template v-if="RenderIcon(index)"></template> 
+                                <template v-if="renderIcon(index)">
+                                    <IconHandler
+                                        :icon_data="getIconData(index)"
+                                        @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                                    />
+                                </template> 
                             </div>
                         </template>
                     </div>
@@ -154,6 +159,9 @@ import WindowContainerDivider from '../Window Components/WindowContainerDivider.
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import IconHandler from '../Main/IconHandler.vue';
+import { iconData, iconStorage } from '../../Data/iconData';
+import { mouseData } from '../../Data/mouseData';
 
 export default {
     components: {
@@ -161,22 +169,55 @@ export default {
         ToolTip,
         RangeSlider,
         TextInput,
-        SingleButton
+        SingleButton,
+        IconHandler,
     },
     data(){
         return {
+            iconStorage,
+            mouseData,
+
+
             m_Rows: 4,
             m_Columns: 3,
+
+            m_iconID: null
         }
     },
     methods: {
+
 // Icon functions
 // ------------------------------------------------------------------------------------------------------------
-        checkDropIcon(){ // icon drag onto saved storage
+
+
+// Some of the functions are copied but altered from GridLayout.vue
+// Perhaps I can move them to a single function later
+
+        checkDropIcon(index){ // icon drag onto saved storage
             if(!this.$GlobalStates.value.edit.iconDragData){ return; } // Requires data
 
-            console.log("Drop!", this.$GlobalStates.value.edit.iconDragData);
+            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
+            let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
+            
+            if(oldGroupID === "Storage"){
+                this.rearrangeIcons(index, iconID);
+            }
+            else{
+                iconData.moveIcon(iconID, oldGroupID, "Storage", this.m_Columns, false);
+            }
             this.resetSelection();
+        },
+
+        rearrangeIcons(index_A, iconID){
+            let group   = iconStorage.allData;
+            let data    = iconStorage.getIconDataFromIndex(group, index_A);
+            let index_B = iconStorage.getIconIndexOfGroup(group, iconID);
+            
+            (data) ? iconStorage.swapIndices(group, index_A, index_B) : iconStorage.moveItemToEnd(group, index_B);
+        },
+
+        getIconData(index){
+            return iconStorage.allData[index];
         },
 
         resetSelection(){
@@ -184,17 +225,58 @@ export default {
         },
 
         generateIcon(){
+            let newIcon = iconStorage.generateIcon(null, null, "Burger", "Icon");
+            iconStorage.allData.push(newIcon);
 
+            console.log(iconStorage.allData, "generated");
         },
 
         deleteIcon(){
 
         },
 
+// Mouse functions
 // ------------------------------------------------------------------------------------------------------------
 
-        RenderIcon(){ // Get the data for any saved icons.
-            return false;
+// Reused code from Gridlayout.vue, could put into own file later
+
+        dragAndDrop(index){
+            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
+            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
+            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
+            
+            mouseData.enableMouseDown();
+            mouseData.enableTracking();
+            mouseData.enableMouseUp();
+
+            this.m_iconID = this.getIconData(index).iconID;
+        },
+
+        edit_Drag_MouseDown(){
+            // Find what it is holding and store it.s
+            this.$GlobalStates.value.edit.iconDragData = {
+                storedContainer:  "Storage",
+                storedID: this.m_iconID,
+            };
+        },
+
+        edit_Drag_Move(){
+
+        },
+
+        disableDrag(){
+            mouseData.disableMouseDown();
+            mouseData.disableTracking();
+            mouseData.disableMouseUp();
+        },
+
+
+
+// ------------------------------------------------------------------------------------------------------------
+
+        renderIcon(index){ // Check if there is data
+            // console.log(iconStorage.allData[index]);
+            return (iconStorage.allData[index]) ? true : false;
         },
         tmp(){
 

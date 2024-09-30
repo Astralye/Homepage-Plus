@@ -1,4 +1,4 @@
-getIconData<template>
+<template>
     <div class="fill grid base-margin border-box"
         ref="container"
         @mouseup="resetSelection"
@@ -288,7 +288,6 @@ export default {
         
         renderFree(index){
             let coord = iconData.indexToCoord(index, this.m_Rows);
-
             // Contains no value
             if(!iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y)){ return false; }
             return true;

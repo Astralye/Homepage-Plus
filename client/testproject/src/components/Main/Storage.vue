@@ -46,7 +46,7 @@
 import Modal from './Modal.vue';
 import { containerData } from '../../Data/containerData.js'
 import { layout } from '../../Data/layoutData.js';
-import { iconData } from '../../Data/iconData.js';
+import { iconData, iconStorage } from '../../Data/iconData.js';
 
 export default {
     components:{
@@ -57,6 +57,7 @@ export default {
             containerData,
             layout,
             iconData,
+            iconStorage,
 
             iconSize: "5em",
             modal:{
@@ -69,7 +70,8 @@ export default {
             localStorageVarNames: {
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
-                iconData: "iconData"
+                iconData: "iconData",
+                iconStorage: "iconStorage"
             }
         }
     },
@@ -88,6 +90,7 @@ export default {
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
             localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
             localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
+            localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
 
             // console.log(containerData.allData);
             
@@ -108,6 +111,7 @@ export default {
             containerData.resetData();
             layout.resetData();
             iconData.resetData();
+            iconStorage.TMP_resetData(); // Remove later
 
             this.saveLayout();
             // Reset selected
@@ -142,14 +146,19 @@ export default {
             const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
             const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
             const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
+            const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
+            
 
             if(layoutData  === null) { console.log("No Layout Data!");  return; }
             if(displayData === null) { console.log("No Display Data!"); return;}
             if(dataIcon === null)    { console.log("No Icon Data!");    return;}
+            if(storageData === null) { console.log("No Icon Storage Data!");    return;}
+            
 
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
             iconData.initializeData(dataIcon);
+            iconStorage.TMP_initData(storageData); // Change later
             
             this.$GlobalStates.clickLoad = true; 
             this.$GlobalStates.isRenderFinalNode = true;
