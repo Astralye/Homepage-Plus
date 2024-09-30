@@ -23,9 +23,6 @@ export default{
     },
     data() {
         return{
-            editIcon: "editing.png",
-            settingIcon: "settings.png",
-
             toggleTab: [
                 { type: "edit", toggle: false},
                 { type: "settings", toggle: false},
@@ -45,10 +42,6 @@ export default{
         }
     },
     created(){
-        
-        // Load User data
-        this.loadData();
-
         // Resize window
         window.addEventListener("resize", () => {
             this.$GlobalStates.value.edit.windowSize.height = window.innerHeight;
@@ -56,21 +49,14 @@ export default{
         });
     },
     methods: {
-        loadData(){
-            const containerData = JSON.parse(localStorage.getItem("containerData"));
-            
-            if(containerData === null) {
-                console.log ("No data!"); 
-                return;
-            }
-            this.$ContainerData.value = containerData;
-        },
-
-        // imageLocation(fileName) {
-        //     return new URL(`./assets/${fileName}`, import.meta.url).href; 
-        // }
-
         // This opens a blank window with no content.
+
+        closeAllWindows(){
+            this.EditBtns.forEach(window => {
+                window.toggle = false;
+            });
+        },
+        
         openWindowTab(type){
 
             let windowType;
@@ -81,6 +67,7 @@ export default{
                 {
                     windowType = this.toggleTab[0];
                     this.$GlobalStates.value.edit.enabled = !this.$GlobalStates.value.edit.enabled;
+                    this.closeAllWindows();
                     break;
                 }
                 case "settings":
