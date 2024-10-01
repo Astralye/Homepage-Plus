@@ -10,7 +10,7 @@
 
         <div class="center fit-content text-padding">
             <p>
-                {{ icon_data.iconString }}
+                {{ iconText }}
             </p>
         </div>
     </div>
@@ -31,11 +31,23 @@ export default {
             required: true,
         },
     },
+    data(){
+        return{
+            iconText: ""
+        }
+    },
     created(){
+        this.iconText = this.icon_data.iconString; 
     },
     methods: {
         openLink(){
             window.open(this.icon_data.link, '_blank');
+        }
+    },
+    watch: {
+        'icon_data':{
+            handler(val){ this.iconText = val.iconString },
+            deep: true            
         }
     }
 }

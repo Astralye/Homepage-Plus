@@ -247,7 +247,7 @@ export default {
 // ------------------------------------------------------------------------------------------
 
         setSelectedIcon(index){
-            iconSelect.setData(iconData.getIconDataFromIndex(this.m_GroupData, index));
+            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
     // Grid Direction
