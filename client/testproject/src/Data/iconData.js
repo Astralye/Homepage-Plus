@@ -307,22 +307,16 @@ class IconSelected {
     constructor(){
         this.data = {
             iconID: "",
-            iconSize: 1,
-            iconImage: null,
-            iconString: "",
-            link: "",
+            groupID: "", 
         }
     }
 
     get dataValue(){ return this.data; };
 
     // The data object passed in is the iconData
-    setData(newIconDataObj){
-        this.data.iconID       = newIconDataObj.iconID;
-        this.data.iconSize     = newIconDataObj.iconSize;
-        this.data.iconImage    = newIconDataObj.iconImage;
-        this.data.iconString   = newIconDataObj.iconString;
-        this.data.link         = newIconDataObj.link;
+    setData(iconID, groupID){
+        this.data.iconID  = iconID;
+        this.data.groupID = groupID;
     }
 }
 

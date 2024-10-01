@@ -1,5 +1,4 @@
 <template>
-
     <div>
         <div class="flex flex-space">
             <SingleButton
@@ -75,9 +74,9 @@
         
                 <template #content>
                     <input type="text" 
-                        placeholder="Item name" 
-                        :value="m_SelectedIcon.iconString">
-                </template>
+                        placeholder="Item name"
+                        v-model="m_SelectedObject.iconString">
+                    </template>
             </WindowContainerDivider>
     
             <WindowContainerDivider
@@ -190,17 +189,9 @@ export default {
 
             m_iconID: null,
 
-            m_SelectedIcon: {
-                iconID: "",
-                coordinate:{
-                    x: null,
-                    y: null,
-                },
-                iconSize: 1,
-                iconImage: null,
-                iconString: "",
-                link: "",
-            }
+            m_STORAGE: "Storage",
+
+            m_SelectedObject: {},
         }
     },
     created(){
@@ -215,7 +206,8 @@ export default {
 // ------------------------------------------------------------------------------------------------------------
 
         setSelectData(index){
-            iconSelect.setData(iconStorage.getIconDataFromIndex(iconStorage.allData, index));
+            let data = iconStorage.getIconDataFromIndex(iconStorage.allData, index);
+            iconSelect.setData(data.iconID, this.m_STORAGE);
         },
 
 
@@ -228,11 +220,11 @@ export default {
             let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
             let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
             
-            if(oldGroupID === "Storage"){
+            if(oldGroupID === this.m_STORAGE){
                 this.rearrangeIcons(index, iconID);
             }
             else{
-                iconData.moveIcon(iconID, oldGroupID, "Storage", this.m_Columns, false);
+                iconData.moveIcon(iconID, oldGroupID, this.m_STORAGE, this.m_Columns, false);
             }
             this.resetSelection();
         },
@@ -282,7 +274,7 @@ export default {
         edit_Drag_MouseDown(){
             // Find what it is holding and store it.s
             this.$GlobalStates.value.edit.iconDragData = {
-                storedContainer:  "Storage",
+                storedContainer:  this.m_STORAGE,
                 storedID: this.m_iconID,
             };
         },
@@ -311,10 +303,8 @@ export default {
 // ------------------------------------------------------------------------------------------------------------
     
         displaySelectedData(newIconData){
-            this.m_SelectedIcon.iconID     = newIconData.iconID;
-            this.m_SelectedIcon.iconImage  = newIconData.iconImage;
-            this.m_SelectedIcon.iconSize   = newIconData.iconSize;
-            this.m_SelectedIcon.iconString = newIconData.iconString;
+            let group = iconData.getGroup(newIconData.groupID);
+            this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
         },
 
     },
