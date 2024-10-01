@@ -251,7 +251,14 @@ export default {
         },
 
         deleteIcon(){
+            // If nothing, a popup shows 'nothing selected', like the storage values.
+            if(iconSelect.dataValue.groupID === "" || iconSelect.dataValue.iconID === "") { return; }
 
+            // Perhaps popup message comes here to confirm
+            // User can click a 'Stop showing me this message prompt'
+
+            iconData.deleteIcon(iconSelect.dataValue.groupID, iconSelect.dataValue.iconID);
+            iconSelect.resetData();
         },
 
 // Mouse functions
@@ -303,6 +310,8 @@ export default {
 // ------------------------------------------------------------------------------------------------------------
     
         displaySelectedData(newIconData){
+            if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
+
             let group = iconData.getGroup(newIconData.groupID);
             this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
         },

@@ -223,6 +223,13 @@ class IconData{
         }
     }
 
+    deleteIcon(groupID, iconID){
+        let group = this.getGroup(groupID);
+        let index = this.getIconIndexOfGroup(group, iconID);
+
+        group.splice(index, 1);
+    }
+
     isFromStorage(groupID){
         return (groupID === "Storage");
     }
@@ -304,19 +311,20 @@ class IconData{
 };
 
 class IconSelected {
-    constructor(){
-        this.data = {
-            iconID: "",
-            groupID: "", 
-        }
-    }
-
+    constructor(){ this.resetData(); }
     get dataValue(){ return this.data; };
 
     // The data object passed in is the iconData
     setData(iconID, groupID){
         this.data.iconID  = iconID;
         this.data.groupID = groupID;
+    }
+
+    resetData(){
+        this.data = {
+            iconID: "",
+            groupID: "", 
+        }
     }
 }
 
