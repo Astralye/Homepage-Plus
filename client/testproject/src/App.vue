@@ -207,7 +207,7 @@ export default{
         <!-- Layout button -->
         <Transition name="fade">
             <Window
-                v-show="this.EditBtns[0].toggle"
+                v-if="this.EditBtns[0].toggle"
                 title="Layout"
                 :width="325"
                 @close-window="test"
@@ -229,7 +229,7 @@ export default{
         <!-- Container button -->
         <Transition name="fade">
             <Window
-                v-show="this.EditBtns[1].toggle"
+                v-if="this.EditBtns[1].toggle"
                 title="Containers"
                 :width="350"
                 @close-window="test"
@@ -247,7 +247,7 @@ export default{
 
         <Transition name="fade">
             <Window
-                v-show="this.EditBtns[2].toggle"
+                v-if="this.EditBtns[2].toggle"
                 title="Widgets"
                 @close-window="test"
                 @focusTab="focusClickedTab">
@@ -266,7 +266,7 @@ export default{
 
         <Transition name="fade">
             <Window
-                v-show="this.EditBtns[3].toggle"
+                v-if="this.EditBtns[3].toggle"
                 title="Link Maker"
                 :width="400"
                 @close-window="test"

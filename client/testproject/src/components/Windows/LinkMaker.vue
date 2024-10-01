@@ -5,12 +5,12 @@
             <SingleButton
             class="flex"
             @click="generateIcon">
-                <h2 class="single-button-dark"> New icon </h2>
+                <h2 class="single-button-dark"> New </h2>
             </SingleButton>
             <SingleButton
             class="flex"
             @click="deleteIcon">
-                <h2 class="single-button-dark"> Delete icon </h2>
+                <h2 class="single-button-dark"> Delete </h2>
             </SingleButton>
         </div>
         <WindowContainerDivider
@@ -19,6 +19,10 @@
                     <h2 class="inline">
                         Saved Icons
                     </h2>
+                </template>
+
+                <template #tooltip>
+                    <ToolTip> When the window is open, you can select via clicking</ToolTip>
                 </template>
         
                 <template #content>
@@ -32,6 +36,7 @@
                                     <IconHandler
                                         :icon_data="getIconData(index)"
                                         @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                                        @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectData(index) : null"
                                     />
                                 </template> 
                             </div>
@@ -69,7 +74,9 @@
                 </template>
         
                 <template #content>
-                    <input placeholder="Item name">
+                    <input type="text" 
+                        placeholder="Item name" 
+                        :value="m_SelectedIcon.iconString">
                 </template>
             </WindowContainerDivider>
     
@@ -160,7 +167,7 @@ import RangeSlider from '../Input Components/RangeSlider.vue';
 import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import IconHandler from '../Main/IconHandler.vue';
-import { iconData, iconStorage } from '../../Data/iconData';
+import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
 
 export default {
@@ -176,18 +183,40 @@ export default {
         return {
             iconStorage,
             mouseData,
-
+            iconSelect,
 
             m_Rows: 4,
             m_Columns: 3,
 
-            m_iconID: null
+            m_iconID: null,
+
+            m_SelectedIcon: {
+                iconID: "",
+                coordinate:{
+                    x: null,
+                    y: null,
+                },
+                iconSize: 1,
+                iconImage: null,
+                iconString: "",
+                link: "",
+            }
         }
+    },
+    created(){
+        this.$GlobalStates.value.edit.isIconSelector = true;
+    },
+    unmounted(){
+        this.$GlobalStates.value.edit.isIconSelector = false;
     },
     methods: {
 
 // Icon functions
 // ------------------------------------------------------------------------------------------------------------
+
+        setSelectData(index){
+            iconSelect.setData(iconStorage.getIconDataFromIndex(iconStorage.allData, index));
+        },
 
 
 // Some of the functions are copied but altered from GridLayout.vue
@@ -227,8 +256,6 @@ export default {
         generateIcon(){
             let newIcon = iconStorage.generateIcon(null, null, "Burger", "Icon");
             iconStorage.allData.push(newIcon);
-
-            console.log(iconStorage.allData, "generated");
         },
 
         deleteIcon(){
@@ -270,8 +297,6 @@ export default {
             mouseData.disableMouseUp();
         },
 
-
-
 // ------------------------------------------------------------------------------------------------------------
 
         renderIcon(index){ // Check if there is data
@@ -280,6 +305,23 @@ export default {
         },
         tmp(){
 
+        },
+
+// selected data
+// ------------------------------------------------------------------------------------------------------------
+    
+        displaySelectedData(newIconData){
+            this.m_SelectedIcon.iconID     = newIconData.iconID;
+            this.m_SelectedIcon.iconImage  = newIconData.iconImage;
+            this.m_SelectedIcon.iconSize   = newIconData.iconSize;
+            this.m_SelectedIcon.iconString = newIconData.iconString;
+        },
+
+    },
+    watch: {
+        'iconSelect.dataValue': {
+            handler(val){ this.displaySelectedData(val); },
+            deep: true
         }
     }
 }

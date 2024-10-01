@@ -12,6 +12,7 @@
                     <IconHandler
                     :icon_data="getIconData(index)"
                     @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                    @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
                     />
                     <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
 
@@ -57,7 +58,7 @@
 <script>
 import { containerData } from '../../Data/containerData';
 import IconHandler from './IconHandler.vue';
-import { iconData } from '../../Data/iconData.js';
+import { iconData, iconSelect } from '../../Data/iconData.js';
 import { mouseData } from '../../Data/mouseData.js';
 
 export default {
@@ -79,7 +80,7 @@ export default {
         return{
             iconData,
             mouseData,
-            
+            iconSelect,
             
             m_containerData: null,
             
@@ -245,6 +246,10 @@ export default {
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+        setSelectedIcon(index){
+            iconSelect.setData(iconData.getIconDataFromIndex(this.m_GroupData, index));
+        },
+
     // Grid Direction
 
         // Modifies index depending on direction
@@ -351,6 +356,10 @@ export default {
                 this.m_Row_Gap    = `${rowGap}px`;
             })
         },
+
+        iconSelect(){
+
+        }
     },
     watch: {
         'm_containerData.gridData.gridDimensions'(){ this.setDimension(); },
