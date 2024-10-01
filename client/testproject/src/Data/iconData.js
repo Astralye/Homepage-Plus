@@ -303,8 +303,33 @@ class IconData{
     }
 };
 
+class IconSelected {
+    constructor(){
+        this.data = {
+            iconID: "",
+            iconSize: 1,
+            iconImage: null,
+            iconString: "",
+            link: "",
+        }
+    }
+
+    get dataValue(){ return this.data; };
+
+    // The data object passed in is the iconData
+    setData(newIconDataObj){
+        this.data.iconID       = newIconDataObj.iconID;
+        this.data.iconSize     = newIconDataObj.iconSize;
+        this.data.iconImage    = newIconDataObj.iconImage;
+        this.data.iconString   = newIconDataObj.iconString;
+        this.data.link         = newIconDataObj.link;
+    }
+}
+
 const iconDataInstance    = new IconData;
 const iconStorageInstance = new IconData;
+const iconSelectInstance  = new IconSelected;
 
-export const iconData    = reactive(iconDataInstance);
-export const iconStorage = reactive(iconStorageInstance);
+export const iconData     = reactive(iconDataInstance);
+export const iconStorage  = reactive(iconStorageInstance);
+export const iconSelect   = reactive(iconSelectInstance);

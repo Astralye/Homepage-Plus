@@ -21,6 +21,8 @@ app.config.globalProperties.$GlobalStates = ref( {
         dragStepSize: 0.25,
         resetSelect: false,
         iconDragData: null, // Object, store containerID + IconID
+
+        isIconSelector: null
     },
     isInitialize: false,
     isRenderFinalNode: false,
