@@ -45,118 +45,10 @@
             </WindowContainerDivider>
     </div>
         <!-- Grid -->
-    <div class="flex">
-        <div class="width-half">
-            <WindowContainerDivider
-            class="container-divider">
-                <template #header>
-                    <h2 class="inline">
-                        Displayed icon
-                    </h2>
-                </template>
-        
-                <template #content>
-                    <div class="image-placeholder"
-                    @click="console.log('Click! select icon.')"/>
-                    <!-- <RangeSlider/> -->
-                </template>
-            </WindowContainerDivider>
-        </div>
 
-        <div class="width-half">
-            <WindowContainerDivider
-            class="container-divider">
-                <template #header>
-                    <h2 class="inline">
-                        Name
-                    </h2>
-                </template>
-        
-                <template #content>
-                    <input type="text" 
-                        placeholder="Item name"
-                        v-model="m_SelectedObject.iconString">
-                    </template>
-            </WindowContainerDivider>
-    
-            <WindowContainerDivider
-            class="container-divider">
-                <template #header>
-                    <h2 class="inline">
-                        Icon Size
-                    </h2>
-                </template>
-        
-                <template #content>
-                    <RangeSlider
-                    :m_function="tmp"
-                    :input_Data="['50','75', '100', '125']"/>
-                </template>
+    <!-- If none is selected, remove all -->
 
-                <template #tooltip>
-                    <ToolTip> Size in px of the icon</ToolTip>
-                </template>
-            </WindowContainerDivider>
-
-        </div>
-
-    </div>
-
-    <WindowContainerDivider
-    class="container-divider">
-        <template #header> 
-            <h2 class="inline">
-                Domain Name
-            </h2>
-        </template>
-
-        <template #content>
-            <div class="custom-select width-full">
-                <select class="width-full">
-                  <option value="0"></option>
-                  <option value="1">https://Youtube.com</option>
-                  <option value="2">https://Facebook.com</option>
-                  <option value="3">Add</option>
-                </select>
-              </div>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Top level domain of the website. You can store folders based on the domain.
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-    <WindowContainerDivider
-    class="container-divider">
-        <template #header> 
-            <h3 class="inline">
-                Subdirectory
-            </h3>
-        </template>
-
-        <template #content>
-            <TextInput></TextInput>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Directory after the domain name e.g youtube.com/{XYZ}
-                where XYZ is the input
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-    <WindowContainerDivider
-    class="container-divider">
-        <template #content>
-            Open on new window? 
-            <input type="checkbox">
-
-            </input>
-        </template>
-    </WindowContainerDivider>
+    <Tabs :tab_Array="[ 'IconCustomize' , 'IconFunction' ]" folder_Name="LinkTabs"/>
 </template>
 
 <script>
@@ -166,6 +58,8 @@ import RangeSlider from '../Input Components/RangeSlider.vue';
 import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import IconHandler from '../Main/IconHandler.vue';
+import Tabs from '../Window Components/Tabs.vue';
+
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
 
@@ -177,6 +71,9 @@ export default {
         TextInput,
         SingleButton,
         IconHandler,
+        Tabs,
+
+        
     },
     data(){
         return {
@@ -190,8 +87,6 @@ export default {
             m_iconID: null,
 
             m_STORAGE: "Storage",
-
-            m_SelectedObject: {},
         }
     },
     created(){
@@ -305,23 +200,6 @@ export default {
         tmp(){
 
         },
-
-// selected data
-// ------------------------------------------------------------------------------------------------------------
-    
-        displaySelectedData(newIconData){
-            if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
-
-            let group = iconData.getGroup(newIconData.groupID);
-            this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
-        },
-
-    },
-    watch: {
-        'iconSelect.dataValue': {
-            handler(val){ this.displaySelectedData(val); },
-            deep: true
-        }
     }
 }
 
