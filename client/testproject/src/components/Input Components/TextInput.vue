@@ -1,141 +1,48 @@
 <template>
-    <div class="form-group">
-        <span>https://</span>
-        <input class="form-field" type="text" placeholder="domain.tld">
+    <div>
+        <input 
+            class="input" 
+            type="text" 
+            :placeholder="placeholder_text"
+
+            :value="modelValue" 
+            @input="$emit('update:modelValue', $event.target.value)">
     </div>
 </template>
 
 <script>
     export default {
-        
+        props:{
+            placeholder_text: String,
+            modelValue: String,
+        },
     }
 </script>
 
 <style scoped>
-
-/*
-
-Credit to Aaron Iker for the base code
-https://codepen.io/aaroniker/pen/dybMVMB
-
-*/
-
-:root {
-
-    --input-color: #99A3BA;
-    --input-border: #CDD9ED;
-    --input-background: #fff;
-    --input-placeholder: #CBD1DC;
-
-    --input-border-focus: #275EFE;
-
-    --group-color: var(--input-color);
-    --group-border: var(--input-border);
-    --group-background: #EEF4FF;
-
-    --group-color-focus: #fff;
-    --group-border-focus: var(--input-border-focus);
-    --group-background-focus: #678EFE;
-
-}
-
-.form-field {
-    display: block;
+/* From Uiverse.io by ErzenXz */ 
+.input {
     width: 100%;
-    padding: 8px 16px;
-    line-height: 25px;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: inherit;
-    border-radius: 6px;
-    -webkit-appearance: none;
-    color: var(--input-color);
-    border: 1px solid var(--input-border);
-    background: var(--input-background);
-    transition: border .3s ease;
-    &::placeholder {
-        color: var(--input-placeholder);
-    }
-    &:focus {
-        outline: none;
-        border-color: var(--input-border-focus);
-    }
+    height: 30px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid lightgrey;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0px 0px 20px -20px;
 }
 
-.form-group {
-    position: relative;
-    display: flex;
-    width: 100%;
-    & > span,
-    .form-field {
-        white-space: nowrap;
-        display: block;
-        &:not(:first-child):not(:last-child) {
-            border-radius: 0;
-        }
-        &:first-child {
-            border-radius: 6px 0 0 6px;
-        }
-        &:last-child {
-            border-radius: 0 6px 6px 0;
-        }
-        &:not(:first-child) {
-            margin-left: -1px;
-        }
-    }
-    .form-field {
-        position: relative;
-        z-index: 1;
-        flex: 1 1 auto;
-        width: 1%;
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-    & > span {
-        text-align: center;
-        padding: 8px 12px;
-        font-size: 14px;
-        line-height: 25px;
-        color: var(--group-color);
-        background: var(--group-background);
-        border: 1px solid var(--group-border);
-        transition: background 0.3s ease, border .3s ease, color .3s ease;
-    }
-    &:focus-within {
-        & > span {
-            color: var(--group-color-focus);
-            background: var(--group-background-focus);
-            border-color: var(--group-border-focus);
-        }
-    }
+.input:hover {
+    border: 2px solid lightgrey;
+    box-shadow: 0px 0px 20px -6px;
 }
 
-html {
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
+.input:active {
+    transform: scale(0.98);
+    box-shadow: 0px 0px 20px -3px;
 }
 
-* {
-    box-sizing: inherit;
-    &:before,
-    &:after {
-        box-sizing: inherit;
-    }
-}
-
-body {
-    min-height: 100vh;
-    font-family: 'Mukta Malar', Arial;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    background: #F5F9FF;  
-    .form-group {
-        max-width: 360px;
-        &:not(:last-child) {
-            margin-bottom: 32px;
-        }
-    }
+.input:focus {
+    border: 2px solid grey;
 }
 </style>

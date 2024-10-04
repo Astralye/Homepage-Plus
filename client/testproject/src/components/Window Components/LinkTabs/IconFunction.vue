@@ -3,6 +3,22 @@
     class="container-divider">
         <template #header> 
             <h2 class="inline">
+                URL Link
+            </h2>
+        </template>
+
+        <template #content>
+            <TextInput>
+                
+            </TextInput>
+        </template>
+
+    </WindowContainerDivider>
+    
+    <WindowContainerDivider
+    class="container-divider">
+        <template #header> 
+            <h2 class="inline">
                 Domain Name
             </h2>
         </template>
@@ -34,7 +50,9 @@
         </template>
 
         <template #content>
-            <TextInput></TextInput>
+            <TextInput>
+                <template #start-value>https://</template>
+            </TextInput>
         </template>
 
         <template #tooltip>
