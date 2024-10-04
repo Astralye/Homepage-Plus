@@ -88,7 +88,7 @@ export default {
             if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
 
             let group = iconData.getGroup(newIconData.groupID);
-            this.m_SelectedObject = iconData.getI,conDataFromID(group, newIconData.iconID);
+            this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
         },
 
         tmp(){ }
