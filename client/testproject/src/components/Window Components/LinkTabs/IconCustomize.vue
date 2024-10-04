@@ -26,10 +26,11 @@
                 </template>
         
                 <template #content>
-                    <input type="text" 
-                        placeholder="Item name"
+                    <TextInput
+                        :placeholder_text="'Icon name'"
                         v-model="m_SelectedObject.iconString">
-                    </template>
+                    </TextInput>
+                </template>
             </WindowContainerDivider>
     
             <WindowContainerDivider
@@ -60,6 +61,7 @@
 import ToolTip from '../ToolTip.vue';
 import WindowContainerDivider from '../WindowContainerDivider.vue';
 import RangeSlider from '../../Input Components/RangeSlider.vue';
+import TextInput from '../../Input Components/TextInput.vue';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
 
@@ -67,7 +69,8 @@ export default {
     components:{
         WindowContainerDivider,
         ToolTip,
-        RangeSlider
+        RangeSlider,
+        TextInput
     },
     data() {
         return {
@@ -85,8 +88,10 @@ export default {
             if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
 
             let group = iconData.getGroup(newIconData.groupID);
-            this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
-        }
+            this.m_SelectedObject = iconData.getI,conDataFromID(group, newIconData.iconID);
+        },
+
+        tmp(){ }
     },
 
 // ----------------------------------------------------------------------------------------------
