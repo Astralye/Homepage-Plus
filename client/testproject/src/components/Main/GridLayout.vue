@@ -4,7 +4,7 @@
         @mouseup="resetSelection"
         >
         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="flex-center"
+            <div class="flex-center grid-item"
                 @mouseup="checkDropIcon(index)">
                 <template v-if="renderIcon(index)">
 
@@ -14,6 +14,7 @@
                     @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
                     @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
                     />
+                    
                     <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
 
                         <!-- 
@@ -375,6 +376,11 @@ export default {
 </script>
 
 <style scoped>
+
+.icon-wrapper{
+    width: 75px;
+}
+
 .border-box{
     box-sizing: border-box;
 }

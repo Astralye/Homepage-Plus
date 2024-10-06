@@ -10,8 +10,28 @@
                 </template>
         
                 <template #content>
-                    <div class="image-placeholder"
-                    @click="console.log('Click! select icon.')"/>
+                    <div class="image-placeholder flex"
+                    @click="console.log('Click! select icon.')">
+
+                        <template v-if="!isCurrentlySelected()">
+                            <div class="icon-fit center fit-content">
+                                <SVGIcon
+                                :name="m_SelectedObject.iconImage"/>
+
+                            </div>
+                        </template>
+                        <template v-else>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="auto" fill="#e8eaed">
+                                <path d="m254-238-16-16 226-226-226-226 16-16 226 226 226-226 16 16-226 226 226 226-16 16-226-226-226 226Z"/>
+                            </svg>
+                        </template>
+                    </div>
+
+                    <template v-if="isCurrentlySelected()">
+                        <p>
+                            None currently selected!
+                        </p>
+                    </template>
                 </template>
             </WindowContainerDivider>
         </div>
@@ -62,6 +82,7 @@ import ToolTip from '../ToolTip.vue';
 import WindowContainerDivider from '../WindowContainerDivider.vue';
 import RangeSlider from '../../Input Components/RangeSlider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
+import SVGIcon from '../../Input Components/SVGIcon.vue';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
 
@@ -70,7 +91,8 @@ export default {
         WindowContainerDivider,
         ToolTip,
         RangeSlider,
-        TextInput
+        TextInput,
+        SVGIcon
     },
     data() {
         return {
@@ -84,6 +106,12 @@ export default {
 // ---------------------------------------------------------------------------------------------- 
 
     methods:{
+
+        // Check for empty object
+        isCurrentlySelected(){
+            return (Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object);
+        },
+
         displaySelectedData(newIconData){
             if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
 
@@ -105,6 +133,19 @@ export default {
 </script>
 
 <style scoped>
+.center{
+    margin: auto;
+}
+
+.fit-content{
+    max-width: fit-content;
+}
+
+.icon-fit{
+    width: 90%;
+    height: auto;
+}
+
 .grid-item{
     border: solid rgba(255, 255, 255, 0.4) 0.5px;
 }
@@ -143,7 +184,7 @@ export default {
 
 .image-placeholder{
     border: 2px solid black;
-    width: 150px;
-    height: 150px;
+    width: 175px;
+    height: 175px;
 }
 </style>
