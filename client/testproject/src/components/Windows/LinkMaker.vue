@@ -27,7 +27,7 @@
                 <template #content>
                     <div class="saved-grid width-full grid">
                         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-                            <div class="saved-icons grid-item"
+                            <div class="saved-icons grid-item flex"
                             @mouseup="checkDropIcon(index)">
                                 
                                 <!-- For rendering any icons saved -->
@@ -49,6 +49,7 @@
     <!-- If none is selected, remove all -->
 
     <Tabs :tab_Array="[ 'IconCustomize' , 'IconFunction' ]" folder_Name="LinkTabs"/>
+
 </template>
 
 <script>
@@ -72,8 +73,6 @@ export default {
         SingleButton,
         IconHandler,
         Tabs,
-
-        
     },
     data(){
         return {
@@ -104,7 +103,6 @@ export default {
             let data = iconStorage.getIconDataFromIndex(iconStorage.allData, index);
             iconSelect.setData(data.iconID, this.m_STORAGE);
         },
-
 
 // Some of the functions are copied but altered from GridLayout.vue
 // Perhaps I can move them to a single function later
@@ -206,21 +204,17 @@ export default {
 </script>
 
 <style scoped>
-
 .grid-item{
     border: solid rgba(255, 255, 255, 0.4) 0.5px;
 }
 
 .saved-grid{
     border: 2px solid black;
+    border-radius: 5px;
     height: 150px;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr 1fr;
     overflow-y: scroll;
-}
-
-.width-half{
-    width: 50%;
 }
 
 .width-full{
@@ -228,7 +222,7 @@ export default {
 }
 
 .saved-icons{
-    height: 116px;
+    aspect-ratio: 1;
 }
 
 .grid{
@@ -241,11 +235,5 @@ export default {
 
 .flex-space{
     justify-content: space-between;
-}
-
-.image-placeholder{
-    border: 2px solid black;
-    width: 150px;
-    height: 150px;
 }
 </style>

@@ -9,10 +9,12 @@
         {{ tab }}
         </button>
         
-        <!-- Ensures values are kept -->     
-        <KeepAlive> 
-            <component :is="switchComponents" class="tab"></component>
-        </KeepAlive>
+        <div class="tab-border">
+            <!-- Ensures values are kept -->     
+            <KeepAlive> 
+                <component :is="switchComponents" class="tab"></component>
+            </KeepAlive>
+        </div>
     </div>
 </template>
 
@@ -73,6 +75,12 @@ export default {
 </script>
 
 <style scoped>
+@import '../../assets/base.css';
+
+.tab-border{
+    border: 2px solid var(--Primary-background-colour);
+    border-radius: 5px;
+}
 
 .tab-button {
     padding: 6px 10px;
