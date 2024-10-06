@@ -8,68 +8,75 @@
         </template>
 
         <template #content>
-            <TextInput>
+            <TextInput
+                :placeholder_text="'https://'">
                 
             </TextInput>
         </template>
 
+        <template #tooltip>
+            <ToolTip>
+                Calculates the domain and directory automatically.
+            </ToolTip>
+        </template>
     </WindowContainerDivider>
     
+    <div class="flex flex-space">
+        <WindowContainerDivider
+        class="container-divider">
+            <template #header> 
+                <h3 class="inline">
+                    Domain Name
+                </h3>
+            </template>
+
+            <template #content>
+                <div class="custom-select width-full">
+                    <select class="width-full">
+                        <option value="0"></option>
+                        <option value="1">https://Youtube.com</option>
+                        <option value="2">https://Facebook.com</option>
+                        <option value="3">Add</option>
+                    </select>
+                </div>
+            </template>
+
+            <template #tooltip>
+                <ToolTip>
+                    Top level domain of the website. You can store folders based on the domain.
+                </ToolTip>
+            </template>
+        </WindowContainerDivider>
+
+        <WindowContainerDivider
+        class="container-divider">
+            <template #header> 
+                <h3 class="inline">
+                    Subdirectory
+                </h3>
+            </template>
+
+            <template #content>
+                <TextInput
+                    :placeholder_text="'/'">
+                </TextInput>
+            </template>
+
+            <template #tooltip>
+                <ToolTip>
+                    Directory after the domain name e.g youtube.com/{XYZ}
+                    where XYZ is the input
+                </ToolTip>
+            </template>
+        </WindowContainerDivider>
+
+    </div>
+
     <WindowContainerDivider
     class="container-divider">
-        <template #header> 
-            <h2 class="inline">
-                Domain Name
-            </h2>
-        </template>
-
         <template #content>
-            <div class="custom-select width-full">
-                <select class="width-full">
-                  <option value="0"></option>
-                  <option value="1">https://Youtube.com</option>
-                  <option value="2">https://Facebook.com</option>
-                  <option value="3">Add</option>
-                </select>
-              </div>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Top level domain of the website. You can store folders based on the domain.
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-    <WindowContainerDivider
-    class="container-divider">
-        <template #header> 
-            <h3 class="inline">
-                Subdirectory
-            </h3>
-        </template>
-
-        <template #content>
-            <TextInput>
-                <template #start-value>https://</template>
-            </TextInput>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Directory after the domain name e.g youtube.com/{XYZ}
-                where XYZ is the input
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-    <WindowContainerDivider
-    class="container-divider">
-        <template #content>
+            <input type="checkbox"/>
             Open on new window? 
-            <input type="checkbox">
-
-            </input>
         </template>
     </WindowContainerDivider>
 </template>
@@ -118,5 +125,12 @@ export default {
 </script>
 
 <style scoped>
+.flex{
+    display: flex;
+}
+
+.flex-space{
+    justify-content: space-evenly;
+}
 
 </style>

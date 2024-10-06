@@ -1,7 +1,9 @@
 <template>
-    <div class="center iconContainer noselect">
+    <div class="center noselect">
 
-        <div class="center fit-content">
+        <div class="center fit-content"
+            :class="{ 'icon-wrapper-text': !hasEmptyText, 'icon-wrapper-full': hasEmptyText}">
+            
             <SVGIcon
             :name="icon_data.iconImage"
             @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
@@ -42,12 +44,17 @@ export default {
     methods: {
         openLink(){
             window.open(this.icon_data.link, '_blank');
-        }
+        },
     },
     watch: {
         'icon_data':{
             handler(val){ this.iconText = val.iconString },
             deep: true            
+        }
+    },
+    computed: {
+        hasEmptyText(){
+            return (this.iconText.length === 0);
         }
     }
 }
@@ -56,26 +63,18 @@ export default {
 <style scoped>
 @import '../../assets/main.css';
 
-.iconContainer{
-    width: 100%;
+.icon-wrapper-full{
+    width: 80%;
+    height: auto;
 }
 
-.text-padding{
-    padding-top: 0.3em;
-}
-
-.tmpIcon{
-    width: 90px;
-    height: 90px;
-    background-color: cadetblue;
+.icon-wrapper-text{
+    width: 70%;
+    height: auto;
 }
 
 .fit-content{
     max-width: fit-content;
-}
-
-.flex{
-    display: flex;
 }
 
 .center{
