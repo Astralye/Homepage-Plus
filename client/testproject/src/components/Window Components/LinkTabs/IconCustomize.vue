@@ -11,7 +11,7 @@
         
                 <template #content>
                     <div class="image-placeholder flex"
-                    @click="console.log('Click! select icon.')">
+                    @click="toggleWindow()">
 
                         <template v-if="!isCurrentlySelected()">
                             <div class="icon-fit center fit-content">
@@ -75,6 +75,43 @@
         </div> 
 
     </div>
+
+    <teleport to="body">
+        <Transition name="fade">
+            <Window
+                v-if="m_DisplayWindow"
+                title="Icon Menu"
+                :width="400"
+                @close-window="toggleWindow()"
+                @focusTab="focusClickedTab">
+                <template #window-icon>
+                    <svg class="margin-y-auto" xmlns="http://www.w3.org/2000/svg" height="35px" width="auto" viewBox="0 -960 960 960" fill="#CCCCCC">
+                        <path d="M360-240h440v-107H360v107ZM160-613h120v-107H160v107Zm0 187h120v-107H160v107Zm0 186h120v-107H160v107Zm200-186h440v-107H360v107Zm0-187h440v-107H360v107ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Z"/>
+                    </svg>
+                </template>
+
+                <template #window-content>
+                <!-- Window content -->
+
+                <WindowContainerDivider>
+                    <template #content>
+                        <div class="saved-grid width-full grid">
+                            <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
+                                <div class="saved-icons grid-item flex">
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </WindowContainerDivider>
+
+
+
+                </template>
+            </Window>
+        </Transition>
+    </teleport>
+
+
 </template>
 
 <script>
@@ -84,6 +121,8 @@ import RangeSlider from '../../Input Components/RangeSlider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
 import SVGIcon from '../../Input Components/SVGIcon.vue';
 
+import Window from '../Window.vue';
+
 import { iconData, iconSelect } from '../../../Data/iconData';
 
 export default {
@@ -92,20 +131,68 @@ export default {
         ToolTip,
         RangeSlider,
         TextInput,
-        SVGIcon
+        SVGIcon,
+
+        Window,
     },
     data() {
         return {
             iconSelect,
 
             m_SelectedObject: {},
+            
+            m_DisplayWindow: false,
+
+            m_Rows: 5,
+            m_Columns: 0
         }
+    },
+
+    created(){
+        this.calculateDimensions();
+    },
+
+    unmounted(){
+        this.m_DisplayWindow = false; 
     },
 
 // Data retrieval
 // ---------------------------------------------------------------------------------------------- 
 
     methods:{
+
+        calculateDimensions(){
+            // Need to get the size of the folder and all the icons.
+
+            let noIcons = 40;
+            this.m_Columns = ~~(noIcons / this.m_Rows);
+        },
+
+        // Window functions 
+
+        focusClickedTab(name){
+
+            // Run code if > 1 element
+            if(this.$windowStack.length <= 1) { return; }
+
+            let windowString = name.toLowerCase();
+            let index = this.$windowStack.value.indexOf(windowString);
+
+            // Run code if not last
+            if(index == this.$windowStack.value.length-1) { return; }
+
+            if (index > -1) {
+                let tmp = this.$windowStack.value[index];
+                this.$windowStack.value.splice(index, 1);
+                this.$windowStack.value.push(tmp);
+            }
+        },
+
+
+        toggleWindow(){
+            this.m_DisplayWindow = !this.m_DisplayWindow;
+            return this.m_DisplayWindow;
+        },
 
         // Check for empty object
         isCurrentlySelected(){
@@ -133,6 +220,7 @@ export default {
 </script>
 
 <style scoped>
+
 .center{
     margin: auto;
 }
@@ -152,9 +240,8 @@ export default {
 
 .saved-grid{
     border: 2px solid black;
-    height: 150px;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
+    height: 200px;
+    grid-template-columns:  repeat(5, 1fr);
     overflow-y: scroll;
 }
 
@@ -167,7 +254,8 @@ export default {
 }
 
 .saved-icons{
-    height: 116px;
+    height: 100%;
+    aspect-ratio: 1;
 }
 
 .grid{
