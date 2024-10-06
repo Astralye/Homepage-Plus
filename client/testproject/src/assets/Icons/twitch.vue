@@ -1,5 +1,5 @@
 <template>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" id="Twitch-Logo--Streamline-Logos" height="75" width="75">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" id="Twitch-Logo--Streamline-Logos" height="100%" width="100%">
         <desc>Twitch Logo Streamline Icon: https://streamlinehq.com</desc>
         <path fill="#ffffff" fill-rule="evenodd" d="M3 1 1.5 5v15H7v3h3l3 -3h4l5.5 -5.5V1H3Zm2 2h15.5v10.5L17 17h-5l-2.5 2.5V17H5V3Zm5 9.5V7h2v5.5h-2ZM15 7v5.5h2V7h-2Z" clip-rule="evenodd" stroke-width="1"></path>
     </svg>
