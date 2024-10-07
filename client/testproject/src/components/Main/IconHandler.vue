@@ -1,3 +1,7 @@
+<!-- 
+    This file is responsible for displaying icons on the various grids.
+-->
+
 <template>
     <div class="center noselect">
 

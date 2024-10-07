@@ -96,7 +96,6 @@ class ContainerDataClass{
   getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; };}
   getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; };}
   getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; };}
-
 }
 
 const containerDataInstance = new ContainerDataClass;

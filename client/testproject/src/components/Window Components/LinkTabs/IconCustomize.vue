@@ -98,6 +98,20 @@
                         <div class="saved-grid width-full grid">
                             <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
                                 <div class="saved-icons grid-item flex">
+                                    
+                                    <template v-if="iconImageStorage.isValidIndex(index)">
+                                        <SVGHandler
+                                            width="100%"
+                                            height="100%"
+                                            :path_Value="getSVG(index)"
+                                            >
+                                            
+                                            <!-- 
+                                                Need to insert the path data here 
+                                            -->
+                                        </SVGHandler>
+                                    </template>
+                                    <!-- It needs to load the correct icon -->
                                 </div>
                             </template>
                         </div>
@@ -121,9 +135,13 @@ import RangeSlider from '../../Input Components/RangeSlider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
 import SVGIcon from '../../Input Components/SVGIcon.vue';
 
+import SVGHandler from '../../Input Components/SVGHandler.vue';
+import SVGManip from '../../Input Components/SVGManip.vue';
+
 import Window from '../Window.vue';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
+import { iconImageStorage } from '../../../Data/iconImages';
 
 export default {
     components:{
@@ -133,18 +151,22 @@ export default {
         TextInput,
         SVGIcon,
 
+        SVGManip,
+        SVGHandler,
+
         Window,
     },
     data() {
         return {
             iconSelect,
+            iconImageStorage,
 
             m_SelectedObject: {},
             
             m_DisplayWindow: false,
 
             m_Rows: 5,
-            m_Columns: 0
+            m_Columns: 0,
         }
     },
 
@@ -160,6 +182,11 @@ export default {
 // ---------------------------------------------------------------------------------------------- 
 
     methods:{
+
+        getSVG(index){
+            let svg = iconImageStorage.getPathFromIndex(index);
+            return svg.pathData;
+        },
 
         calculateDimensions(){
             // Need to get the size of the folder and all the icons.
