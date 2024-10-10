@@ -4,15 +4,16 @@
         @mouseup="resetSelection"
         >
         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="flex-center grid-item"
-                @mouseup="checkDropIcon(index)">
+            <div class="flex-center"
+                :class="{ 'icon-Selection' : isSelectedIcon(index), 'unselect-icon' : !isSelectedIcon(index), }"
+                @mouseup="checkDropIcon(index)"
+                @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null">
                 <template v-if="renderIcon(index)">
 
                     <!-- Edit mode Icon -->
                     <IconHandler
                         :icon_data="getIconData(index)"
                         @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                        @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
                     />
                     
                     <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
@@ -247,7 +248,13 @@ export default {
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+        isSelectedIcon(index){
+            if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
+            return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
+        },
+
         setSelectedIcon(index){
+            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
             iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
@@ -357,10 +364,6 @@ export default {
                 this.m_Row_Gap    = `${rowGap}px`;
             })
         },
-
-        iconSelect(){
-
-        }
     },
     watch: {
         'm_containerData.gridData.gridDimensions'(){ this.setDimension(); },
@@ -389,6 +392,26 @@ export default {
     display: flex;
     justify-content: center;
     align-content: center;
+}
+
+.unselect-icon{
+    border: 3px solid rgba(255, 255, 255, 0);
+    border-radius: 10px;
+
+    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
+       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
+         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
+            transition: border-color 0.15s linear;
+}
+
+.icon-Selection{
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    
+    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
+       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
+         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
+            transition: border-color 0.15s linear;
 }
 
 .grid-item{

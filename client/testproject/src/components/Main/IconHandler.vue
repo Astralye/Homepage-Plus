@@ -8,7 +8,7 @@
         <div class="center fit-content">
 
             <SVGHandler
-                height="75px"
+                :height="icon_data.iconSize"
                 width="auto"
                 :path_Value="iconImageStorage.getPathData(icon_data.iconImage)"
                 :view_Box="iconImageStorage.getViewBoxName(icon_data.iconImage)"
@@ -17,11 +17,13 @@
             />
         </div>
 
-        <div class="center fit-content text-padding">
-            <p>
-                {{ iconText }}
-            </p>
-        </div>
+        <template v-if="icon_data.displayText">
+            <div class="center fit-content text-padding">
+                <p>
+                    {{ iconText }}
+                </p>
+            </div>
+        </template>
     </div>
 </template>
 
