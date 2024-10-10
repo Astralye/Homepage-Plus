@@ -5,12 +5,14 @@
 <template>
     <div class="center noselect">
 
-        <div class="center fit-content"
-            :class="{ 'icon-wrapper-text': !hasEmptyText, 'icon-wrapper-full': hasEmptyText}">
-            
-            <SVGIcon
-            :name="icon_data.iconImage"
-            @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
+        <div class="center fit-content">
+
+            <SVGHandler
+                height="75px"
+                width="auto"
+                :path_Value="iconImageStorage.getPathData(icon_data.iconImage)"
+
+                @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
             />
         </div>
 
@@ -23,12 +25,13 @@
 </template>
 
 <script>
-import SVGIcon from '../Input Components/SVGIcon.vue';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import { iconImageStorage } from '../../Data/iconImages';
 
 // This will be drag and drop.
 export default {
     components: {
-        SVGIcon
+        SVGHandler
     },
     props:{
         icon_data: {
@@ -39,6 +42,8 @@ export default {
     },
     data(){
         return{
+            iconImageStorage,
+
             iconText: ""
         }
     },
@@ -66,16 +71,6 @@ export default {
 
 <style scoped>
 @import '../../assets/main.css';
-
-.icon-wrapper-full{
-    width: 80%;
-    height: auto;
-}
-
-.icon-wrapper-text{
-    width: 70%;
-    height: auto;
-}
 
 .fit-content{
     max-width: fit-content;

@@ -5,9 +5,11 @@
 <template>
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        :viewBox="viewBox"
+        :viewBox="view_Box"
         :width="width"
-        :height="height">
+        :height="height"
+        :fill="fill_Colour"
+        >
         <path
             fill-rule="evenodd"
             :d="path_Value">
@@ -19,7 +21,7 @@
     export default {
         props: {
             // svg Values
-            viewBox: {
+            view_Box: {
                 type: String,
                 default: "0 0 32 32"
             },
@@ -31,15 +33,17 @@
                 type: String,
                 default: "24",
             },
+            fill_Colour:{
+                type: String,
+                default: "#000000",
+            },
 
+            // path values
             path_Value:{
                 type: String,
                 required: true
             }
         },
-        created(){
-            console.log(this.path_Value);
-        }
     }
 </script>
 

@@ -3,23 +3,35 @@
         <div class="action-container" v-if="this.$GlobalStates.value.edit.enabled">
             <!-- Save button -->
             <button @click="saveLayout">
-                <svg xmlns="http://www.w3.org/2000/svg" :height="iconSize" viewBox="0 -960 960 960" fill="#CCCCCC">
-                    <path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/>
-                </svg>
+                <SVGHandler
+                    :height="iconSize"
+                    width="auto"
+                    view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
+                    :path_Value="iconImageStorage.getPathData('Save')"
+                />
             </button>
 
             <!-- Delete button -->
             <button @click="deleteLayout">
-                <svg xmlns="http://www.w3.org/2000/svg" :height="iconSize" viewBox="0 -960 960 960" fill="#CCCCCC">
-                    <path d="M283-130q-30.94 0-52.97-22.03Q208-174.06 208-205v-512h-39v-75h193v-38h237v38h193v75h-39v512q0 30.94-22.03 52.97Q708.94-130 678-130H283Zm395-587H283v512h395v-512ZM365-283.5h75v-355h-75v355Zm156 0h75v-355h-75v355ZM283-717v512-512Z"/>
-                </svg>
+                <SVGHandler
+                :height="iconSize"
+                width="auto"
+                view_Box="0 -960 960 960"
+                fill_Colour="#CCCCCC"
+                :path_Value="iconImageStorage.getPathData('Delete')"
+            />
             </button>
 
             <!-- Cancel Button -->
             <button @click="cancelEdit">
-                <svg xmlns="http://www.w3.org/2000/svg" :height="iconSize" viewBox="0 -960 960 960" fill="#CCCCCC">
-                    <path d="m259-206-52-53 220-221-220-221 52-53 221 221 221-221 52 53-220 221 220 221-52 53-221-221-221 221Z"/>
-                </svg>
+                <SVGHandler
+                :height="iconSize"
+                width="auto"
+                view_Box="0 -960 960 960"
+                fill_Colour="#CCCCCC"
+                :path_Value="iconImageStorage.getPathData('Cross')"
+            />
             </button>
         </div>
     </Transition>
@@ -48,9 +60,13 @@ import { containerData } from '../../Data/containerData.js'
 import { layout } from '../../Data/layoutData.js';
 import { iconData, iconStorage } from '../../Data/iconData.js';
 
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import { iconImageStorage } from '../../Data/iconImages';
+
 export default {
     components:{
-        Modal
+        Modal,
+        SVGHandler
     },
     data(){
         return {
@@ -58,6 +74,7 @@ export default {
             layout,
             iconData,
             iconStorage,
+            iconImageStorage,
 
             iconSize: "5em",
             modal:{
