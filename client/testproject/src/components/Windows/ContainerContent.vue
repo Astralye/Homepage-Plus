@@ -7,7 +7,20 @@
 
     <WindowContainerDivider>
       <template #header> 
-        <h2> Container layout type</h2>
+        <h2> Container Name </h2>
+      </template>
+
+      <template #content>
+        <TextInput></TextInput>
+
+        <input type="checkbox">
+        <label> Show name?</label>
+      </template>
+    </WindowContainerDivider>
+
+    <WindowContainerDivider>
+      <template #header> 
+        <h2> Display type</h2>
       </template>
 
       <template #tooltip>
@@ -32,24 +45,6 @@
             }">
         </RadioButton>  
       </template>
-    </WindowContainerDivider>
-
-
-    <WindowContainerDivider>
-      <template #header> 
-        <h2> Icon size </h2>
-      </template>
-
-      <template #tooltip>
-        <ToolTip> Size of the icons, relative to a base size </ToolTip>
-      </template>
-
-      <template #content>
-        <RangeSlider
-          :m_function="changeIconSize"
-          :input_Data="['0.5x','1x', '2x', '3x']"/>
-      </template>
-
     </WindowContainerDivider>
 
     <WindowContainerDivider>
@@ -144,13 +139,16 @@ import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 
+import TextInput from '../Input Components/TextInput.vue';
+
 export default {
     components: {
         ToolTip,
         WindowContainerDivider,
         SingleButton,
         RadioButton,
-        RangeSlider
+        RangeSlider,
+        TextInput
     },
     created(){
       this.m_CurrentID = "0A";
