@@ -24,6 +24,7 @@ class IconImages{
     
     baseData(){
         this.data = [
+            
             // Social media icons
             {
                 name: "Github",
@@ -93,6 +94,20 @@ class IconImages{
 // Get path data
 // --------------------------------------------------------------------------------------------------------------------------
 
+    // Temporary, fix later
+    getViewBoxIndex(index){
+        return (0 <= index && index < 4) ? "0 0 32 32" : "0 -960 960 960"; 
+    }
+
+    getViewBoxName(name){
+        return this.getViewBoxIndex(this.getIndexFromName(name));
+    }
+
+
+    getIndexFromName(name){
+        for(let i=0; i<this.data.length; i++){ if(this.data[i].name === name){ return i; } }
+    }
+
     // Via index
     getPathFromIndex(index){
         if(!this.isValidIndex(index)){ return null; }
@@ -105,6 +120,8 @@ class IconImages{
 
     // Via name
     getPathData(inputName){
+        if(!inputName){ return null; } // Input is null
+
         for(let i=0; i<this.data.length; i++){ if(this.data[i].name === inputName){ return this.data[i].pathData; } }
 
         // If not found
