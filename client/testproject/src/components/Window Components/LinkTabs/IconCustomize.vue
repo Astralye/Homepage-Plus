@@ -105,8 +105,10 @@
                     <template #content>
                         <div class="saved-grid width-full grid">
                             <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-                                <div class="saved-icons grid-item flex">
-                                    
+                                
+                                <div class="saved-icons flex"
+                                    :class="{ 'icon-Selection' : isSelectedIcon(index), 'grid-item' : !isSelectedIcon(index) }"
+                                    >
                                     <template v-if="iconImageStorage.isValidIndex(index)">
                                         <SVGHandler
                                             width="100%"
@@ -161,6 +163,7 @@ export default {
             iconImageStorage,
 
             m_SelectedObject: {},
+            m_SelectedIconIndex: -1,
             
             m_DisplayWindow: false,
 
@@ -188,6 +191,7 @@ export default {
 
             let svg = iconImageStorage.getPathFromIndex(index);
             this.m_SelectedObject.iconImage = svg.name;
+            this.setSVGIndex(svg.name);
         },
         
         getSVG(index){
@@ -201,6 +205,12 @@ export default {
             let noIcons = 40; // arbiturary number
             // Should be the N total icons
             this.m_Columns = ~~(noIcons / this.m_Rows);
+        },
+
+        // Check if current selected icon is the index.
+        isSelectedIcon(index){
+            if(this.isCurrentlySelected()){ return; } // No selection
+            return (this.m_SelectedIconIndex === index);
         },
 
         // Window functions 
@@ -238,7 +248,15 @@ export default {
 
             let group = iconData.getGroup(newIconData.groupID);
             this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
+
+            this.setSVGIndex(this.m_SelectedObject.iconImage);
         },
+
+        // From the name of the icon, get the index at which it appears in iconImages
+        setSVGIndex(svgName){
+            this.m_SelectedIconIndex = iconImageStorage.getIndexFromName(svgName);
+        },
+
 
         tmp(){ }
     },
@@ -248,12 +266,17 @@ export default {
         'iconSelect.dataValue': {
             handler(val){ this.displaySelectedData(val); },
             deep: true
-        }
+        },
     }
 }
 </script>
 
 <style scoped>
+
+.icon-Selection{
+    border: 4px solid brown;
+    transition: all 0.2s ease-in-out;
+}
 
 .center{
     margin: auto;
@@ -270,6 +293,8 @@ export default {
 
 .grid-item{
     border: solid rgba(255, 255, 255, 0.4) 0.5px;
+
+    transition: all 0.2s ease-in-out;
 }
 
 .saved-grid{
