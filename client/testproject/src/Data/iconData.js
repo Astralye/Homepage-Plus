@@ -9,46 +9,7 @@ class IconData{
 
     // For testing purposes, delete later
     resetData(){
-        this.data = [
-            {
-                containerID: "0A1A", // This will have to be set in the Link maker, for now, just keep it static.
-                iconDataArray: [
-                    {
-                        iconID: "ICONA",
-                        coordinate:{
-                            x: 2, // tmp values
-                            y: 2, // tmp values
-                        },
-                        iconSize: 1,
-                        iconImage: "Youtube",
-                        iconString: "Youtube",
-                        link: "https://www.youtube.com/feed/subscriptions",
-                    },
-                    {
-                        iconID: "ICONB",
-                        coordinate:{
-                            x: 1, // tmp values
-                            y: 1, // tmp values
-                        },
-                        iconSize: 1,
-                        iconImage: "Reddit",
-                        iconString: "Reddit",
-                        link: "https://www.reddit.com/",
-                    },
-                    {
-                        iconID: "ICONC",
-                        coordinate:{
-                            x: 2, // tmp values
-                            y: 3, // tmp values
-                        },
-                        iconSize: 1,
-                        iconImage: null,
-                        iconString: "",
-                        link: "FOLDER",
-                    }
-                ]
-            }
-        ]
+        this.data = []
     }
 
     // For testing purposes, to keep initalized data.
@@ -59,41 +20,6 @@ class IconData{
 
     TMP_resetData(){
         this.data = [];
-    }
-
-    resetData2(){
-        this.data = [
-            {
-                containerID: "", // Which container it is being stored.
-                iconDataArray: [
-                    {
-                        iconID: "",
-                        // An icon can be stored in different locations depending on the saved dimension
-                        // If free, use these, if compact, store index.
-
-                        // For now just a single position
-                        // positions: [{
-                        //     savedDimension: {
-                        //         rows: null,
-                        //         columns: null
-                        //     },
-                        //     coordinate:{
-                        //         x: null,
-                        //         y: null,
-                        //     }
-                        // }],
-                        coordinate:{
-                            x: null,
-                            y: null, 
-                        },
-                        iconSize: 1,
-                        iconImage: null,
-                        iconString: "",
-                        link: "",
-                    }
-                ]
-            }
-        ]
     }
 
     checkContainerExist(containerID){
@@ -112,15 +38,16 @@ class IconData{
                 x: setX,
                 y: setY,
             },
-            iconSize: 1,
+            iconSize: "75",
             iconImage: image,
             iconString: string,
             link: "",
+            displayText: true,
         }
     }
 
     generateDefaultIcon(){
-        return this.generateIcon(1,1,0,"","icon!");
+        return this.generateIcon(1,1,"Dotted_Square","Sample Text");
     }
 
     generateIconID(){

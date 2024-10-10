@@ -27,15 +27,16 @@
                 <template #content>
                     <div class="saved-grid width-full grid">
                         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-                            <div class="saved-icons grid-item flex"
-                            @mouseup="checkDropIcon(index)">
+                            <div class="saved-icons flex"
+                                :class="{ 'icon-Selection' : isSelectedIcon(index), 'grid-item' : !isSelectedIcon(index), }"
+                            @mouseup="checkDropIcon(index)"
+                            @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectData(index) : null">
                                 
                                 <!-- For rendering any icons saved -->
                                 <template v-if="renderIcon(index)">
                                     <IconHandler
                                         :icon_data="getIconData(index)"
                                         @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                                        @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectData(index) : null"
                                     />
                                 </template> 
                             </div>
@@ -93,6 +94,8 @@ export default {
     },
     unmounted(){
         this.$GlobalStates.value.edit.isIconSelector = false;
+        
+        iconSelect.resetData();
     },
     methods: {
 
@@ -102,8 +105,14 @@ export default {
 // Icon functions
 // ------------------------------------------------------------------------------------------------------------
 
+        isSelectedIcon(index){
+            if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
+            return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_STORAGE === iconSelect.data.groupID);
+        },
+
         setSelectData(index){
             let data = iconStorage.getIconDataFromIndex(iconStorage.allData, index);
+            if(!data){ iconSelect.resetData(); return; } // no data
             iconSelect.setData(data.iconID, this.m_STORAGE);
         },
 
@@ -142,7 +151,7 @@ export default {
         },
 
         generateIcon(){
-            let newIcon = iconStorage.generateIcon(null, null, "Burger", "Icon");
+            let newIcon = iconStorage.generateDefaultIcon();
             iconStorage.allData.push(newIcon);
         },
 
@@ -207,8 +216,25 @@ export default {
 </script>
 
 <style scoped>
+
+.icon-Selection{
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    
+    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
+       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
+         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
+            transition: border-color 0.15s linear;
+}
+
 .grid-item{
-    border: solid rgba(255, 255, 255, 0.4) 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+
+    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
+       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
+         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
+            transition: border-color 0.15s linear;
 }
 
 .saved-grid{

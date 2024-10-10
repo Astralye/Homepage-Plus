@@ -1,84 +1,97 @@
 <template>
-    <div class="flex">
-        <div class="width-half">
-            <WindowContainerDivider
-            class="container-divider">
-                <template #header>
-                    <h2 class="inline">
-                        Displayed icon
-                    </h2>
-                </template>
-        
-                <template #content>
-                    <div class="image-placeholder flex"
-                    @click="toggleWindow()">
-
-                        <template v-if="!isCurrentlySelected()">
-                            <div class="icon-fit center fit-content">
-                                <SVGHandler
-                                    height="150px"
-                                    width="auto"
-                                    fill_Colour="#CCCCCC"
-                                    :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
-                                    :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
-                                />
-                            </div>
-                        </template>
-                        <template v-else>
-                            <svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="auto" fill="#e8eaed">
-                                <path d="m254-238-16-16 226-226-226-226 16-16 226 226 226-226 16 16-226 226 226 226-16 16-226-226-226 226Z"/>
-                            </svg>
-                        </template>
-                    </div>
-
-                    <template v-if="isCurrentlySelected()">
-                        <p>
-                            None currently selected!
-                        </p>
+    <div>
+        <div class="flex">
+            <div class="width-half">
+                <WindowContainerDivider
+                class="container-divider">
+                    <template #header>
+                        <h2 class="inline">
+                            Displayed icon
+                        </h2>
                     </template>
-                </template>
-            </WindowContainerDivider>
+            
+                    <template #content>
+                        <div class="image-placeholder flex mouse-hover"
+                        @click="toggleWindow()">
+
+                            <template v-if="!isCurrentlySelected()">
+                                <div class="icon-fit center fit-content">
+                                    <SVGHandler
+                                        height="150px"
+                                        width="auto"
+                                        fill_Colour="#CCCCCC"
+                                        :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
+                                        :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
+                                    />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="auto" fill="#e8eaed">
+                                    <path d="m254-238-16-16 226-226-226-226 16-16 226 226 226-226 16 16-226 226 226 226-16 16-226-226-226 226Z"/>
+                                </svg>
+                            </template>
+                        </div>
+
+                        <template v-if="isCurrentlySelected()">
+                            <p>
+                                None currently selected!
+                            </p>
+                        </template>
+                    </template>
+                </WindowContainerDivider>
+            </div>
+
+            <div class="width-half">
+                <WindowContainerDivider
+                class="container-divider">
+                    <template #header>
+                        <h2 class="inline">
+                            Name
+                        </h2>
+                    </template>
+            
+                    <template #content>
+                        <TextInput
+                            :placeholder_text="'Icon name'"
+                            v-model="m_SelectedObject.iconString">
+                        </TextInput>
+                    </template>
+                </WindowContainerDivider>
+        
+                <WindowContainerDivider
+                class="container-divider">
+                    <template #header>
+                        <h2 class="inline">
+                            Icon Size
+                        </h2>
+                    </template>
+            
+                    <template #content>
+                        <RangeSlider
+                        :m_function="tmp"
+                        :input_Data="['50', '75', '100']"/>
+                    </template>
+
+                    <template #tooltip>
+                        <ToolTip> Size in px of the icon</ToolTip>
+                    </template>
+                </WindowContainerDivider>
+
+            </div> 
+
         </div>
 
-        <div class="width-half">
-            <WindowContainerDivider
-            class="container-divider">
-                <template #header>
-                    <h2 class="inline">
-                        Name
-                    </h2>
-                </template>
-        
-                <template #content>
-                    <TextInput
-                        :placeholder_text="'Icon name'"
-                        v-model="m_SelectedObject.iconString">
-                    </TextInput>
-                </template>
-            </WindowContainerDivider>
-    
-            <WindowContainerDivider
-            class="container-divider">
-                <template #header>
-                    <h2 class="inline">
-                        Icon Size
-                    </h2>
-                </template>
-        
-                <template #content>
-                    <RangeSlider
-                    :m_function="tmp"
-                    :input_Data="['50','75', '100', '125']"/>
-                </template>
 
-                <template #tooltip>
-                    <ToolTip> Size in px of the icon</ToolTip>
-                </template>
-            </WindowContainerDivider>
 
-        </div> 
-
+        <div>
+            <label>
+                <input type="checkbox" v-model="m_SelectedObject.displayText">
+                Display text
+            </label>
+        </div>
     </div>
+
+    
 
     <teleport to="body">
         <Transition name="fade">
@@ -165,6 +178,8 @@ export default {
             m_SelectedObject: {},
             m_SelectedIconIndex: -1,
             
+            displayText: true,
+
             m_DisplayWindow: false,
 
             m_Rows: 7,
@@ -258,7 +273,9 @@ export default {
         },
 
 
-        tmp(){ }
+        tmp(value){
+            this.m_SelectedObject.iconSize = value;
+        }
     },
 
 // ----------------------------------------------------------------------------------------------
@@ -272,6 +289,14 @@ export default {
 </script>
 
 <style scoped>
+
+.mouse-hover{
+    transition: all 0.15s ease-in-out;
+}
+
+.mouse-hover:hover{
+    background-color: rgba(50, 50, 50, 0.3);
+}
 
 .icon-Selection{
     border: 4px solid brown;
