@@ -15,9 +15,12 @@
 
                         <template v-if="!isCurrentlySelected()">
                             <div class="icon-fit center fit-content">
-                                <SVGIcon
-                                :name="m_SelectedObject.iconImage"/>
-
+                                <SVGHandler
+                                    height="150px"
+                                    width="auto"
+                                    fill_Colour="#CCCCCC"
+                                    :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
+                                />
                             </div>
                         </template>
                         <template v-else>
@@ -104,12 +107,8 @@
                                             width="100%"
                                             height="100%"
                                             :path_Value="getSVG(index)"
-                                            >
-                                            
-                                            <!-- 
-                                                Need to insert the path data here 
-                                            -->
-                                        </SVGHandler>
+                                            @click="console.log('here')"
+                                        />
                                     </template>
                                     <!-- It needs to load the correct icon -->
                                 </div>
@@ -133,10 +132,8 @@ import ToolTip from '../ToolTip.vue';
 import WindowContainerDivider from '../WindowContainerDivider.vue';
 import RangeSlider from '../../Input Components/RangeSlider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
-import SVGIcon from '../../Input Components/SVGIcon.vue';
 
 import SVGHandler from '../../Input Components/SVGHandler.vue';
-import SVGManip from '../../Input Components/SVGManip.vue';
 
 import Window from '../Window.vue';
 
@@ -149,9 +146,7 @@ export default {
         ToolTip,
         RangeSlider,
         TextInput,
-        SVGIcon,
 
-        SVGManip,
         SVGHandler,
 
         Window,
@@ -183,6 +178,11 @@ export default {
 
     methods:{
 
+        // Changes the currently selected. Displays
+        newSelect(index){
+
+        },
+        
         getSVG(index){
             let svg = iconImageStorage.getPathFromIndex(index);
             return svg.pathData;

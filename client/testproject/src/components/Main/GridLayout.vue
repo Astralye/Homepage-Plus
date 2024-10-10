@@ -10,9 +10,9 @@
 
                     <!-- Edit mode Icon -->
                     <IconHandler
-                    :icon_data="getIconData(index)"
-                    @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                    @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
+                        :icon_data="getIconData(index)"
+                        @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                        @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
                     />
                     
                     <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->

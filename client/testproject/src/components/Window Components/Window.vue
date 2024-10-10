@@ -1,8 +1,13 @@
 <script>
 
+import { iconImageStorage } from '../../Data/iconImages';
+import SVGHandler from '../Input Components/SVGHandler.vue';
 import { mouseData } from '../../Data/mouseData';
 
 export default {
+    components:  {
+        SVGHandler,
+    },
     props: {
         title: String,
 
@@ -14,6 +19,8 @@ export default {
     emits: ['closeWindow', 'focusTab'],
     data() {
         return{
+            iconImageStorage,
+
             windowHover: false,
 
             positions: {
@@ -123,9 +130,13 @@ export default {
                     @click="$emit('closeWindow', `${title}`)"
                     @mouseenter.self="windowHover = false"
                     >
-                    <svg xmlns="http://www.w3.org/2000/svg" height="2.5em" viewBox="0 -960 960 960" width="auto" fill="#CCCCCC">
-                        <path d="m259-206-52-53 220-221-220-221 52-53 221 221 221-221 52 53-220 221 220 221-52 53-221-221-221 221Z"/>
-                    </svg>
+                    <SVGHandler 
+                        width="auto"
+                        height="2.5em"
+                        :path_Value="iconImageStorage.getPathData('Cross')"
+                        view_Box="0 -960 960 960"
+                        fill_Colour="#CCCCCC"
+                        />
                 </button>
         </div>
 
