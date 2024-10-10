@@ -20,6 +20,7 @@
                                     width="auto"
                                     fill_Colour="#CCCCCC"
                                     :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
+                                    :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
                                 />
                             </div>
                         </template>
@@ -84,13 +85,17 @@
             <Window
                 v-if="m_DisplayWindow"
                 title="Icon Menu"
-                :width="400"
+                :width="500"
                 @close-window="toggleWindow()"
                 @focusTab="focusClickedTab">
                 <template #window-icon>
-                    <svg class="margin-y-auto" xmlns="http://www.w3.org/2000/svg" height="35px" width="auto" viewBox="0 -960 960 960" fill="#CCCCCC">
-                        <path d="M360-240h440v-107H360v107ZM160-613h120v-107H160v107Zm0 187h120v-107H160v107Zm0 186h120v-107H160v107Zm200-186h440v-107H360v107Zm0-187h440v-107H360v107ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Z"/>
-                    </svg>
+                    <SVGHandler
+                        height="35px"
+                        width="auto"
+                        view_Box="0 -960 960 960"
+                        fill_Colour="#CCCCCC"
+                        :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
+                    />
                 </template>
 
                 <template #window-content>
@@ -105,9 +110,10 @@
                                     <template v-if="iconImageStorage.isValidIndex(index)">
                                         <SVGHandler
                                             width="100%"
-                                            height="100%"
+                                            height="auto"
                                             :path_Value="getSVG(index)"
-                                            @click="console.log('here')"
+                                            :view_Box="iconImageStorage.getViewBoxIndex(index)"
+                                            @click="newSelect(index)"
                                         />
                                     </template>
                                     <!-- It needs to load the correct icon -->
@@ -116,8 +122,6 @@
                         </div>
                     </template>
                 </WindowContainerDivider>
-
-
 
                 </template>
             </Window>
@@ -160,7 +164,7 @@ export default {
             
             m_DisplayWindow: false,
 
-            m_Rows: 5,
+            m_Rows: 7,
             m_Columns: 0,
         }
     },
@@ -180,7 +184,10 @@ export default {
 
         // Changes the currently selected. Displays
         newSelect(index){
+            if(this.isCurrentlySelected()){ return; } // No selection
 
+            let svg = iconImageStorage.getPathFromIndex(index);
+            this.m_SelectedObject.iconImage = svg.name;
         },
         
         getSVG(index){
@@ -191,7 +198,8 @@ export default {
         calculateDimensions(){
             // Need to get the size of the folder and all the icons.
 
-            let noIcons = 40;
+            let noIcons = 40; // arbiturary number
+            // Should be the N total icons
             this.m_Columns = ~~(noIcons / this.m_Rows);
         },
 
@@ -214,7 +222,6 @@ export default {
                 this.$windowStack.value.push(tmp);
             }
         },
-
 
         toggleWindow(){
             this.m_DisplayWindow = !this.m_DisplayWindow;
@@ -267,8 +274,8 @@ export default {
 
 .saved-grid{
     border: 2px solid black;
-    height: 200px;
-    grid-template-columns:  repeat(5, 1fr);
+    height: 300px;
+    grid-template-columns:  repeat(7, 1fr);
     overflow-y: scroll;
 }
 

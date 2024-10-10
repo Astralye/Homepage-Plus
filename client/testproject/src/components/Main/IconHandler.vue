@@ -11,6 +11,7 @@
                 height="75px"
                 width="auto"
                 :path_Value="iconImageStorage.getPathData(icon_data.iconImage)"
+                :view_Box="iconImageStorage.getViewBoxName(icon_data.iconImage)"
 
                 @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
             />
