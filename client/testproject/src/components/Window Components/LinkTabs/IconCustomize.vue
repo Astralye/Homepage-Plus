@@ -53,8 +53,7 @@
                     <template #content>
                         <TextInput
                             :placeholder_text="'Icon name'"
-                            v-model="m_SelectedObject.iconString">
-                        </TextInput>
+                            v-model="m_SelectedObject.iconString"/>
                     </template>
                 </WindowContainerDivider>
         
@@ -68,8 +67,10 @@
             
                     <template #content>
                         <RangeSlider
-                        :m_function="tmp"
-                        :input_Data="['50', '75', '100']"/>
+                            :no_Items="m_iconSizePixels.length"
+                            :caption_Data="m_iconSizePixels"
+                            v-model="m_SelectedObject.iconSize"
+                            />
                     </template>
 
                     <template #tooltip>
@@ -89,6 +90,10 @@
                 Display text
             </label>
         </div>
+        
+        <!-- <ColourPicker>
+
+        </ColourPicker> -->
     </div>
 
     
@@ -158,6 +163,8 @@ import Window from '../Window.vue';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
 import { iconImageStorage } from '../../../Data/iconImages';
+import ColourPicker from '../../Input Components/ColourPicker.vue';
+
 
 export default {
     components:{
@@ -169,6 +176,10 @@ export default {
         SVGHandler,
 
         Window,
+
+        ColourPicker,
+
+        RangeSlider
     },
     data() {
         return {
@@ -184,6 +195,8 @@ export default {
 
             m_Rows: 7,
             m_Columns: 0,
+
+            m_iconSizePixels: ['50', '75', '100']
         }
     },
 
@@ -199,6 +212,12 @@ export default {
 // ---------------------------------------------------------------------------------------------- 
 
     methods:{
+
+        getIndex(){
+            for(let i = 0; i < this.m_iconSizePixels.length; i++){
+                if(this.m_SelectedObject.iconSize === this.m_iconSizePixels[i]){ return i; }
+            }
+        },
 
         // Changes the currently selected. Displays
         newSelect(index){
@@ -272,9 +291,8 @@ export default {
             this.m_SelectedIconIndex = iconImageStorage.getIndexFromName(svgName);
         },
 
-
-        tmp(value){
-            this.m_SelectedObject.iconSize = value;
+        changeIconSize(index){
+            this.m_SelectedObject.iconSize = this.m_iconSizePixels[index];
         }
     },
 

@@ -1,89 +1,113 @@
 <template>
     <input type="range"
         min="0" 
-        :max="this.m_SliderData.max" 
-        :step="this.m_SliderData.stepSize"
+        :max="m_SliderData.max" 
+        :step="m_SliderData.stepSize"
         list="my-datalist"
-        v-model="sliderValue"
+
+        :value="modelToScale(modelValue)" 
+        @input="computeNewValue($event.target.value)"
     />
 
-    <datalist id="my-datalist">
-        <template v-for="n in this.m_SliderData.divisions">
-            <option>{{ input_Data[n-1] }}</option>
-        </template>
-    </datalist>
+    <template v-if="displayCaption">
+        <datalist id="my-datalist">
+            <template v-for="index in m_SliderData.divisions">
+                <option>{{ caption_Data[index-1] }}</option>
+            </template>
+        </datalist>
+    </template>
 </template>
-
 <script>
-export default {
-    data(){
-        return{
-            // m_ParentVariableData: null,
-            // m_functions: {}
-            m_SliderData: {
-                blocks: 0,
-                stepSize: 100,
-                max: 100,
-                divisions: 0,
-                value: 0,
+    export default {
+        props:{
+            modelValue: String,
+
+            no_Items:{
+                type: Number,
+                default: 2,
+                required: true,
             },
-            sliderValue: 0
-        }
-    },
-    props: {
-        input_Data:{
-            type: Array,
-            default: [],
-            required: true,
-        },
-        m_function: {
-            type: Function,
-            default: "",
-            required: true,
-        }
-    },
-    created(){
-        this.setSliderData();
-    },
-    methods: {
-        printSliderData(){
-            console.log(`Slider data\n`,
-                    `\nStep size: ${this.m_SliderData.stepSize}`,
-                    `\nBlocks: ${this.m_SliderData.blocks}`,
-                    `\nMax: ${this.m_SliderData.max}`,
-                );
-        },
-
-        setSliderData(){
-            if(this.input_Data.length === 0){
-                console.warn("ERROR (RangeSlider.vue): No input data");
-                return;
-            }
-            else if(this.input_Data.length === 2){
-                console.warn("ERROR (RangeSlider.vue): Slider component requires minimum 3 values");
-                return;
-            }
-
-            this.m_SliderData.divisions = this.input_Data.length;
-            this.m_SliderData.blocks    = this.input_Data.length - 1;
-            this.m_SliderData.stepSize  = Math.round(100 / this.m_SliderData.blocks);
-            this.m_SliderData.max       = this.m_SliderData.blocks * this.m_SliderData.stepSize;
-
-            // this.printSliderData();
-        },
-    },
-    watch:{
-        // Calculate real value from interpreted value
-        sliderValue(val, oldval){
             
-            // Update value
-            let position = val / this.m_SliderData.stepSize;
-            this.m_SliderData.value = this.input_Data[position];
+            // Array of strings
+            caption_Data:{ 
+                type: Array,
+                default: [],
+            },
 
-            this.m_function(this.m_SliderData.value);
-        }
+            start_Index:{
+                type: Number,
+                default: null
+            },
+        },
+        emits: [ 'update:modelValue'],
+        data(){
+            return{
+                m_SliderData: {
+                    blocks: 0,
+                    stepSize: 100,
+                    max: 100,
+                    divisions: 0,
+                },
+
+                sliderData: 0,
+                displayCaption: false
+            }
+        },
+
+        methods: {
+            initData(){
+                
+                this.m_SliderData.divisions = this.caption_Data.length; // V-for becomes buggy if value
+                this.m_SliderData.blocks    = this.no_Items - 1;
+                this.m_SliderData.stepSize  = Math.round(100 / this.m_SliderData.blocks);
+                this.m_SliderData.max       = this.m_SliderData.blocks * this.m_SliderData.stepSize;
+
+                if(!this.start_Index){ this.m_SliderData.value = this.start_Index; }
+            },
+
+            checkDisplayCaption(){
+                this.displayCaption = (this.no_Items == this.caption_Data.length && this.caption_Data.length != 0);
+            },
+
+            /*
+                Update the parent v model depending on its type
+                There are two types:
+                    1. Category
+                    2. Value
+
+                Items based on category (contains caption data), will use the event value as the index
+                If value was used, it just uses the index as the v-model data
+            */
+            valueToIndex(value){
+                return value / this.m_SliderData.stepSize;
+            },
+            
+            // Convert modal value to local slider value
+            modelToScale(value){
+
+                // If no array data, the value of the modal is the position itself.
+                if(!this.displayCaption){ return value; }
+
+                for(var i = 0; i < this.caption_Data.length; i++){
+                    if(this.caption_Data[i] === value){ return i * this.m_SliderData.stepSize}
+                }
+                
+                return 0; // If not found
+            },
+
+            computeNewValue(value){
+                if(!this.displayCaption){ this.$emit('update:modelValue', index); }
+
+                let index = this.valueToIndex(value);
+                this.$emit('update:modelValue', this.caption_Data[index]);
+            }
+        },
+
+        created(){
+            this.initData();
+            this.checkDisplayCaption();
+        },
     }
-}
 </script>
 
 <style scoped>
