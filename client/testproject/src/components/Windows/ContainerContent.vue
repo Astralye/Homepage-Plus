@@ -134,7 +134,6 @@
 
 import { containerData } from '../../Data/containerData.js';
 import RadioButton from '../Input Components/RadioBtn.vue';
-import RangeSlider from '../Input Components/RangeSlider.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
@@ -147,7 +146,6 @@ export default {
         WindowContainerDivider,
         SingleButton,
         RadioButton,
-        RangeSlider,
         TextInput
     },
     created(){

@@ -56,7 +56,6 @@
 <script>
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
-import RangeSlider from '../Input Components/RangeSlider.vue';
 import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import IconHandler from '../Main/IconHandler.vue';
@@ -69,7 +68,6 @@ export default {
     components: {
         WindowContainerDivider,
         ToolTip,
-        RangeSlider,
         TextInput,
         SingleButton,
         IconHandler,

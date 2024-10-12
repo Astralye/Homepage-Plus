@@ -37,8 +37,8 @@ export default {
             // Range Slider Data
             // --------------------------------------------------------------------------
             
-            StepSizeValue: 0, 
-
+            m_StepSizeValues: [0.05, 0.125, 0.25, 0.33, 0.5],
+            
 
             // These were for rendering, they have no semantic value to the data structure
 
@@ -251,14 +251,14 @@ export default {
             <div class="container-content-margin-top">
 
                 <input 
-                type="checkbox" 
-                id="EvenSpacing"
-                name="EvenSpacing" 
-                value="EvenSpacing"
-                class="EvenSpacing"
-                v-model="check"
-                @change="updateSpacingCheckmark(check)"
-                :checked="this.States.selectedContainer.evenlySpaced"
+                    type="checkbox" 
+                    id="EvenSpacing"
+                    name="EvenSpacing" 
+                    value="EvenSpacing"
+                    class="EvenSpacing"
+                    v-model="check"
+                    @change="updateSpacingCheckmark(check)"
+                    :checked="this.States.selectedContainer.evenlySpaced"
                 >
                     
                 <label class="selection fullWidth"></label>
@@ -290,8 +290,10 @@ export default {
         <template #content>
             <div class="container-content-margin-top">
                 <RangeSlider
-                    :m_function="updateStepSize"
-                    :input_Data="[0.05,0.125,0.25, 0.33, 0.5]"/>
+                    :no_Items="m_StepSizeValues.length"
+                    :caption_Data="m_StepSizeValues"
+                    v-model="this.$GlobalStates.value.edit.dragStepSize"
+                    />
             </div>
         </template>
 
