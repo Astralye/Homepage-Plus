@@ -50,11 +50,27 @@ class IconData{
         return this.generateIcon(1,1,"Dotted_Square","Sample Text");
     }
 
+    // Generates a 4 digit Hex id: idXXXX
     generateIconID(){
-        // Use some form of hashing to create a unique ID
-        // Maybe based on time and date created? 
+        var id;
+        do{ id = ("id" + Math.random().toString(16).slice(12)); }
+        while( this.doesIconIDexist(id,true) || iconData.doesIconIDexist(id, false)); // If icon exists, run again
+        return id;
+    }
+    
+    // Data storage of icons in the containers is different than storage
+    doesIconIDexist(id, isStorage){
+        for(let i = 0; i < this.data.length; i++){
+            if(isStorage){ if(id === this.data[i].iconID){ return true; };} 
 
-        return "abc";
+            else{
+                // Each i, corresponds to the container.
+                for(let j = 0; j < this.data[i].iconDataArray.length; j++){
+                    if(id === this.data[i].iconDataArray[j].iconID){ console.log("end"); return true; }
+                }
+            }
+        }
+        return false;
     }
 
 // Coordinate Index
@@ -205,12 +221,6 @@ class IconData{
         console.error(`Error (iconData.js): IconID '${iconID}' does not exist`);
         return -1;
     }
-
-    // Assuming the parameter is a object
-    getCoordinate(iconObj)  {return iconObj.coordinate; }
-    getIconSize(iconObj)    {return iconObj.iconSize; }
-    getIconImage(iconObj)   {return iconObj.iconImage; }
-    getIconString(iconObj)  {return iconObj.iconString; }
 
 // ----------------------------------------------------------------------------------------------------------------
 // Setters
