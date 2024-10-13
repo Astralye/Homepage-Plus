@@ -16,6 +16,8 @@
             placeholder_text: String,
             modelValue: String,
         },
+
+        emits: [ 'update:modelValue' ],
     }
 </script>
 

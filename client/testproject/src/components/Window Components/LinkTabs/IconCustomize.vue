@@ -11,17 +11,23 @@
                     </template>
             
                     <template #content>
-                        <div class="image-placeholder flex mouse-hover"
-                        @click="toggleWindow()">
+                        <div class="image-placeholder flex pos-relative mouse-hover"
+                        @click.self="toggleWindow()">
 
                             <template v-if="!isCurrentlySelected()">
-                                <div class="icon-fit center fit-content">
+                                <div class="icon-fit center fit-content"
+                                    @click="toggleWindow()">
                                     <SVGHandler
-                                        height="150px"
-                                        width="auto"
-                                        fill_Colour="#CCCCCC"
+                                        height="150"
+                                        width="150"
+                                        :fill_Colour="this.m_localIconColourHex"
                                         :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
                                         :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
+                                    />
+                                </div>
+                                <div class="pos-absolute bottom-right button-shift">
+                                    <ColourPicker
+                                        @getHEXValues="(hex) => updateColourValues(hex)"
                                     />
                                 </div>
                             </template>
@@ -82,18 +88,12 @@
 
         </div>
 
-
-
         <div>
             <label>
                 <input type="checkbox" v-model="m_SelectedObject.displayText">
                 Display text
             </label>
         </div>
-        
-        <!-- <ColourPicker>
-
-        </ColourPicker> -->
     </div>
 
     
@@ -131,6 +131,7 @@
                                         <SVGHandler
                                             width="100%"
                                             height="auto"
+                                            :fill_Colour="m_localIconColourHex"
                                             :path_Value="getSVG(index)"
                                             :view_Box="iconImageStorage.getViewBoxIndex(index)"
                                             @click="newSelect(index)"
@@ -196,7 +197,9 @@ export default {
             m_Rows: 7,
             m_Columns: 0,
 
-            m_iconSizePixels: ['50', '75', '100']
+            m_iconSizePixels: ['50', '75', '100'],
+
+            m_localIconColourHex: "#CCCCCC"
         }
     },
 
@@ -208,10 +211,19 @@ export default {
         this.m_DisplayWindow = false; 
     },
 
+    methods:{
+
+// Colour picker Values
+// ----------------------------------------------------------------------------------------------
+
+        updateColourValues(hex){
+            this.m_localIconColourHex = hex;
+        },
+
+
+
 // Data retrieval
 // ---------------------------------------------------------------------------------------------- 
-
-    methods:{
 
         getIndex(){
             for(let i = 0; i < this.m_iconSizePixels.length; i++){
@@ -308,6 +320,23 @@ export default {
 
 <style scoped>
 
+.bottom-right{
+    bottom: 0;
+    right: 0;
+}
+
+.button-shift{
+    transform: translate(2px, 2px);
+}
+
+.pos-relative{
+    position: relative;
+}
+
+.pos-absolute{
+    position: absolute;
+}
+
 .mouse-hover{
     transition: all 0.15s ease-in-out;
 }
@@ -330,7 +359,7 @@ export default {
 }
 
 .icon-fit{
-    width: 90%;
+    width: 100%;
     height: auto;
 }
 
@@ -373,8 +402,9 @@ export default {
 }
 
 .image-placeholder{
-    border: 2px solid black;
-    width: 175px;
+    border: 2px solid black; 
+    border-radius: 1em;
+    width: 100%;
     height: 175px;
 }
 </style>

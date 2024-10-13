@@ -20,10 +20,10 @@
 <script>
     export default {
         props:{
-            modelValue: String,
+            modelValue: [Number, String],
 
             no_Items:{
-                type: Number,
+                type: [Number, String],
                 default: 2,
                 required: true,
             },
@@ -35,7 +35,7 @@
             },
 
             start_Index:{
-                type: Number,
+                type: [Number, String],
                 default: null
             },
         },
@@ -55,14 +55,24 @@
         },
 
         methods: {
+            
             initData(){
+                (this.caption_Data.length === 0) ? this.initValue() : this.initCategory();
                 
-                this.m_SliderData.divisions = this.caption_Data.length; // V-for becomes buggy if value
+                if(!this.start_Index){ this.m_SliderData.value = this.start_Index; }
+            },
+
+            initValue(){
+                this.m_SliderData.stepSize  = 1;
+                this.m_SliderData.divisions = this.no_Items;
+                this.m_SliderData.max       = this.no_Items;
+            },
+
+            initCategory(){
+                this.m_SliderData.divisions = this.caption_Data.length; // V-for becomes buggy if used no_Items prop
                 this.m_SliderData.blocks    = this.no_Items - 1;
                 this.m_SliderData.stepSize  = Math.round(100 / this.m_SliderData.blocks);
                 this.m_SliderData.max       = this.m_SliderData.blocks * this.m_SliderData.stepSize;
-
-                if(!this.start_Index){ this.m_SliderData.value = this.start_Index; }
             },
 
             checkDisplayCaption(){
@@ -84,7 +94,6 @@
             
             // Convert modal value to local slider value
             modelToScale(value){
-
                 // If no array data, the value of the modal is the position itself.
                 if(!this.displayCaption){ return value; }
 
@@ -96,7 +105,8 @@
             },
 
             computeNewValue(value){
-                if(!this.displayCaption){ this.$emit('update:modelValue', index); }
+                if(!this.displayCaption){ 
+                    this.$emit('update:modelValue', value); return; }
 
                 let index = this.valueToIndex(value);
                 this.$emit('update:modelValue', this.caption_Data[index]);
