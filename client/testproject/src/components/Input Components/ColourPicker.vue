@@ -20,7 +20,7 @@
             <Window
                 v-if="m_DisplayWindow"
                 title="Colour Picker"
-                :width="300"
+                :width="350"
                 @close-window="toggleWindow()">
                 <!-- @focusTab="focusClickedTab"> -->
                 <template #window-icon>
@@ -29,7 +29,7 @@
                         width="auto"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
-                        :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
+                        :path_Value="iconImageStorage.getPathData('Colour_Palette')"
                     />
                 </template>
 
@@ -39,30 +39,56 @@
                 <WindowContainerDivider>
                     <template #content>
 
-                        <div class="square">
-                        
+                        <div class="flex"
+                            @mouseup="enableHexUpdate"> 
+                            <div class="width-half half-item-margin">
+                                <div class="square"> </div>
+                            </div>
+
+                            <div class="width-half half-item-margin">
+                                <p>Hex:</p>
+                                <TextInput
+                                    class="text-input-spacing"
+                                    placeholder_text="Hex Value"
+                                    :max_length="7"
+                                    v-model="m_HexValue"/>
+                                <p>HSL</p>
+                                <TextInput
+                                    placeholder_text="HSL Value"
+                                    v-model="m_HSLString"/>
+                            </div>
                         </div>
 
-
-                        Hue = {{ m_HSLValues.Hue }}
+                        <p> Hue = {{ m_HSLValues.Hue }} </p>
                         <RangeSlider
                             :no_Items="300"
                             :start_Index="m_HSLValues.Hue"
                             v-model="m_HSLValues.Hue"
+
+                            @mousedown="disableTextUpdate"
+                            @mouseup="enableTextUpdate"
                         />
 
-                        Saturation = {{ m_HSLValues.Saturation }}%
+                        <p> Saturation = {{ m_HSLValues.Saturation }}% </p>
+
                         <RangeSlider
                             :no_Items="100"
                             :start_Index="m_HSLValues.Saturation"
                             v-model="m_HSLValues.Saturation"
+
+                            @mousedown="disableTextUpdate"
+                            @mouseup="enableTextUpdate"
                         />
 
-                        Light = {{ m_HSLValues.Light }}%
+                        <p> Light = {{ m_HSLValues.Light }}% </p>
+
                         <RangeSlider
                             :no_Items="100"
                             :start_Index="m_HSLValues.Light"
                             v-model="m_HSLValues.Light"
+
+                            @mousedown="disableTextUpdate"
+                            @mouseup="enableTextUpdate"
                         />
                     </template>
                 </WindowContainerDivider>
@@ -80,12 +106,14 @@ import { iconImageStorage } from '../../Data/iconImages';
 import Window from '../Window Components/Window.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 
+import TextInput from './TextInput.vue';
 import RangeSlider from './RangeSlider.vue';
 
 export default {
     components:{
         Window,
         WindowContainerDivider,
+        TextInput,
 
         RangeSlider,
         SVGHandler,
@@ -109,23 +137,79 @@ export default {
                 Light: 0,      // 0 - 100%
             },
 
+            m_HexValue: "#000000",
+            m_HSLString: "",
+
+            isUpdateString: true,
 
             m_DisplayWindow: false,
         }
     },
     methods:{
-        toggleWindow(){
-            this.m_DisplayWindow = !this.m_DisplayWindow;
-            return this.m_DisplayWindow;
+
+// Emitter
+// -----------------------------------------------------------------------------------------------
+        emitValues(){ this.$emit('getHEXValues', this.m_HexValue); },
+
+// Math
+// -----------------------------------------------------------------------------------------------
+
+        clamp(number, min, max){
+            return Math.max(min, Math.min(number, max));
         },
+
+
+// Updaters
+// --------------------------------------------------------------------------------------------------
+
+        // update HSL CSS
         updateHSLCSSValues(){
-            this.m_HSLCSS.Hue = String(this.m_HSLValues.Hue);
-            this.m_HSLCSS.Saturation = String(this.m_HSLValues.Saturation) + "%";
-            this.m_HSLCSS.Light = String(this.m_HSLValues.Light) + "%"; 
+            let hue = String(this.m_HSLValues.Hue);
+            let saturation = String(this.m_HSLValues.Saturation) + "%";
+            let light = String(this.m_HSLValues.Light) + "%"; 
+
+            this.m_HSLString = `hsl( ${hue}, ${saturation}, ${light} )`;
         },
-        emitValues(){
-            this.$emit('getHEXValues', this.hslToHex(this.m_HSLValues.Hue, this.m_HSLValues.Saturation,  this.m_HSLValues.Light));
+
+        // update HSL slider values
+        updateHSLSlider(val){
+            let values = val.replace(/[^\d,]/g, '').split(',');
+
+            this.setHSL(this.clamp(values[0], 0, 300),
+                        this.clamp(values[1], 0, 100),
+                        this.clamp(values[2], 0, 100));
         },
+
+        // update hex string from HSL slider
+        updateHexString(){
+            this.m_HexValue = this.hslToHex(this.m_HSLValues.Hue, this.m_HSLValues.Saturation,  this.m_HSLValues.Light);
+        },
+
+        setHSL(h,s,l){
+            this.m_HSLValues.Hue = h;
+            this.m_HSLValues.Saturation = s;
+            this.m_HSLValues.Light = l;
+        },
+
+        // Check if the hex value is valid
+        userHexParser(hexValue){
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexValue);
+            if(!result){ return; } // null only if values exceed 255 in hex
+
+            const { h, s, l } = this.hexToHSL(hexValue);
+            this.setHSL(h, s, l);
+            this.updateHSLCSSValues();
+        },
+
+// Conversions
+// --------------------------------------------------------------------------------------------------------------------------------------------------
+
+        /*
+            These conversions use rounding and floating point numbers.
+            Therefore, values can 'drift' if changing only a single value
+
+            However, this is a minor issue and does not break the code.
+        */
 
         // Code taken from https://stackoverflow.com/questions/36721830/convert-hsl-to-rgb-and-hex
         hslToHex(h, s, l) {
@@ -138,9 +222,64 @@ export default {
             };
             return `#${f(0)}${f(8)}${f(4)}`;  
         },
+
+        // Code taken from https://stackoverflow.com/questions/62390243/java-script-how-can-i-pull-the-hsl-value-when-a-colour-is-selected-from-input-t
+        hexToHSL(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+            let r = parseInt(result[1], 16);
+            let g = parseInt(result[2], 16);
+            let b = parseInt(result[3], 16);
+
+            r /= 255, g /= 255, b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max == min){
+                h = s = 0; // achromatic
+            } else {
+                var d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch(max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                
+                h /= 6;
+            }
+
+            h = Math.round(h*360);
+            s = Math.round(s*100);
+            l = Math.round(l*100);
+
+            return { h, s, l };
+        },
+    
+// Boolean
+// --------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        /*
+            Both the HSL sliders and Hex text both modify the string
+            However, HSL modifies the hex, which runs the watcher.
+            This disables the HSL slider to run the hex watcher 
+        */
+        disableTextUpdate(){
+            this.isUpdateString = false;
+        },
+
+        enableTextUpdate(){
+            this.isUpdateString = true;
+        },
+
+        toggleWindow(){
+            this.m_DisplayWindow = !this.m_DisplayWindow;
+            return this.m_DisplayWindow;
+        },
     },
-    mounted(){
+    created(){
         this.updateHSLCSSValues();
+        this.updateHexString();
     },
     unmounted(){
         this.m_DisplayWindow = false;
@@ -149,9 +288,22 @@ export default {
         'm_HSLValues': {
             handler(){ 
                 this.updateHSLCSSValues();
+                this.updateHexString();
+
                 this.emitValues();
             },
             deep: true,
+        },
+        'm_HexValue'(val){
+            if(!this.isUpdateString){ return; } // Only the user input string hex should be watched. 
+            if(val.length != 7)   { return; } // Requires length of 7, # and 3x 2 hex values per channnel
+
+            this.userHexParser(val);
+        },
+        'm_HSLString'(val){
+            if(!this.isUpdateString){ return; } // Only the user input string hex should be watched. 
+            if(!val){ return; }
+            this.updateHSLSlider(val);
         }
     }
 }
@@ -160,12 +312,29 @@ export default {
 
 <style scoped>
 
+.text-input-spacing:not(:last-child){
+    margin-bottom: 5px;
+}
+
+.flex{
+    display: flex;
+}
+
+.width-half{
+    width: 50%;
+}
+
+.half-item-margin{
+    margin: 0.25em;
+}
+
 .square{
-    display: block;
-    width: 100px;
-    height: 100px;
+    box-sizing: border-box;
+    border: 3px solid black;
+    border-radius: 10px;
+    aspect-ratio: 1;
     
-    background-color: hsl( v-bind("m_HSLCSS.Hue") , v-bind("m_HSLCSS.Saturation"), v-bind("m_HSLCSS.Light"));
+    background-color: v-bind("m_HSLString");
 }
 
 .palette-padding{

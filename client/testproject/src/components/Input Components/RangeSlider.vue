@@ -1,21 +1,30 @@
 <template>
-    <input type="range"
-        min="0" 
-        :max="m_SliderData.max" 
-        :step="m_SliderData.stepSize"
-        list="my-datalist"
+    <div>
+        <input type="range"
+            min="0"
+            :max="m_SliderData.max"
+            :step="m_SliderData.stepSize"
+            
+            :value="modelToScale(modelValue)" 
+            @input="computeNewValue($event.target.value)"
+            />
+        <!--
+            list="my-datalist"
 
-        :value="modelToScale(modelValue)" 
-        @input="computeNewValue($event.target.value)"
-    />
+            within the input causes weird snapping bugs for the HUE value for 300.
+            Snaps to 50, 75 and 100, maybe due to the same ID being used for other sliders.
 
-    <template v-if="displayCaption">
-        <datalist id="my-datalist">
-            <template v-for="index in m_SliderData.divisions">
-                <option>{{ caption_Data[index-1] }}</option>
-            </template>
-        </datalist>
-    </template>
+            No currently documented errors, so will just comment it out.
+        -->
+
+        <template v-if="displayCaption">
+            <datalist id="my-datalist">
+                <template v-for="index in m_SliderData.divisions">
+                    <option>{{ caption_Data[index-1] }}</option>
+                </template>
+            </datalist>
+        </template>
+    </div>
 </template>
 <script>
     export default {
@@ -105,8 +114,7 @@
             },
 
             computeNewValue(value){
-                if(!this.displayCaption){ 
-                    this.$emit('update:modelValue', value); return; }
+                if(!this.displayCaption){ this.$emit('update:modelValue', value); return; }
 
                 let index = this.valueToIndex(value);
                 this.$emit('update:modelValue', this.caption_Data[index]);
