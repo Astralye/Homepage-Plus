@@ -4,6 +4,7 @@
             class="input" 
             type="text" 
             :placeholder="placeholder_text"
+            :maxlength="max_length"
 
             :value="modelValue" 
             @input="$emit('update:modelValue', $event.target.value)">
@@ -15,6 +16,7 @@
         props:{
             placeholder_text: String,
             modelValue: String,
+            max_length: [ String, Number],
         },
 
         emits: [ 'update:modelValue' ],
