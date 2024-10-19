@@ -161,7 +161,10 @@ export default {
 <template>
 
     <SingleButton
-        @click="activateSelectionMode" class="center">
+        @click="activateSelectionMode" 
+        class="center"
+        m_IconString="Dotted_Square"
+        >
         <h2 class="single-button-dark"> Select Container </h2>
     </SingleButton>
 

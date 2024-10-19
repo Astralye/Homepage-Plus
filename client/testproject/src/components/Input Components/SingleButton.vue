@@ -9,7 +9,7 @@
             height="40px"
             width="40px"
             view_Box="0 -960 960 960"
-            :path_Value="iconImageStorage.getPathData('Dotted_Square')"
+            :path_Value="iconImageStorage.getPathData(m_IconString)"
         />
         <slot> </slot>
     </button>
@@ -22,6 +22,12 @@ import { iconImageStorage } from '../../Data/iconImages';
 export default{
     components:{
         SVGHandler
+    },
+    props: {
+        m_IconString: {
+            type: String,
+            default: "Dotted_Square"
+        }
     },
     data(){
         return{
