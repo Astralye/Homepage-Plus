@@ -38,6 +38,7 @@ class IconData{
                 x: setX,
                 y: setY,
             },
+            iconColour: "#000000",
             iconSize: "75",
             iconImage: image,
             iconString: string,
