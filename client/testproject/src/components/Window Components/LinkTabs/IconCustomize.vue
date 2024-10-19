@@ -20,14 +20,15 @@
                                     <SVGHandler
                                         height="150"
                                         width="150"
-                                        :fill_Colour="this.m_localIconColourHex"
+                                        :fill_Colour="m_SelectedObject.iconColour"
                                         :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
                                         :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
                                     />
                                 </div>
                                 <div class="pos-absolute bottom-right button-shift">
                                     <ColourPicker
-                                        @getHEXValues="(hex) => updateColourValues(hex)"
+                                        :loaded_Data="m_SelectedObject.iconColour"
+                                        @setColour="(hex) => setColourData(hex)"
                                     />
                                 </div>
                             </template>
@@ -216,11 +217,9 @@ export default {
 // Colour picker Values
 // ----------------------------------------------------------------------------------------------
 
-        updateColourValues(hex){
-            this.m_localIconColourHex = hex;
+        setColourData(hex){
+            this.m_SelectedObject.iconColour = hex;
         },
-
-
 
 // Data retrieval
 // ---------------------------------------------------------------------------------------------- 

@@ -43,7 +43,9 @@
                         <div class="flex"
                             @mouseup="enableHexUpdate"> 
                             <div class="width-half half-item-margin">
-                                <div class="square"> </div>
+                                <div class="square"
+                                    :style="{ 'background-color' : m_HSLString }"
+                                > </div>
                             </div>
 
                             <div class="width-half half-item-margin">
@@ -145,7 +147,13 @@ export default {
         RangeSlider,
         SVGHandler,
     },
-    emits: [ 'getHEXValues', 'setColour'] ,
+    props: {
+        loaded_Data: {
+            type: String,
+            default: null
+        }
+    },
+    emits: [ 'setColour'] ,
     data(){
         return{
             iconImageStorage,
@@ -155,8 +163,8 @@ export default {
             // Because they are number, cannot use them directly
             m_HSLValues:{
                 Hue: 0,           // 0 - 300
-                Saturation: 50, // 0 - 100%
-                Light: 50,      // 0 - 100%
+                Saturation: 0, // 0 - 100%
+                Light: 0,      // 0 - 100%
             },
 
             m_HSLCSS:{
@@ -175,7 +183,6 @@ export default {
     },
     methods:{
 
-
         saveColour(){
             colourQueue.addData(this.m_HexValue);
             this.emitSave();
@@ -184,8 +191,7 @@ export default {
 // Emitter
 // -----------------------------------------------------------------------------------------------
 
-        emitValues(){ this.$emit('getHEXValues', this.m_HexValue); },
-        emitSave()  { this.$emit('setColour',    this.m_HexValue); },
+        emitSave() { this.$emit('setColour',    this.m_HexValue); },
 
 // Math
 // -----------------------------------------------------------------------------------------------
@@ -318,21 +324,29 @@ export default {
             this.m_DisplayWindow = !this.m_DisplayWindow;
             return this.m_DisplayWindow;
         },
+
+        loadIconColourData(){
+            this.m_HexValue = this.loaded_Data;
+        }
+
     },
     created(){
+        this.loadIconColourData();
         this.updateHSLCSSValues();
-        this.updateHexString();
+        this.setHSL(this.hexToHSL(this.m_HexValue));
     },
     unmounted(){
         this.m_DisplayWindow = false;
     },
     watch:{
+        'loaded_Data'(){
+            this.loadIconColourData();
+            this.updateHSLCSSValues();
+        },
         'm_HSLValues': {
-            handler(){ 
+            handler(){
                 this.updateHSLCSSValues();
                 this.updateHexString();
-
-                this.emitValues();
             },
             deep: true,
         },
@@ -396,8 +410,6 @@ export default {
     border: 3px solid black;
     border-radius: 10px;
     aspect-ratio: 1;
-    
-    background-color: v-bind("m_HSLString");
 }
 
 .palette-padding{

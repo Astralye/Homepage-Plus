@@ -11,6 +11,7 @@
                 :height="icon_data.iconSize"
                 width="auto"
                 :path_Value="iconImageStorage.getPathData(icon_data.iconImage)"
+                :fill_Colour="icon_data.iconColour"
                 :view_Box="iconImageStorage.getViewBoxName(icon_data.iconImage)"
 
                 @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
