@@ -3,12 +3,17 @@
         <div class="flex flex-space">
             <SingleButton
             class="flex"
-            @click="generateIcon">
+            m_IconString="Dotted_Square"
+            @click="generateIcon"
+            >
                 <h2 class="single-button-dark"> New </h2>
             </SingleButton>
+            
             <SingleButton
             class="flex"
-            @click="deleteIcon">
+            m_IconString="Dotted_Square"
+            @click="deleteIcon"
+            >
                 <h2 class="single-button-dark"> Delete </h2>
             </SingleButton>
         </div>
