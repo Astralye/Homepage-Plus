@@ -39,6 +39,7 @@
                 <WindowContainerDivider>
                     <template #content>
 
+                        <!-- Display colour and value input -->
                         <div class="flex"
                             @mouseup="enableHexUpdate"> 
                             <div class="width-half half-item-margin">
@@ -59,6 +60,18 @@
                             </div>
                         </div>
 
+                        <!-- Colour queue -->
+                        <div class="flex flex-space">
+                            <template v-for="(item, index) in colourQueue.maxSize" :key="index">
+                                <div 
+                                    class="Queue-Box"
+                                    :style="{ 'background-color': colourQueue.getColour(index) }"
+                                    @click="loadColour(index)"
+                                >
+                                </div>
+                            </template>
+                        </div>
+                            
                         <p> Hue = {{ m_HSLValues.Hue }} </p>
                         <RangeSlider
                             :no_Items="300"
@@ -90,6 +103,15 @@
                             @mousedown="disableTextUpdate"
                             @mouseup="enableTextUpdate"
                         />
+
+                        <div class="flex end">
+                            <SingleButton
+                            @click="saveColour"
+                            m_IconString="Save"
+                            >
+                                Save Colour
+                            </SingleButton>
+                        </div>
                     </template>
                 </WindowContainerDivider>
                 </template>
@@ -102,9 +124,12 @@
 <script>
 import SVGHandler from './SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
+import { colourQueue } from '../../Data/savedColours';
 
 import Window from '../Window Components/Window.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+
+import SingleButton from './SingleButton.vue';
 
 import TextInput from './TextInput.vue';
 import RangeSlider from './RangeSlider.vue';
@@ -115,13 +140,16 @@ export default {
         WindowContainerDivider,
         TextInput,
 
+        SingleButton,
+
         RangeSlider,
         SVGHandler,
     },
-    emits: [ 'getHEXValues'] ,
+    emits: [ 'getHEXValues', 'setColour'] ,
     data(){
         return{
             iconImageStorage,
+            colourQueue,
 
             // Values modified by the vmodel
             // Because they are number, cannot use them directly
@@ -147,9 +175,17 @@ export default {
     },
     methods:{
 
+
+        saveColour(){
+            colourQueue.addData(this.m_HexValue);
+            this.emitSave();
+        },
+
 // Emitter
 // -----------------------------------------------------------------------------------------------
+
         emitValues(){ this.$emit('getHEXValues', this.m_HexValue); },
+        emitSave()  { this.$emit('setColour',    this.m_HexValue); },
 
 // Math
 // -----------------------------------------------------------------------------------------------
@@ -161,6 +197,12 @@ export default {
 
 // Updaters
 // --------------------------------------------------------------------------------------------------
+
+        // After clicking the previous colour
+        loadColour(index){
+            this.m_HexValue = colourQueue.getColour(index);
+            this.updateHSLCSSValues();
+        },
 
         // update HSL CSS
         updateHSLCSSValues(){
@@ -311,6 +353,27 @@ export default {
 <!-- width: v-bind("windowWidth"); -->
 
 <style scoped>
+
+.flex-space{
+    justify-content: space-between;
+}
+
+.Queue-Box{
+    border: 2px solid black;
+    border-radius: 5px;
+
+    width: 30px;
+    height: 30px;
+}
+
+.right{
+    right: 0;
+}
+
+.end{
+    justify-content: flex-end;
+}
+
 
 .text-input-spacing:not(:last-child){
     margin-bottom: 5px;
