@@ -9,7 +9,7 @@
 
         <template #content>
             <TextInput
-                :placeholder_text="'https://'">
+                :placeholder_text="'https://' + m_SelectedDomain">
                 
             </TextInput>
         </template>
@@ -26,24 +26,20 @@
         class="container-divider">
             <template #header> 
                 <h3 class="inline">
-                    Domain Name
+                    Hostname
                 </h3>
             </template>
 
             <template #content>
-                <div class="custom-select width-full">
-                    <select class="width-full">
-                        <option value="0"></option>
-                        <option value="1">https://Youtube.com</option>
-                        <option value="2">https://Facebook.com</option>
-                        <option value="3">Add</option>
-                    </select>
-                </div>
+                <OptionSelect
+                    v-model="m_StoredDomains"
+                    @Selected-Value="value => m_SelectedDomain = value"
+                />
             </template>
 
             <template #tooltip>
                 <ToolTip>
-                    Top level domain of the website. You can store folders based on the domain.
+                    Root name of a website.
                 </ToolTip>
             </template>
         </WindowContainerDivider>
@@ -85,6 +81,7 @@
 import ToolTip from '../ToolTip.vue';
 import WindowContainerDivider from '../WindowContainerDivider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
+import OptionSelect from '../../Input Components/OptionSelect.vue';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
 
@@ -93,12 +90,16 @@ export default {
         ToolTip,
         WindowContainerDivider,
         TextInput,
+        OptionSelect
     }
     ,data() {
         return {
             iconSelect,
 
             m_SelectedObject: {},
+
+            m_StoredDomains: [],
+            m_SelectedDomain: ""
         }
     },
 
