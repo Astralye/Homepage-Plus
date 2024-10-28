@@ -9,11 +9,7 @@
             @input="enableDropDown"
             @click="enableDropDown"
             @keydown.enter="addValueToArray(searchQuery)"
-            >
-            <!-- @focusout="console.log('out')" 
-             Focus 
-             
-             -->
+        >
 
         <!-- Dropdown input -->
         <TransitionGroup name="dropdown">
@@ -24,7 +20,7 @@
                 <TransitionGroup name="list-item">
                     <div v-for="(item, index) in filteredSearch" :key="index" class="item-container flex">
                         <!-- Selection -->
-                        <div class="text item-select"
+                        <div class="text noselect"
                             @click.self="selectOption(item)">
                             {{ item }}
                         </div>
@@ -141,7 +137,7 @@ export default {
 
         isValueExist(queryValue){
             for(let i = 0; i < this.modelValue.length; i++){
-                if(this.modelValue[i] === queryValue){
+                if(this.modelValue[i] === queryValue.toLowerCase()){
                     return true;
                 }
             }
@@ -161,16 +157,17 @@ export default {
 
         // Validates query before insertion
         addValueToArray(query){
+            
             if(this.isValueExist(query)){ this.selectOption(query); return};
             if(!this.isValidInput(query)) return;
 
-            this.modelValue.push(query);
+            this.modelValue.push(query.toLowerCase());
             this.updateModel();
+            this.selectOption(query);
         },
 
         // Searches if item exist, if so remove from array.
         removeValueFromArray(item){
-            // item = item.toLowerCase();
 
             // If value does not exist, no requirement to check for valid index.
             if(!this.isValueExist(item)) return;
@@ -220,7 +217,7 @@ export default {
 </script>
 
 <style scoped>
-@import '../../assets/base.css';
+@import '../../assets/main.css';
 
 .list-item-enter-active,
 .list-item-leave-active {
@@ -300,6 +297,7 @@ export default {
 
 .text:hover{
     background-color: var(--Tertiary-background-colour);
+    cursor: pointer;
 }
 
 .item-container{
