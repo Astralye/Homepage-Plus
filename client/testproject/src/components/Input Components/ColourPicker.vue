@@ -324,7 +324,6 @@ export default {
         },
 
         toggleWindow(){
-            console.log(this.m_DisplayWindow);
             this.m_DisplayWindow = !this.m_DisplayWindow;
             return this.m_DisplayWindow;
         },
