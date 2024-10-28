@@ -68,10 +68,18 @@ export default {
     },
     components: { SVGHandler },
     props:{
+        // Data that is manipulated
         modelValue:{
             type: Array,
             required: true
         },
+
+        // Index to load the value
+        Selected_Index:{
+            type: Number,
+            default: -1,
+        },
+
     },
     emits: [ 'update:modelValue', 'Selected-Value' ],
     unmounted() {
@@ -212,6 +220,13 @@ export default {
                 }
             );
         }
+    },
+
+    watch:{
+        Selected_Index(index){ 
+            if(index < 0){ return; }
+            this.searchQuery = this.modelValue[index];
+         }
     }
 }
 </script>
