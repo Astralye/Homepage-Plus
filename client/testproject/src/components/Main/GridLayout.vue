@@ -5,16 +5,17 @@
         >
         <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
             <div class="flex-center"
-                :class="{ 'icon-Selection' : isSelectedIcon(index), 'unselect-icon' : !isSelectedIcon(index), }"
+                :class="{ 'icon-Selection' : isSelectedIcon(index),
+                          'unselect-icon'  : !isSelectedIcon(index), 
+                          'icon' : renderIcon(index)}"
                 @mouseup="checkDropIcon(index)"
                 @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null">
-                <template v-if="renderIcon(index)">
-
-                    <!-- Edit mode Icon -->
-                    <IconHandler
-                        :icon_data="getIconData(index)"
-                        @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                    />
+                
+                <IconHandler v-if="renderIcon(index)"
+                    class="icon"
+                    :icon_data="getIconData(index)"
+                    @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                />
                     
                     <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
 
@@ -51,7 +52,6 @@
                     Mass drag + drop.
 
                     -->
-                </template>
             </div>
         </template>
     </div>
@@ -402,6 +402,10 @@ export default {
        -moz-transition: border-color 0.15s linear; /* FF3.7+ */
          -o-transition: border-color 0.15s linear; /* Opera 10.5 */
             transition: border-color 0.15s linear;
+}
+
+.icon{
+    cursor: pointer
 }
 
 .icon-Selection{

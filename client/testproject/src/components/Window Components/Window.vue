@@ -53,7 +53,7 @@ export default {
                 this.$refs.draggableContainer.style.zIndex = index;
             }
         },
-        dragMouseDown: function ( event ){
+        dragMouseDown(event){
 
             if(!this.windowHover) {return; }
             event.preventDefault();
@@ -212,7 +212,7 @@ export default {
     position: absolute;
     top: 0;
     left: 0;
-    box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.3), -3px -3px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), -3px -3px 20px rgba(0, 0, 0, 0.2);
     z-index: 30;
 
     border-radius: 10px;
