@@ -65,7 +65,7 @@
                         <!-- Colour queue -->
                         <div class="flex flex-space">
                             <template v-for="(item, index) in colourQueue.maxSize" :key="index">
-                                <div 
+                                <div
                                     class="Queue-Box"
                                     :style="{ 'background-color': colourQueue.getColour(index) }"
                                     @click="loadColour(index)"
@@ -206,7 +206,10 @@ export default {
 
         // After clicking the previous colour
         loadColour(index){
-            this.m_HexValue = colourQueue.getColour(index);
+            let value = colourQueue.getColour(index);
+            if(!value){ return; }
+
+            this.m_HexValue = value;
             this.updateHSLCSSValues();
         },
 
