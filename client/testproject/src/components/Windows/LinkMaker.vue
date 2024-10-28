@@ -1,18 +1,17 @@
 <template>
     <div>
         <div class="flex flex-space">
-            <SingleButton
-            class="flex"
-            m_IconString="Dotted_Square"
-            @click="generateIcon"
+            <SingleButton class="flex"
+                m_IconString="Dotted_Square"
+                @click="generateIcon"
             >
-                <h2 class="single-button-dark"> New </h2>
+                    <h2 class="single-button-dark"> New </h2>
             </SingleButton>
             
             <SingleButton
-            class="flex"
-            m_IconString="Dotted_Square"
-            @click="deleteIcon"
+                class="flex"
+                m_IconString="Dotted_Square"
+                @click="deleteIcon"
             >
                 <h2 class="single-button-dark"> Delete </h2>
             </SingleButton>
@@ -28,24 +27,26 @@
                 <template #tooltip>
                     <ToolTip> When the window is open, you can select via clicking</ToolTip>
                 </template>
-        
+
                 <template #content>
                     <div class="saved-grid width-full grid">
-                        <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-                            <div class="saved-icons flex"
-                                :class="{ 'icon-Selection' : isSelectedIcon(index), 'grid-item' : !isSelectedIcon(index), }"
+
+                        <!-- Grid pattern -->
+                        <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
+                            class="saved-icons flex"
+                            :class="{ 'icon-Selection' : isSelectedIcon(index), 
+                                      'grid-item' : !isSelectedIcon(index),
+                                      'mouse-pointer': renderIcon(index)}"
+
                             @mouseup="checkDropIcon(index)"
-                            @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectData(index) : null">
-                                
-                                <!-- For rendering any icons saved -->
-                                <template v-if="renderIcon(index)">
-                                    <IconHandler
-                                        :icon_data="getIconData(index)"
-                                        @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                                    />
-                                </template> 
-                            </div>
-                        </template>
+                            @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectData(index) : null"
+                        >
+                            <!-- For rendering any icons saved -->
+                            <IconHandler v-if="renderIcon(index)"
+                                :icon_data="getIconData(index)"
+                                @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                            />
+                        </div>
                     </div>
                 </template>
             </WindowContainerDivider>
@@ -219,6 +220,10 @@ export default {
 </script>
 
 <style scoped>
+
+.mouse-pointer{
+    cursor: pointer;
+}
 
 .icon-Selection{
     border: 3px solid rgba(255, 255, 255, 0.8);

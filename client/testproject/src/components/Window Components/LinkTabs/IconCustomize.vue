@@ -1,9 +1,12 @@
 <template>
     <div>
+        <!-- Main container -->
         <div class="flex">
+
+            <!-- Display icon -->
             <div class="width-half">
                 <WindowContainerDivider
-                class="container-divider">
+                    class="container-divider">
                     <template #header>
                         <h2 class="inline">
                             Displayed icon
@@ -33,9 +36,12 @@
                                 </div>
                             </template>
                             <template v-else>
-                                <svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="auto" fill="#e8eaed">
-                                    <path d="m254-238-16-16 226-226-226-226 16-16 226 226 226-226 16 16-226 226 226 226-16 16-226-226-226 226Z"/>
-                                </svg>
+                                <SVGHandler
+                                    height="100%"
+                                    width="100%"
+                                    :path_Value="iconImageStorage.getPathData('Cross')"
+                                    :view_Box="iconImageStorage.getViewBoxName('Cross')"
+                                />
                             </template>
                         </div>
 
@@ -342,6 +348,7 @@ export default {
 
 .mouse-hover:hover{
     background-color: rgba(50, 50, 50, 0.3);
+    cursor: pointer;
 }
 
 .icon-Selection{

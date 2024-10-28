@@ -2,7 +2,7 @@
 
     <!-- Button to open window -->
     <div class="palette-button palette-padding palette-margin"
-        @click="m_DisplayWindow = true">
+        @click="toggleWindow">
         <SVGHandler
             view_Box="0 -960 960 960"
             height="100%"
@@ -321,6 +321,7 @@ export default {
         },
 
         toggleWindow(){
+            console.log(this.m_DisplayWindow);
             this.m_DisplayWindow = !this.m_DisplayWindow;
             return this.m_DisplayWindow;
         },
