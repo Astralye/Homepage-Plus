@@ -326,19 +326,6 @@ export default {
             // Calculate new grid value.
             containerData.addNewID(this.m_LayoutData.id);
         },
-        updateGridDimension(){
-            let data = containerData.getObjectFromID(this.m_LayoutData.id);
-
-            if(data === undefined) { return; }
-            if(!data.display){ return; } // If it is not the top layer do not modify.
-
-            let iconSize = containerData.getIconSize(this.m_LayoutData.id);
-            
-            let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
-            containerData.setGridDimension(this.m_LayoutData.id, `${dimension.rows},${dimension.columns}`);
-
-            // console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
-        },
 
         disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
 
@@ -364,7 +351,6 @@ export default {
             // $ref returns null on tick, look at next tick to update values
             this.$nextTick(() => {
                 this.setComponentDOMValues();
-                this.updateGridDimension();
             });
         },
 
@@ -414,11 +400,6 @@ export default {
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
                 this.setComponentDOMValues();
-
-                // // For updating orientation
-                // this.$nextTick(() => {
-                //     this.updateGridDimension();
-                // });
             },
             deep: true,
         }
@@ -458,8 +439,7 @@ export default {
                         @drag="p_updateColumnRow"
                         />
                 </template>
-
-                <template v-if="this.m_LayoutData.NoChildren === 0">
+                <template v-else-if="this.m_LayoutData.NoChildren === 0">
                     <Gridlayout
                         @mouseover="m_isHover = this.$GlobalStates.value.containerSelectionMode"
                         @mouseout="m_isHover=false"

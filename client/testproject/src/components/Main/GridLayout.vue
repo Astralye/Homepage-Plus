@@ -1,21 +1,27 @@
 <template>
-    <div class="fill grid base-margin border-box"
+    <div class="fill grid border-box"
         ref="container"
         @mouseup="resetSelection"
         >
-        <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="flex-center"
-                :class="{ 'icon-Selection' : isSelectedIcon(index),
-                          'unselect-icon'  : !isSelectedIcon(index), 
-                          'icon' : renderIcon(index)}"
-                @mouseup="checkDropIcon(index)"
-                @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null">
+        <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
+            class="grid-proper"
+            @mouseup="checkDropIcon(index)"
+            @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
+            >
+
+            <div class="grid-item"
+                :class="{ 'icon' : renderIcon(index),
+                'icon-Selection' : isSelectedIcon(index),
+                'unselect-icon'  : !isSelectedIcon(index)}">
                 
                 <IconHandler v-if="renderIcon(index)"
                     class="icon"
                     :icon_data="getIconData(index)"
                     @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
                 />
+                
+            </div>
+        </div>
                     
                     <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
 
@@ -52,8 +58,6 @@
                     Mass drag + drop.
 
                     -->
-            </div>
-        </template>
     </div>
 </template>
 
@@ -62,6 +66,7 @@ import { containerData } from '../../Data/containerData';
 import IconHandler from './IconHandler.vue';
 import { iconData, iconSelect } from '../../Data/iconData.js';
 import { mouseData } from '../../Data/mouseData.js';
+import { GridModificationClass } from '../Functions/gridModification.js';
 
 export default {
     components:{
@@ -80,17 +85,13 @@ export default {
     },
     data(){
         return{
+            GridModificationClass,
             iconData,
             mouseData,
             iconSelect,
             
+            m_ComponentDimensions: null,
             m_containerData: null,
-            
-            m_Column_Data: "",
-            m_Column_Gap: "",
-
-            m_Rows_Data: "",
-            m_Row_Gap: "",
 
             m_Rows: 0,
             m_Columns: 0, 
@@ -98,28 +99,45 @@ export default {
             m_iconSize: 0,
 
             m_GroupData: null,
+            m_iconID: null,
 
-            m_iconID: null
+            m_Observer: null,
         }
     },
     created(){
         this.initGrid();
+        this.m_iconSize = containerData.getIconSize(this.component_ID);
+    },
+    mounted(){
+        this.m_ComponentDimensions = this.$refs["container"];
+
+        // Vue3 does not watch the DOM elements
+        // JS contains an observer for DOM elements.
+        this.m_Observer = new ResizeObserver((dimensions) => {
+            let width  = dimensions[0].contentRect.width;
+            let height = dimensions[0].contentRect.height;
+
+            let dimension = GridModificationClass.calculateGridDimension(width, height, this.m_iconSize);
+            this.setRowColData(dimension.rows, dimension.columns);
+        });
+
+        this.m_Observer.observe(this.m_ComponentDimensions)
+    },
+    unmounted(){
+        this.m_Observer.disconnect();
     },
     methods: {
-
         initGrid(){
 
-            this.m_containerData = this.getContainerData();
+            this.m_containerData = containerData.getObjectFromID(this.component_ID);
             this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
 
             if(this.m_GroupData === null){ 
                 iconData.createGroup(this.m_containerData.ID);
                 this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
             } // group data does not exist
-            this.setDimension();
-            this.m_iconSize = containerData.getIconSize(this.component_ID);
-            this.setContainerIconData();
-            
+
+            this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
 
@@ -135,9 +153,11 @@ export default {
                 if(!iconData.getIconDataFromCoordinate(iconData.getGroup(groupID), tmpCoord.x, tmpCoord.y)){ return { x: tmpCoord.x, y: tmpCoord.y }; } 
             }
 
-            // No spaces available
-            // This should not occur in any case, Dragging to new location requires an empty space
-            // If no empty space, this function should not be run.
+            /*
+                No spaces available
+                This should not occur in any case, Dragging to new location requires an empty space
+                If no empty space, this function should not be run.
+            */
             console.error("Error: No spaces available");
             return null;
         },
@@ -321,58 +341,13 @@ export default {
             return iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
         },
 
-    // Setters
-
-        setContainerIconData(){ this.m_GroupData = iconData.getGroup(this.component_ID); },
-
 // ------------------------------------------------------------------------------------------
 // Grid Functions
 
-        getContainerData(){ return containerData.getObjectFromID(this.component_ID); },
-
         // Dimension is stored as 'C,R'
-        setRowColData(dimString){
-            dimString = dimString.split(',');
-            this.m_Rows    = Number(dimString[0]);
-            this.m_Columns = Number(dimString[1]);
-
-            this.m_Column_Data = "1fr ".repeat(dimString[0]);
-            this.m_Rows_Data   = "1fr ".repeat(dimString[1]);
-        },
-
-        setDimension(){
-            let dim = containerData.getGridDimension(this.component_ID);
-            this.setRowColData(dim);
-            this.calculateGridGap();
-        },
-
-        /*
-            This calcualtes grid gap
-
-            There are bugs when there is only 1 row/ column as there is no grid gap.
-            Will need to take into consideration.
-        */
-
-        calculateGridGap(){
-            this.$nextTick( () => {
-                let data = this.$refs["container"].getBoundingClientRect();
-
-                let columnGap = (data.width  - (this.m_iconSize * this.m_Rows))    / ( this.m_Rows - 1 );
-                let rowGap    = (data.height - (this.m_iconSize * this.m_Columns)) / ( this.m_Columns - 1 );
-
-                this.m_Column_Gap = `${columnGap}px`;
-                this.m_Row_Gap    = `${rowGap}px`;
-            })
-        },
-    },
-    watch: {
-        'm_containerData.gridData.gridDimensions'(){ this.setDimension(); },
-        '$GlobalStates.value.edit.windowSize':{
-            handler(val,oldval){ this.calculateGridGap(); },
-            deep: true
-        },
-        'update_Grid_Flag'(){
-            this.calculateGridGap();
+        setRowColData(rows, columns){
+            this.m_Rows    = rows
+            this.m_Columns = columns
         },
     }
 }
@@ -381,7 +356,7 @@ export default {
 <style scoped>
 
 .icon-wrapper{
-    width: 75px;
+    width: 100px;
 }
 
 .border-box{
@@ -419,7 +394,30 @@ export default {
 }
 
 .grid-item{
-    border: solid rgba(255, 255, 255, 0.4) 0.5px;
+    margin: auto;
+    box-sizing: border-box;
+    align-self: center;
+    position: absolute;
+    
+    top: 50%;
+    right: 50%;
+    transform: translate(50%,-50%);
+
+    width: 125px;
+    aspect-ratio: 1;
+    
+    border: solid rgba(255, 255, 255, 0.5) 0.5px;
+    
+    border-radius: 10px;
+
+    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
+       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
+         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
+            transition: border-color 0.15s linear;
+}
+
+.grid-proper{
+    position: relative;
 }
 
 .fill{
@@ -429,20 +427,8 @@ export default {
 
 .grid{
     display: grid;
-    grid-template-columns: v-bind("m_Column_Data");
-    grid-template-rows:    v-bind("m_Rows_Data");
-
-    grid-row-gap:    v-bind("m_Row_Gap");
-    grid-column-gap: v-bind("m_Column_Gap");
-
-    /* 
-    
-    grid-row-gap + grid-column-gap has to be calculated manually.
-
-    Static widths for the box causes the program to go all buggy.
-    Instead, change the sizes of the row + column gaps via calculation to ensure the values are static.
-    
-    */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-rows:    repeat(auto-fit, minmax(150px, 1fr));
 }
 
 

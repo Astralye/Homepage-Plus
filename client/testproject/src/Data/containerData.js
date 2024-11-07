@@ -55,10 +55,9 @@ class ContainerDataClass{
       return {
       ID: idGenerated,
       layoutType: "Grid",
-      iconSize: "125",
+      iconSize: "150",
       display: true, // If it is not a leaf node, disable it
       gridData: {
-          gridDimensions: "1,1",
           contentAlign: "Compact",
           xAxisDirection: "Left",
           yAxisDirection: "Top"
@@ -66,6 +65,10 @@ class ContainerDataClass{
       ListData: {},
       };
   };
+
+  /*
+  I need to remove grid dimensions as this causes bugs 
+  */
 
   // Setters
 
@@ -78,7 +81,6 @@ class ContainerDataClass{
   enableDisplay(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.display = true; } };
   // Grid setters
 
-  setGridDimension(objectID, val) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.gridDimensions = val; }};
   setGridAlignCompact(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.contentAlign = "Compact"}};
   setGridAlignFree(objectID)      { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.contentAlign = "Free"}};
 
@@ -92,7 +94,6 @@ class ContainerDataClass{
 
   getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;} }
   getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;} }
-  getGridDimension(objectID){let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.gridDimensions; }};
   getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; };}
   getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; };}
   getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; };}
