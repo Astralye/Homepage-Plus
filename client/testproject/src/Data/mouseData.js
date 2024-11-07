@@ -27,14 +27,47 @@ export class Mouse {
             this.data.mouseMoveFunctions.forEach(element => { element(); });
     }}
 
+    enableTouchMove(){
+        document.addEventListener("touchmove", this.eventmove)
+    }
+
+    eventmove(e){
+        mouseData.updateCoordinate(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        mouseData.data.mouseMoveFunctions.forEach(element => element())
+    }
+
     // When enabling and disabling, remove all data to ensure safety.
     // Perhaps these take in arguments to check what to enable + disable.
-    disableTracking(){ document.onmousemove = null;  this.data.mouseMoveFunctions = []; }
+    disableTracking() { document.onmousemove = null;  this.data.mouseMoveFunctions = []; }
+    disableTouchMove(){  
+        document.removeEventListener("touchmove", this.eventmove);
+        this.data.mouseMoveFunctions = [];
+    }
 
-// onmouseUp
+// on UP input
+
+    // Touch
+
+    touchUpFunctions(functionArray){ this.data.mouseUpFunctions = functionArray; }
+    enableTouchUp(){ 
+        this.data.mouseUpFunctions.forEach(fnc =>
+            document.addEventListener("touchend", fnc))
+        }
+    disableTouchUp(){
+        this.data.mouseUpFunctions.forEach(fnc => {
+            document.removeEventListener("touchend", fnc)
+        })
+        this.data.mouseUpFunctions = [];
+    }
+
+    // Mouse
 
     mouseUpFunctions(functionArray){ this.data.mouseUpFunctions = functionArray; }
-    enableMouseUp(){ document.onmouseup = (event) => { this.data.mouseUpFunctions.forEach(element => { element(); } ); }; }
+    enableMouseUp(){ 
+        document.onmouseup = (event) => { 
+            this.data.mouseUpFunctions.forEach(element => element())
+        }}
+
     disableMouseUp(){ document.onmouseup = null;  this.data.mouseUpFunctions = []; }
 
 // onmouseDown

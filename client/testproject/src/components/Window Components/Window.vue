@@ -50,25 +50,10 @@ export default {
 
             if(index > -1){
                 index += 10; // always in front
-                this.$refs.draggableContainer.style.zIndex = index;
+                this.$refs['draggableContainer'].style.zIndex = index;
             }
         },
-        dragMouseDown(event){
 
-            if(!this.windowHover) {return; }
-            event.preventDefault();
-            
-            // Get current mouse location
-            this.positions.clientX = event.clientX;
-            this.positions.clientY = event.clientY;
-
-            // register on mouse move and mouse up events
-            mouseData.movementFunctions( [ this.elementDrag ]);
-            mouseData.mouseUpFunctions ( [ this.closeDragElement ]);
-            
-            mouseData.enableTracking();
-            mouseData.enableMouseUp();
-        },
         elementDrag(){
 
             // Stored mouse coordinates
@@ -83,10 +68,41 @@ export default {
             this.positions.clientY = mouse.y;
 
             // Update style coordinate
-            this.$refs.draggableContainer.style.top  = (this.$refs.draggableContainer.offsetTop  - movementY) + 'px';
-            this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - movementX) + 'px';
-        
+            this.$refs['draggableContainer'].style.top  = (this.$refs['draggableContainer'].offsetTop  - movementY) + 'px';
+            this.$refs['draggableContainer'].style.left = (this.$refs['draggableContainer'].offsetLeft - movementX) + 'px';
+
             this.updateZIndex();
+        },
+        // Touchscreen
+        touchDown(event){
+            // Position of touch
+            this.positions.clientX = event.changedTouches[0].clientX;
+            this.positions.clientY = event.changedTouches[0].clientY;
+
+            mouseData.movementFunctions([ this.elementDrag ]);
+            mouseData.touchUpFunctions([ this.closeDrag ]);
+
+            mouseData.enableTouchMove();
+            mouseData.enableTouchUp();
+        },
+        closeDrag(){
+            mouseData.disableTouchMove();
+            mouseData.disableTouchUp();
+        },
+
+        dragMouseDown(event){
+            if(!this.windowHover) {return; }
+            
+            // Get current mouse location
+            this.positions.clientX = event.clientX;
+            this.positions.clientY = event.clientY;
+
+            // register on mouse move and mouse up events
+            mouseData.movementFunctions( [ this.elementDrag ]);
+            mouseData.mouseUpFunctions ( [ this.closeDragElement ]);
+            
+            mouseData.enableTracking();
+            mouseData.enableMouseUp();
         },
         closeDragElement() {
             mouseData.disableMouseUp();
@@ -100,6 +116,8 @@ export default {
     <!-- main container -->
     <div
         @mousedown="$emit('focusTab', `${title}`)"
+        @touchstart="$emit('focusTab', `${title}`)"
+
         ref="draggableContainer" 
         class="window"
         >
@@ -108,10 +126,13 @@ export default {
         <div 
             class="header flex noselect" 
             
+            @touchstart="touchDown"
+
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
+            
 
                 <!--  Title -->
                 <div class="header-Title flex">
