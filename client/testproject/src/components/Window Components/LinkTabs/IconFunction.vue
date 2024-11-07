@@ -132,7 +132,6 @@ export default {
     methods:{
         // Loads the icon data to component
         displaySelectedData(newIconData){
-            console.log(newIconData);
             if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
             
             let group = iconData.getGroup(newIconData.groupID);
@@ -180,7 +179,6 @@ export default {
 
                 this.updateLinkValue(this.m_LinkInfo.protocol + this.m_LinkInfo.root + this.m_LinkInfo.subdirectory + this.m_LinkInfo.search); 
                 
-                console.log(this.m_URLObject.href);
                 return this.m_URLObject.href;
             },
             set(newValue){

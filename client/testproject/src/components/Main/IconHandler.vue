@@ -56,6 +56,7 @@ export default {
     },
     methods: {
         openLink(){
+            console.log(this.icon_data.link);
             window.open(this.icon_data.link, '_blank');
         },
     },
