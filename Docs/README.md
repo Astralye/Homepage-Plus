@@ -31,10 +31,9 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#screenshots">Screenshots</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -187,8 +186,8 @@ This page stores data using localstorage. Therefore, the page is only local to t
 A feature to export and import the data will be considered in the future.
 
 ## Screenshots
-![[Base.png]]
-![[Link maker.png]]
+![[Base.png]](Base.png)
+![[Link maker.png]](Linkmaker.png)
 
 ## License
 This project is licensed under the GNU General Public License v3.0. See the [License](LICENSE.md) file for details.
