@@ -370,7 +370,7 @@ export default {
 }
 
 .unselect-icon{
-    border: 3px solid rgba(255, 255, 255, 0);
+    border: 3px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
@@ -405,15 +405,6 @@ export default {
 
     width: 125px;
     aspect-ratio: 1;
-    
-    border: solid rgba(255, 255, 255, 0.5) 0.5px;
-    
-    border-radius: 10px;
-
-    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
-       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
-         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
-            transition: border-color 0.15s linear;
 }
 
 .grid-proper{
