@@ -1,14 +1,20 @@
 <!-- 
     This file is responsible in only loading the SVG data
+
+    Note: Ref can only be used on HTML elements, NOT components,
+    hence the ref prop
 -->
 
 <template>
     <svg
+        :ref="ref_Value"
+
         xmlns="http://www.w3.org/2000/svg"
         :viewBox="view_Box"
         :width="width"
         :height="height"
         :fill="fill_Colour"
+
         >
         <path
             fill-rule="evenodd"
@@ -42,8 +48,12 @@
             path_Value:{
                 type: String,
                 required: true
+            },
+
+            ref_Value:{
+                type: String,
             }
-        },
+        }
     }
 </script>
 
