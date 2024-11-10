@@ -20,11 +20,15 @@
                 'unselect-icon'  : !isSelectedIcon(index)}">
                 
                     <!-- Loads icon data to be rendered -->
-                    <IconHandler v-if="renderIcon(index)"
-                        class="icon"
-                        :icon_data="getIconData(index)"
-                        @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop($event, index) : null"
-                    />
+                    <Transition name="fade">
+                        <IconHandler v-if="renderIcon(index)"
+                            class="icon"
+                            :class="{'opacity-none' : ( m_DraggingEvent && selectedIcon(index)) ,
+                                     'opacity-full' : !m_DraggingEvent }"
+                            :icon_data="getIconData(index)"
+                            @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop($event, index) : null"
+                        />
+                    </Transition>
             </div>
             
             <Teleport to="body">
@@ -444,9 +448,7 @@ export default {
         },
 
         getStoredIconData(){
-            console.log(this.$GlobalStates.value.edit.iconDragData)
             if(!this.$GlobalStates.value.edit.iconDragData || !this.m_iconID){ return; } // Requires data
-
 
             let group = iconData.getGroup(this.$GlobalStates.value.edit.iconDragData.storedContainer);
             return iconData.getIconDataFromID(group, this.m_iconID);
@@ -466,11 +468,23 @@ export default {
 
 <style scoped>
 
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 200ms ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
 .icon-size-enter-active {
-    animation: grow 150ms ease-out;
+    animation: grow 200ms ease-out;
+    transition: opacity 50ms ease-in;
 }
 .icon-size-leave-active {
-    animation: grow 150ms reverse ease-out;
+    animation: grow 200ms reverse ease-out;
+    transition: opacity 50ms ease-in;
 }
 
 @keyframes grow {
@@ -486,6 +500,16 @@ export default {
     pointer-events: none;
     position: absolute;
     transform: scale(1.4);
+}
+
+.opacity-none{
+    opacity: 0;
+}
+
+
+.opacity-full{
+    transition: all 125ms ease-in-out;
+    transition-delay: 125ms;
 }
 
 .icon-wrapper{
