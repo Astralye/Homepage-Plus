@@ -500,6 +500,7 @@ export default {
     pointer-events: none;
     position: absolute;
     transform: scale(1.4);
+    z-index: 20;
 }
 
 .opacity-none{
