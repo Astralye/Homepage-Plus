@@ -6,21 +6,21 @@
 -->
 
 <template>
+<div
+    :ref="ref_Value" >
     <svg
-        :ref="ref_Value"
-
-        xmlns="http://www.w3.org/2000/svg"
-        :viewBox="view_Box"
-        :width="width"
-        :height="height"
-        :fill="fill_Colour"
-
-        >
+    
+    xmlns="http://www.w3.org/2000/svg"
+    :viewBox="view_Box"
+    :width="width"
+    :height="height"
+    :fill="fill_Colour">
         <path
             fill-rule="evenodd"
-            :d="path_Value">
-        </path>
+            :d="path_Value"
+        />
     </svg>
+</div>
 </template>
 
 <script>

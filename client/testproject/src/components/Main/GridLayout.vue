@@ -1,63 +1,81 @@
 <template>
     <div class="fill grid border-box"
+        id="gridTop"
         ref="container"
-        @mouseup="resetSelection"
+        @mouseup="resetSelection(); (this.$GlobalStates.value.edit.enabled) ? resetTimer() : null"
         >
+
+        <!-- Draws all grids -->
         <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
             class="grid-proper"
-            @mouseup="checkDropIcon(index)"
+            @mouseup="checkDropIcon(index);"
             @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
             >
 
+            <!-- Generalized grid item -->
             <div class="grid-item"
+                ref="gridPosition"
                 :class="{ 'icon' : renderIcon(index),
                 'icon-Selection' : isSelectedIcon(index),
                 'unselect-icon'  : !isSelectedIcon(index)}">
                 
-                <IconHandler v-if="renderIcon(index)"
-                    class="icon"
-                    :icon_data="getIconData(index)"
-                    @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                />
-                
+                    <!-- Loads icon data to be rendered -->
+                    <IconHandler v-if="renderIcon(index)"
+                        class="icon"
+                        :icon_data="getIconData(index)"
+                        @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop($event, index) : null"
+                    />
             </div>
+            
+            <Teleport to="body">
+                <Transition name="icon-size">
+                    <SVGHandler
+                        v-show="m_DraggingEvent && selectedIcon(index)"
+                        ref="svgRef"
+                        class="icon-drag-effect"
+                        :ref_Value="'draggingIcon'"
+
+                        :fill_Colour="m_DisplayIconData.iconColour"
+                        :path_Value="m_DisplayIconData.iconImage"
+                        :height="m_DisplayIconData.iconSize"
+                        :width="'auto'"
+                        :view_Box="m_DisplayIconData.viewBox"
+                    />
+                </Transition>
+            </Teleport>
         </div>
-                    
-                    <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
 
-                        <!-- 
-                            mousedown would have many functions, but for this instance, just a single
-                            mouse click will store the data
-                          -->
-        
-                    <!-- 
-                    
-                    the icon should have different functionalities
+                
+        <!-- 
+            Ideas:
 
-                    In edit mode:
-                        Single click on icon -> Select
-                        Single click on non icon, selection box
+            the icon should have different functionalities
 
-                        Right click -> custom context menu.
-                        Double click -> Rename
+            In edit mode:
+                Single click on icon -> Select
+                Single click on non icon, selection box
 
-                        Left click hold -> Drag
-                        Left click hold up -> Drop
-                    
-                    Normal:
-                        Single click
-                        Double click
+                Right click -> custom context menu.
+                Double click -> Rename
 
-                        Right Click 
-                        
-                    Misc, Other notes:
+                Left click hold -> Drag
+                Left click hold up -> Drop
+            
+            Normal:
+                Single click
+                Double click
 
-                    CTRL + C, CTRL + V
-                    -> copy paste icon. 
+                Right Click 
+                
+            Misc, Other notes:
 
-                    Mass drag + drop.
+            CTRL + C, CTRL + V
+            -> copy paste icon. 
 
-                    -->
+            Mass drag + drop.
+
+        -->
+
     </div>
 </template>
 
@@ -67,10 +85,13 @@ import IconHandler from './IconHandler.vue';
 import { iconData, iconSelect } from '../../Data/iconData.js';
 import { mouseData } from '../../Data/mouseData.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import { iconImageStorage } from '../../Data/iconImages';
 
 export default {
     components:{
         IconHandler,
+        SVGHandler
     },
     props:{
         component_ID: {
@@ -86,6 +107,7 @@ export default {
     data(){
         return{
             GridModificationClass,
+            iconImageStorage,
             iconData,
             mouseData,
             iconSelect,
@@ -102,6 +124,27 @@ export default {
             m_iconID: null,
 
             m_Observer: null,
+
+            m_draggableFnc: null,
+
+            m_DisplayIconData:{
+                iconColour: "#000000",
+                iconSize: "100",
+                iconImage: "",
+            },
+
+            m_SavedIndex: 0,
+            m_IconDragRef: null,
+            m_DraggingEvent: false,
+            m_itemDragging: null,
+            m_startPos:{
+                x: null,
+                y: null
+            },
+            m_MouseOffset:{
+                x: null,
+                y: null,
+            }
         }
     },
     created(){
@@ -140,6 +183,9 @@ export default {
             this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
+        resetTimer(){
+            clearTimeout(this.m_draggableFnc);
+        },
 
 // Coordinate Index
 // -------------------------------------------------------------------------------------------
@@ -197,7 +243,7 @@ export default {
         },
 
         dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, newIndex){
-            
+
             // Changes the coordinate values FIRST
             (isFree) ? this.setFreeData(oldGroupID, iconID, newIndex) : this.setCompactData(oldGroupID, iconID, newGroupID, isDifferentGroup);
 
@@ -233,18 +279,42 @@ export default {
             iconData.setCoordinate(groupID, iconID, coord.x, coord.y);
         },
 
+        setSVGDragData(){
+            let svgData = this.getStoredIconData();
+            this.m_DisplayIconData.iconImage  = iconImageStorage.getPathData(svgData.iconImage);
+            this.m_DisplayIconData.iconColour = svgData.iconColour;
+            this.m_DisplayIconData.iconSize   = svgData.iconSize;
+            this.m_DisplayIconData.viewBox    = iconImageStorage.getViewBoxName(svgData.iconImage);
+        },
+
     // Mouse Function
     
-        dragAndDrop(index){
-            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
+        dragAndDrop: function(event, index){
+
+            // this.m_draggableFnc = setTimeout(() => {
+
+            this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
+            this.m_DraggingEvent = true;
+            this.m_iconID = this.getIconData(index).iconID;
+            this.m_SavedIndex = index;
+
+            // Set mouse functions
             mouseData.movementFunctions ([ this.edit_Drag_Move ]);
             mouseData.mouseUpFunctions  ([ this.disableDrag ]);
             
-            mouseData.enableMouseDown();
             mouseData.enableTracking();
             mouseData.enableMouseUp();
+            
+            // Initalizers
+            this.edit_Drag_MouseDown();
+            this.setSVGDragData();
+            this.initIconDragPosition(event.clientX, event.clientY);
 
-            this.m_iconID = this.getIconData(index).iconID;
+            // }, 200);
+        },
+
+        selectedIcon(index){
+            return (index === this.m_SavedIndex);
         },
 
         edit_Drag_MouseDown(){
@@ -255,14 +325,46 @@ export default {
             };
         },
 
-        edit_Drag_Move(){
+        // This is the offset of the starting position that the mouse offsets by when moving
+        initIconDragPosition(initX, initY){
+            let gridItem = this.$refs['gridPosition'][this.m_SavedIndex].getBoundingClientRect();
 
+            this.setMouseOffset(initX, initY, gridItem);
+            this.updateIconDragPosition(initX, initY); // This value will always be constant at the start
+        },
+
+        // Runs on every update loop
+        edit_Drag_Move(){
+            this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y);
+        },
+
+        // Updates the css values to match the cursor
+        updateIconDragPosition(x, y){
+            this.m_IconDragRef['draggingIcon'].style.left = x - this.m_MouseOffset.x + 'px';
+            this.m_IconDragRef['draggingIcon'].style.top  = y - this.m_MouseOffset.y + 'px';
+        },
+
+        // this.m_MouseOffset indicates the absolute mouse position, after taking into account the grid position
+        setMouseOffset(x,y,container){
+
+            // grid item is the coordinates of the container, an offset is added to put it at the center
+            let gridXoffset = container.x + (container.width   / 10);
+            let gridYoffset = container.y + (container.height  / 10);
+
+            // mouseOffset is the difference in px from the mouse to the grid offset.
+            // Used to prevent snapping of top left corner to mouse.
+            this.m_MouseOffset.x = x - gridXoffset;
+            this.m_MouseOffset.y = y - gridYoffset;
         },
 
         disableDrag(){
-            mouseData.disableMouseDown();
+
             mouseData.disableTracking();
             mouseData.disableMouseUp();
+
+            this.m_DraggingEvent = false;
+            this.m_iconID = null;
+            this.m_SavedIndex = 0;
         },
 
 // Icon Functions
@@ -341,10 +443,19 @@ export default {
             return iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
         },
 
+        getStoredIconData(){
+            console.log(this.$GlobalStates.value.edit.iconDragData)
+            if(!this.$GlobalStates.value.edit.iconDragData || !this.m_iconID){ return; } // Requires data
+
+
+            let group = iconData.getGroup(this.$GlobalStates.value.edit.iconDragData.storedContainer);
+            return iconData.getIconDataFromID(group, this.m_iconID);
+        },
+
 // ------------------------------------------------------------------------------------------
 // Grid Functions
 
-        // Dimension is stored as 'C,R'
+        // Dimension is stored as 'R , C'
         setRowColData(rows, columns){
             this.m_Rows    = rows
             this.m_Columns = columns
@@ -354,6 +465,28 @@ export default {
 </script>
 
 <style scoped>
+
+.icon-size-enter-active {
+    animation: grow 150ms ease-out;
+}
+.icon-size-leave-active {
+    animation: grow 150ms reverse ease-out;
+}
+
+@keyframes grow {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.4);
+    }
+  }
+
+.icon-drag-effect{
+    pointer-events: none;
+    position: absolute;
+    transform: scale(1.4);
+}
 
 .icon-wrapper{
     width: 100px;
@@ -411,6 +544,10 @@ export default {
     position: relative;
 }
 
+.auto-width{
+    width: auto;
+}
+
 .fill{
     width:  100%;
     height: 100%;
@@ -420,6 +557,14 @@ export default {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     grid-template-rows:    repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.box{
+    width: 100px;
+    height: auto;
+    aspect-ratio: 1;
+
+    background-color: white;
 }
 
 
