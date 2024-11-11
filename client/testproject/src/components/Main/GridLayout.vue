@@ -6,7 +6,7 @@
         >
 
         <!-- Draws all grids -->
-        <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
+        <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
             @mouseup="checkDropIcon(index);"
             @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
@@ -108,51 +108,47 @@ export default {
     },
     data(){
         return{
+            // Imported Data
+            
             GridModificationClass,
             iconImageStorage,
             iconData,
             mouseData,
             iconSelect,
             
-            m_ComponentDimensions: null,
+            // Main Grid values
+
+            m_GridDimensions: {
+                Rows: 0,
+                Columns: 0,
+            },
+
             m_containerData: null,
+            m_GroupData: null,  // Group data to check and move data between groups 
+            m_iconID: null,     // ID of currently selected icon
+            m_Observer: null,   
 
-            m_Rows: 0,
-            m_Columns: 0, 
+            // Icon drag visual variables
 
-            m_iconSize: 0,
-
-            m_GroupData: null,
-            m_iconID: null,
-
-            m_Observer: null,
-
-            m_draggableFnc: null,
-
+            m_draggableFnc: null,   // Timer to cancel drag function if not valid
             m_TransitionName: 'icon-success',
+            m_SavedIndex: 0,
+            m_IconDragRef: null,    // Reference of the icon.
+            m_DraggingEvent: false, // Triggers transition and vbind classes
+
             m_DisplayIconData:{
                 iconColour: "#000000",
                 iconSize: "100",
                 iconImage: "",
             },
-
-            m_SavedIndex: 0,
-            m_IconDragRef: null,
-            m_DraggingEvent: false,
-            m_itemDragging: null,
-            m_startPos:{
-                x: null,
-                y: null
-            },
             m_MouseOffset:{
-                x: null,
-                y: null,
+                x: 0,
+                y: 0,
             }
         }
     },
     created(){
         this.initGrid();
-        this.m_iconSize = containerData.getIconSize(this.component_ID);
     },
     mounted(){
         this.gridResizer();
@@ -175,13 +171,26 @@ export default {
             this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
+
+    // Resetters
+    
+        resetSelection(){
+            this.$GlobalStates.value.edit.iconDragData = null;
+        },
+
+        // If user lifts mouse event before timer
+        resetTimer(){
+            clearTimeout(this.m_draggableFnc);
+        },
+
+
 // Coordinate Index
 // -------------------------------------------------------------------------------------------
 
         // Find next available position, Starts from the beginning
         generateNextCoordinate(groupID){
-            for(let i = 0; i < this.m_Columns * this.m_Rows; i++){
-                let tmpCoord = iconData.indexToCoord(i, this.m_Rows);
+            for(let i = 0; i < this.m_GridDimensions.Columns * this.m_GridDimensions.Rows; i++){
+                let tmpCoord = iconData.indexToCoord(i, this.m_GridDimensions.Rows);
                 
                 // If null (no item in location,) set new coordinate.
                 if(!iconData.getIconDataFromCoordinate(iconData.getGroup(groupID), tmpCoord.x, tmpCoord.y)){ return { x: tmpCoord.x, y: tmpCoord.y }; } 
@@ -196,24 +205,20 @@ export default {
             return null;
         },
 
-// Icon Movement
+// Icon Displacement
 // ------------------------------------------------------------------------------------------
-
-        resetSelection(){
-            this.$GlobalStates.value.edit.iconDragData = null;
-        },
 
         // Look at the current group. Functions return null if free space.
         // Compact can swap between values,
         isPositionAvailable(group, index, isFree){
-            let newCoord = iconData.indexToCoord(index, this.m_Rows);
+            let newCoord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             
             return (isFree) ? (!iconData.getIconDataFromCoordinate(group, newCoord.x, newCoord.y)) : true;
         },
 
         // Checks if same icon
         isSameIcon(group, index, iconID){
-            let newCoord = iconData.indexToCoord(index, this.m_Rows);
+            let newCoord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             
             return (iconData.getIconDataFromCoordinate(group, newCoord.x, newCoord.y).iconID === iconID);
         },
@@ -248,7 +253,7 @@ export default {
             (isFree) ? this.setFreeData(oldGroupID, iconID, newIndex) : this.setCompactData(oldGroupID, iconID, newGroupID, isDifferentGroup);
 
             // Move data across group. Otherwise, re-arrange group.
-            (isDifferentGroup) ? iconData.moveIcon(iconID, oldGroupID, newGroupID, this.m_Columns, isFree) :
+            (isDifferentGroup) ? iconData.moveIcon(iconID, oldGroupID, newGroupID, this.m_GridDimensions.Columns, isFree) :
                 this.checkRearrange(iconID, oldGroupID, newIndex, isFree);
 
             this.resetSelection();
@@ -261,11 +266,14 @@ export default {
             let index_B = iconData.getIconIndexOfGroup(group, iconID);
 
             // Free mode, sort group based on coordinate, early return
-            if(!data && isFree){ iconData.sortGroup(groupID, this.m_Columns); return; }
+            if(!data && isFree){ iconData.sortGroup(groupID, this.m_GridDimensions.Columns); return; }
 
             // If end location contains data, swap. If not, move to end
             (data) ? iconData.swapIndices(group, index_A, index_B) : iconData.moveItemToEnd(group, index_B);
         },
+
+
+    // Setters
 
         setCompactData(groupID, iconID, newGroupID, isDifferentGroup){
             if(!isDifferentGroup){ return; }
@@ -276,19 +284,12 @@ export default {
         },
 
         setFreeData(groupID, iconID, newIndex){
-            let coord = iconData.indexToCoord(newIndex, this.m_Rows);
+            let coord = iconData.indexToCoord(newIndex, this.m_GridDimensions.Rows);
             iconData.setCoordinate(groupID, iconID, coord.x, coord.y);
         },
 
-        setSVGDragData(){
-            let svgData = this.getStoredIconData();
-            this.m_DisplayIconData.iconImage  = iconImageStorage.getPathData(svgData.iconImage);
-            this.m_DisplayIconData.iconColour = svgData.iconColour;
-            this.m_DisplayIconData.iconSize   = svgData.iconSize;
-            this.m_DisplayIconData.viewBox    = iconImageStorage.getViewBoxName(svgData.iconImage);
-        },
-
-    // Mouse Function
+// Mouse Function
+// ----------------------------------------------------------------------------------------------------------------------------
 
         /*
             Initializer for drag and drop event
@@ -367,6 +368,16 @@ export default {
             this.m_IconDragRef['draggingIcon'].style.top  = y - this.m_MouseOffset.y + 'px';
         },
 
+    // Setters
+
+        setSVGDragData(){
+            let svgData = this.getStoredIconData();
+            this.m_DisplayIconData.iconImage  = iconImageStorage.getPathData(svgData.iconImage);
+            this.m_DisplayIconData.iconColour = svgData.iconColour;
+            this.m_DisplayIconData.iconSize   = svgData.iconSize;
+            this.m_DisplayIconData.viewBox    = iconImageStorage.getViewBoxName(svgData.iconImage);
+        },
+
         // this.m_MouseOffset indicates the absolute mouse position, after taking into account the grid position
         setMouseOffset(x,y,container){
 
@@ -380,14 +391,8 @@ export default {
             this.m_MouseOffset.y = y - gridYoffset;
         },
 
-        // If user lifts mouse event before timer
-        resetTimer(){
-            clearTimeout(this.m_draggableFnc);
-        },
-
 // Icon Functions
 // ------------------------------------------------------------------------------------------
-
 
         // Checks if the current index is the index the user had dragged
         isStoredIndex(index){
@@ -398,11 +403,6 @@ export default {
         isSelectedIcon(index){
             if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
             return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
-        },
-
-        setSelectedIcon(index){
-            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
-            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
     // Grid Direction
@@ -416,20 +416,20 @@ export default {
         // Left to right is default index
         // Rendering from Right to Left
         rightLeft(index){
-            let n_Columns = (~~(index / this.m_Rows) + 1); // Y coordinate
-            let clampedIndex = (index % this.m_Rows);      // tmp index between 0 - N rows
+            let n_Columns = (~~(index / this.m_GridDimensions.Rows) + 1); // Y coordinate
+            let clampedIndex = (index % this.m_GridDimensions.Rows);      // tmp index between 0 - N rows
             
-            let startValue = (this.m_Rows) * n_Columns;    // Start value
+            let startValue = (this.m_GridDimensions.Rows) * n_Columns;    // Start value
             return (startValue - (clampedIndex + 1));      // Start value - tmp index;
         },
 
         // Top to bottom is default index
         // Renders from Bottom to top
         bottomTop(index){
-            let n_Columns = (~~(index / this.m_Rows) + 1); // Y coordinate
-            let clampedIndex = (index % this.m_Rows);      // tmp index between 0 - N rows
+            let n_Columns = (~~(index / this.m_GridDimensions.Rows) + 1); // Y coordinate
+            let clampedIndex = (index % this.m_GridDimensions.Rows);      // tmp index between 0 - N rows
 
-            let startValue = (this.m_Columns - n_Columns) * this.m_Rows;
+            let startValue = (this.m_GridDimensions.Columns - n_Columns) * this.m_GridDimensions.Rows;
             return (startValue + clampedIndex);
         },
 
@@ -447,11 +447,19 @@ export default {
         },
         
         renderFree(index){
-            let coord = iconData.indexToCoord(index, this.m_Rows);
+            let coord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             // Contains no value
             if(!iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y)){ return false; }
             return true;
         },
+
+    // Setters
+
+        setSelectedIcon(index){
+            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
+            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
+        },
+
 
     // Getters
 
@@ -464,7 +472,7 @@ export default {
         },
 
         getFreeIconData(index){
-            let coord = iconData.indexToCoord(index, this.m_Rows);
+            let coord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             return iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
         },
 
@@ -478,12 +486,6 @@ export default {
 // ------------------------------------------------------------------------------------------
 // Grid Functions
 
-        // Dimension is stored as 'R , C'
-        setRowColData(rows, columns){
-            this.m_Rows    = rows
-            this.m_Columns = columns
-        },
-        
         /*
             Vue3 does not watch the DOM elements
             JS contains an observer for DOM elements
@@ -491,18 +493,25 @@ export default {
             Watches for changes in element sizes to automatically recalculate the dimensions of the grids.
         */
         gridResizer(){
-            this.m_ComponentDimensions = this.$refs["container"];
+            let containerRef = this.$refs["container"];
+            if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
 
             this.m_Observer = new ResizeObserver((dimensions) => {
                 let width  = dimensions[0].contentRect.width;
                 let height = dimensions[0].contentRect.height;
 
-                let dimension = GridModificationClass.calculateGridDimension(width, height, this.m_iconSize);
+                let dimension = GridModificationClass.calculateGridDimension(width, height, containerData.getIconSize(this.component_ID));
                 this.setRowColData(dimension.rows, dimension.columns);
             });
 
-            this.m_Observer.observe(this.m_ComponentDimensions)
-        }
+            this.m_Observer.observe(containerRef);
+        },
+
+        // Dimension is stored as 'R , C'
+        setRowColData(rows, columns){
+            this.m_GridDimensions.Rows    = rows
+            this.m_GridDimensions.Columns = columns
+        },
     }
 }
 </script>
