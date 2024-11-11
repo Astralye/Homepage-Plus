@@ -31,8 +31,9 @@
                     </Transition>
             </div>
             
+            <!-- Visible icon that follows mouse -->
             <Teleport to="body">
-                <Transition name="icon-size">
+                <Transition :name="m_TransitionName">
                     <SVGHandler
                         v-show="m_DraggingEvent && isStoredIndex(index)"
                         ref="svgRef"
@@ -48,40 +49,37 @@
                 </Transition>
             </Teleport>
         </div>
-
-                
-        <!-- 
-            Ideas:
-
-            the icon should have different functionalities
-
-            In edit mode:
-                Single click on icon -> Select
-                Single click on non icon, selection box
-
-                Right click -> custom context menu.
-                Double click -> Rename
-
-                Left click hold -> Drag
-                Left click hold up -> Drop
-            
-            Normal:
-                Single click
-                Double click
-
-                Right Click 
-                
-            Misc, Other notes:
-
-            CTRL + C, CTRL + V
-            -> copy paste icon. 
-
-            Mass drag + drop.
-
-        -->
-
     </div>
 </template>
+<!-- 
+    Ideas:
+
+    the icon should have different functionalities
+
+    In edit mode:
+        Single click on icon -> Select
+        Single click on non icon, selection box
+
+        Right click -> custom context menu.
+        Double click -> Rename
+
+        Left click hold -> Drag
+        Left click hold up -> Drop
+    
+    Normal:
+        Single click
+        Double click
+
+        Right Click 
+        
+    Misc, Other notes:
+
+    CTRL + C, CTRL + V
+    -> copy paste icon. 
+
+    Mass drag + drop.
+
+-->
 
 <script>
 import { containerData } from '../../Data/containerData';
@@ -131,6 +129,7 @@ export default {
 
             m_draggableFnc: null,
 
+            m_TransitionName: 'icon-success',
             m_DisplayIconData:{
                 iconColour: "#000000",
                 iconSize: "100",
@@ -212,6 +211,13 @@ export default {
             return (isFree) ? (!iconData.getIconDataFromCoordinate(group, newCoord.x, newCoord.y)) : true;
         },
 
+        // Checks if same icon
+        isSameIcon(group, index, iconID){
+            let newCoord = iconData.indexToCoord(index, this.m_Rows);
+            
+            return (iconData.getIconDataFromCoordinate(group, newCoord.x, newCoord.y).iconID === iconID);
+        },
+
         // Conditions and values to check before drop functionality
         checkDropIcon(index){
             if(!this.$GlobalStates.value.edit.iconDragData){ return; } // Requires data
@@ -227,10 +233,15 @@ export default {
             let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
             let isDifferentGroup = (oldGroupID !== newGroupID);
 
-            if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ return; }
+            if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ 
+                if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){this.m_TransitionName = 'icon-cancel' }; 
+                return;
+            }
+
             this.dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, dirIndex);
         },
 
+        // Before dropping, run the respective container drop functions
         dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, newIndex){
 
             // Changes the coordinate values FIRST
@@ -243,12 +254,13 @@ export default {
             this.resetSelection();
         },
 
+        // Checks if the icon can be swapped, only works if compact
         checkRearrange(iconID, groupID, index_A, isFree){
             let data    = iconData.getIconDataFromIndex(this.m_GroupData, index_A);
             let group   = iconData.getGroup(groupID);
             let index_B = iconData.getIconIndexOfGroup(group, iconID);
 
-            // Free mode, sort group based on coordinate.
+            // Free mode, sort group based on coordinate, early return
             if(!data && isFree){ iconData.sortGroup(groupID, this.m_Columns); return; }
 
             // If end location contains data, swap. If not, move to end
@@ -300,6 +312,7 @@ export default {
                 this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
                 this.m_DraggingEvent = true;
                 this.m_SavedIndex = index;
+                this.m_TransitionName = 'icon-success';
 
                 // Stores the icon that is being dragged
                 // Used to transfer data between containers
@@ -319,7 +332,7 @@ export default {
                 this.setSVGDragData();
                 this.initIconDragPosition(event.clientX, event.clientY);
 
-            }, 150);
+            }, 125);
 
         },
 
@@ -506,28 +519,34 @@ export default {
     opacity: 0;
 }
 
-.icon-size-enter-active {
+.icon-success-enter-active {
     animation: grow 200ms ease-out;
     transition: opacity 50ms ease-in;
 }
-.icon-size-leave-active {
+
+.icon-cancel-leave-active {
+    transition: opacity 50ms ease-in;
+}
+
+.icon-success-leave-active {
     animation: grow 200ms reverse ease-out;
     transition: opacity 50ms ease-in;
 }
+
 
 @keyframes grow {
     0% {
       transform: scale(1);
     }
     100% {
-      transform: scale(1.4);
+      transform: scale(1.5);
     }
   }
 
 .icon-drag-effect{
     pointer-events: none;
     position: absolute;
-    transform: scale(1.4);
+    transform: scale(1.5);
     z-index: 20;
 }
 
