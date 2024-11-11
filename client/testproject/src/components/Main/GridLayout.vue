@@ -23,10 +23,10 @@
                     <Transition name="fade">
                         <IconHandler v-if="renderIcon(index)"
                             class="icon"
-                            :class="{'opacity-none' : ( m_DraggingEvent && selectedIcon(index)) ,
+                            :class="{'opacity-none' : ( m_DraggingEvent && isStoredIndex(index)) ,
                                      'opacity-full' : !m_DraggingEvent }"
                             :icon_data="getIconData(index)"
-                            @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop($event, index) : null"
+                            @mousedown="(this.$GlobalStates.value.edit.enabled) ? initDragDrop($event, index) : null"
                         />
                     </Transition>
             </div>
@@ -34,7 +34,7 @@
             <Teleport to="body">
                 <Transition name="icon-size">
                     <SVGHandler
-                        v-show="m_DraggingEvent && selectedIcon(index)"
+                        v-show="m_DraggingEvent && isStoredIndex(index)"
                         ref="svgRef"
                         class="icon-drag-effect"
                         :ref_Value="'draggingIcon'"
@@ -156,24 +156,13 @@ export default {
         this.m_iconSize = containerData.getIconSize(this.component_ID);
     },
     mounted(){
-        this.m_ComponentDimensions = this.$refs["container"];
-
-        // Vue3 does not watch the DOM elements
-        // JS contains an observer for DOM elements.
-        this.m_Observer = new ResizeObserver((dimensions) => {
-            let width  = dimensions[0].contentRect.width;
-            let height = dimensions[0].contentRect.height;
-
-            let dimension = GridModificationClass.calculateGridDimension(width, height, this.m_iconSize);
-            this.setRowColData(dimension.rows, dimension.columns);
-        });
-
-        this.m_Observer.observe(this.m_ComponentDimensions)
+        this.gridResizer();
     },
     unmounted(){
         this.m_Observer.disconnect();
     },
     methods: {
+        
         initGrid(){
 
             this.m_containerData = containerData.getObjectFromID(this.component_ID);
@@ -185,10 +174,6 @@ export default {
             } // group data does not exist
 
             this.m_GroupData = iconData.getGroup(this.component_ID);
-        },
-
-        resetTimer(){
-            clearTimeout(this.m_draggableFnc);
         },
 
 // Coordinate Index
@@ -292,42 +277,68 @@ export default {
         },
 
     // Mouse Function
-    
-        dragAndDrop: function(event, index){
 
-            // this.m_draggableFnc = setTimeout(() => {
+        /*
+            Initializer for drag and drop event
+            Timeout makes the user wait a certain time before dragging.
+            Also defines what makes a drag and a click
+        */
+        initDragDrop: function(event, index){
 
-            this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
-            this.m_DraggingEvent = true;
-            this.m_iconID = this.getIconData(index).iconID;
-            this.m_SavedIndex = index;
+            var runFnc = false;
+            this.m_draggableFnc = setTimeout(() => { 
 
-            // Set mouse functions
-            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
-            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
-            
-            mouseData.enableTracking();
-            mouseData.enableMouseUp();
-            
-            // Initalizers
-            this.edit_Drag_MouseDown();
-            this.setSVGDragData();
-            this.initIconDragPosition(event.clientX, event.clientY);
+                // Checks if the current mouse hover is over the same element
+                document.querySelectorAll( ":hover" ).forEach(el => {
+                    if(el == event.target){ runFnc = true; return;}
+                });
+                
+                if(!runFnc){ return; }
 
-            // }, 200);
+                // Dragging event to for the icon to follow the mouse.
+                this.m_iconID = this.getIconData(index).iconID;
+                this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
+                this.m_DraggingEvent = true;
+                this.m_SavedIndex = index;
+
+                // Stores the icon that is being dragged
+                // Used to transfer data between containers
+                this.$GlobalStates.value.edit.iconDragData = {
+                    storedContainer:  this.m_containerData.ID,
+                    storedID: this.m_iconID,
+                };
+
+                // Set mouse functions
+                mouseData.movementFunctions ([ this.edit_dragMove ]);
+                mouseData.mouseUpFunctions  ([ this.edit_disableDrag ]);
+                
+                mouseData.enableTracking();
+                mouseData.enableMouseUp();
+                
+                // Initalizers
+                this.setSVGDragData();
+                this.initIconDragPosition(event.clientX, event.clientY);
+
+            }, 150);
+
         },
 
-        selectedIcon(index){
-            return (index === this.m_SavedIndex);
+    // Icon follow on mouse position functions
+
+        // Updates position of dragged icon.
+        edit_dragMove(){ this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y); },
+
+        // Resets values when finish the drag event
+        edit_disableDrag(){
+
+            mouseData.disableTracking();
+            mouseData.disableMouseUp();
+
+            this.m_DraggingEvent = false;
+            this.m_iconID = null;
+            this.m_SavedIndex = 0;
         },
 
-        edit_Drag_MouseDown(){
-            // Find what it is holding and store it.s
-            this.$GlobalStates.value.edit.iconDragData = {
-                storedContainer:  this.m_containerData.ID,
-                storedID: this.m_iconID,
-            };
-        },
 
         // This is the offset of the starting position that the mouse offsets by when moving
         initIconDragPosition(initX, initY){
@@ -335,11 +346,6 @@ export default {
 
             this.setMouseOffset(initX, initY, gridItem);
             this.updateIconDragPosition(initX, initY); // This value will always be constant at the start
-        },
-
-        // Runs on every update loop
-        edit_Drag_Move(){
-            this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y);
         },
 
         // Updates the css values to match the cursor
@@ -361,19 +367,21 @@ export default {
             this.m_MouseOffset.y = y - gridYoffset;
         },
 
-        disableDrag(){
-
-            mouseData.disableTracking();
-            mouseData.disableMouseUp();
-
-            this.m_DraggingEvent = false;
-            this.m_iconID = null;
-            this.m_SavedIndex = 0;
+        // If user lifts mouse event before timer
+        resetTimer(){
+            clearTimeout(this.m_draggableFnc);
         },
 
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+
+        // Checks if the current index is the index the user had dragged
+        isStoredIndex(index){
+            return (index === this.m_SavedIndex);
+        },
+
+        // Click selection for linkmaker
         isSelectedIcon(index){
             if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
             return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
@@ -462,6 +470,26 @@ export default {
             this.m_Rows    = rows
             this.m_Columns = columns
         },
+        
+        /*
+            Vue3 does not watch the DOM elements
+            JS contains an observer for DOM elements
+            
+            Watches for changes in element sizes to automatically recalculate the dimensions of the grids.
+        */
+        gridResizer(){
+            this.m_ComponentDimensions = this.$refs["container"];
+
+            this.m_Observer = new ResizeObserver((dimensions) => {
+                let width  = dimensions[0].contentRect.width;
+                let height = dimensions[0].contentRect.height;
+
+                let dimension = GridModificationClass.calculateGridDimension(width, height, this.m_iconSize);
+                this.setRowColData(dimension.rows, dimension.columns);
+            });
+
+            this.m_Observer.observe(this.m_ComponentDimensions)
+        }
     }
 }
 </script>
