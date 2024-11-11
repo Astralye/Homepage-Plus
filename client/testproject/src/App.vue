@@ -12,6 +12,8 @@ import Storage from './components/Main/Storage.vue'
 import { iconImageStorage } from './Data/iconImages'
 import SVGHandler from './components/Input Components/SVGHandler.vue'
 
+import { editVariables } from './Data/SettingVariables'
+
 export default{
     name: "App",
     components: {
@@ -29,6 +31,7 @@ export default{
     data() {
         return{
             iconImageStorage,
+            editVariables,
 
             toggleTab: [
                 { type: "edit", toggle: false},
@@ -50,10 +53,7 @@ export default{
     },
     created(){
         // Resize window
-        window.addEventListener("resize", () => {
-            this.$GlobalStates.value.edit.windowSize.height = window.innerHeight;
-            this.$GlobalStates.value.edit.windowSize.width = window.innerWidth;
-        });
+        window.addEventListener("resize", () => { editVariables.enableRecalculation(); });
     },
     methods: {
         // This opens a blank window with no content.
@@ -73,7 +73,7 @@ export default{
                 case "edit":
                 {
                     windowType = this.toggleTab[0];
-                    this.$GlobalStates.value.edit.enabled = !this.$GlobalStates.value.edit.enabled;
+                    editVariables.enabled = !editVariables.enabled;
                     this.closeAllWindows();
                     break;
                 }

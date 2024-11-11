@@ -13,7 +13,7 @@
                 :path_Value="iconData.image"
                 :fill_Colour="iconData.colour"
                 :view_Box="iconData.viewBox"
-                @dblclick="(this.$GlobalStates.value.edit.enabled) ? null : openLink()"
+                @dblclick="(editVariables.enabled) ? null : openLink()"
             />
         </div>
 
@@ -31,6 +31,8 @@
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 
+import { editVariables } from '../../Data/SettingVariables';
+
 // This will be drag and drop.
 export default {
     components: {
@@ -45,6 +47,7 @@ export default {
     data(){
         return{
             iconImageStorage,
+            editVariables,
 
             iconData: {
                 size: "10",

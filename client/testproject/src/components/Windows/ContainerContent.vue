@@ -31,7 +31,7 @@
       <template #content>
         <RadioButton
             parent_Variable_String="LayoutType"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
+            :enable_-radio="editVariables.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -60,7 +60,7 @@
       <template #content>
         <RadioButton
             parent_Variable_String="ContentAlign"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
+            :enable_-radio="editVariables.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -92,7 +92,7 @@
         </h4>
         <RadioButton
             parent_Variable_String="OrientationLeftRight"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
+            :enable_-radio="editVariables.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -112,7 +112,7 @@
         </h4>
         <RadioButton
             parent_Variable_String="OrientationTopBottom"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
+            :enable_-radio="editVariables.containerSelected"
             :parent_Fnc_Data="{
               checkedFncDetails:
               {
@@ -134,6 +134,8 @@
 <script>
 
 import { containerData } from '../../Data/containerData.js';
+import { editVariables } from '../../Data/SettingVariables.js';
+
 import RadioButton from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
@@ -150,11 +152,14 @@ export default {
         TextInput
     },
     created(){
-      this.m_CurrentID = "0A";
+      editVariables.setContainerSelected("0A");
     },
     data(){
       return{
+        
         containerData,
+        editVariables,
+
         m_currentObject: null,
 // Radio button variables
 // ------------------------------------------------------------------------------------------------
@@ -182,10 +187,18 @@ export default {
 // ----------------------------------------------------------------------------------------------------------------------------
       }
     },
+    mounted(){
+      editVariables.enableContainerWindow();
+      editVariables.selectionContainerToggler();
+    },
+    unmounted(){
+      editVariables.disableContainerWindow();
+      editVariables.selectionContainerToggler();
+    },
 
     methods: {
-      noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
-      activateSelectionMode() { this.$GlobalStates.value.containerSelectionMode = true; },
+      noSelect(){ return (editVariables.containerSelected === null); },
+      activateSelectionMode() { editVariables.enableContainerSelection(); },
 
 // Radio button functions
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -233,11 +246,11 @@ export default {
       },
 
       // Sets the component selected values to the object data
-      loadData(){
-        this.modifyValue(this.LayoutType,           containerData.getLayoutType(this.m_CurrentID));
-        this.modifyValue(this.ContentAlign,         containerData.getGridAlign (this.m_CurrentID));
-        this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(this.m_CurrentID));
-        this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(this.m_CurrentID));
+      loadData(id){
+        this.modifyValue(this.LayoutType,           containerData.getLayoutType(id));
+        this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
+        this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
+        this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
       },
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -253,11 +266,11 @@ export default {
 // ------------------------------------------------------------------------------------------------------------------------------
 
     },
+    
     watch: {
-      // Retrieves the selected container
-      '$GlobalStates.value.edit.containerSelected'(val){
+      'editVariables.containerSelected'(val){
+        this.loadData(val);
         this.m_CurrentID = val;
-        this.loadData();
       },
     }
 }

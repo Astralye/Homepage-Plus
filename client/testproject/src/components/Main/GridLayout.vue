@@ -2,14 +2,14 @@
     <div class="fill grid border-box"
         id="gridTop"
         ref="container"
-        @mouseup="resetSelection(); (this.$GlobalStates.value.edit.enabled) ? resetTimer() : null"
+        @mouseup="resetSelection(); (editVariables.enabled) ? resetTimer() : null"
         >
 
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
             @mouseup="checkDropIcon(index);"
-            @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null"
+            @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
             >
 
             <!-- Generalized grid item -->
@@ -26,7 +26,7 @@
                             :class="{'opacity-none' : ( m_DraggingEvent && isStoredIndex(index)) ,
                                      'opacity-full' : !m_DraggingEvent }"
                             :icon_data="getIconData(index)"
-                            @mousedown="(this.$GlobalStates.value.edit.enabled) ? initDragDrop($event, index) : null"
+                            @mousedown="(editVariables.enabled) ? initDragDrop($event, index) : null"
                         />
                     </Transition>
             </div>
@@ -90,6 +90,8 @@ import { GridModificationClass } from '../Functions/gridModification.js';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 
+import { editVariables } from '../../Data/SettingVariables';
+
 export default {
     components:{
         IconHandler,
@@ -115,6 +117,8 @@ export default {
             iconData,
             mouseData,
             iconSelect,
+            editVariables,
+            
             
             // Main Grid values
 
@@ -175,7 +179,7 @@ export default {
     // Resetters
     
         resetSelection(){
-            this.$GlobalStates.value.edit.iconDragData = null;
+            editVariables.resetIconDragData();
         },
 
         // If user lifts mouse event before timer
@@ -225,11 +229,11 @@ export default {
 
         // Conditions and values to check before drop functionality
         checkDropIcon(index){
-            if(!this.$GlobalStates.value.edit.iconDragData){ return; } // Requires data
+            if(!editVariables.iconDragData){ return; } // Requires data
 
             let newGroupID = this.m_containerData.ID;
-            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
-            let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
+            let oldGroupID = editVariables.iconDragData.storedContainer;
+            let iconID     = editVariables.iconDragData.storedID;
 
             let isFree     = (this.m_containerData.gridData.contentAlign === "Free");
             let dirIndex   = this.directionalIndexHandler(index);
@@ -317,10 +321,10 @@ export default {
 
                 // Stores the icon that is being dragged
                 // Used to transfer data between containers
-                this.$GlobalStates.value.edit.iconDragData = {
+                editVariables.setIconDragData({
                     storedContainer:  this.m_containerData.ID,
                     storedID: this.m_iconID,
-                };
+                });
 
                 // Set mouse functions
                 mouseData.movementFunctions ([ this.edit_dragMove ]);
@@ -477,9 +481,9 @@ export default {
         },
 
         getStoredIconData(){
-            if(!this.$GlobalStates.value.edit.iconDragData || !this.m_iconID){ return; } // Requires data
+            if(!editVariables.iconDragData || !this.m_iconID){ return; } // Requires data
 
-            let group = iconData.getGroup(this.$GlobalStates.value.edit.iconDragData.storedContainer);
+            let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
             return iconData.getIconDataFromID(group, this.m_iconID);
         },
 

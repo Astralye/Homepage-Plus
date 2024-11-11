@@ -1,6 +1,6 @@
 <template>
     <Transition name="fade">
-        <div class="action-container" v-if="this.$GlobalStates.value.edit.enabled">
+        <div class="action-container" v-if="editVariables.enabled">
             <!-- Save button -->
             <button @click="saveLayout">
                 <SVGHandler
@@ -63,6 +63,8 @@ import { iconData, iconStorage } from '../../Data/iconData.js';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 
+import { editVariables } from '../../Data/SettingVariables';
+
 export default {
     components:{
         Modal,
@@ -75,6 +77,7 @@ export default {
             iconData,
             iconStorage,
             iconImageStorage,
+            editVariables,
 
             iconSize: "5em",
             modal:{
@@ -132,7 +135,7 @@ export default {
 
             this.saveLayout();
             // Reset selected
-            this.$GlobalStates.value.edit.resetSelect = true;
+            editVariables.enableResetSelect();
             this.modal.confirmed = false;
             // this.showPopup("deleted");
         },
@@ -151,7 +154,7 @@ export default {
             this.loadData();
 
             // Reset selected
-            this.$GlobalStates.value.edit.resetSelect = true;
+            editVariables.enableResetSelect();
             this.modal.confirmed = false;
             this.showPopup("cancelled");
 
@@ -177,8 +180,8 @@ export default {
             iconData.initializeData(dataIcon);
             iconStorage.TMP_initData(storageData); // Change later
             
-            this.$GlobalStates.clickLoad = true; 
-            this.$GlobalStates.isRenderFinalNode = true;
+            // this.$GlobalStates.clickLoad = true; 
+            editVariables.enableRenderFinalNode();
         },
 
         // Above the containers, show a message showing what the user has clicked.

@@ -1,9 +1,69 @@
+<template>
+    <!-- Container wrapper -->
+    <div class="height-full">
+        
+        <!-- Container -->
+        <div
+            class="page-content-container height-full"
+            ref="refContainer"
+            >
+            
+            <!-- Edit based container functions -->
+            <div 
+            :class="{'edit-mode': editVariables.enabled, 
+                    'edit-hover': (editVariables.enabled && m_isHover && !m_isStoredClick),
+            'selected-container': (m_isStoredClick && editVariables.enabled && editVariables.activeContainerSelection),
+            'grid-template' : m_LayoutData.NoChildren > 0 }"
+            @mouseover.self="m_isHover = editVariables.containerSelectionMode"
+            @mouseout.self="m_isHover=false"
+            @click.self="editVariables.containerSelectionMode ? ( editVariables.enabled ? storeClickedContainer() : null ) : null">
+
+                <!-- Recurrsion, uses data to determine how many to render -->
+                <template v-if="m_LayoutData.NoChildren > 0">
+                    <Container 
+                        v-for="n in m_LayoutData.NoChildren" 
+                        :nest_level="nest_level+1"
+                        :parent_ID="m_LayoutData.id"
+                        :child_Instance="n-1"
+                        :render_divider="true"
+                        @drag="p_updateColumnRow"
+                        />
+                </template>
+
+                <!-- If no children, display the grid layout -->
+                <template v-else-if="m_LayoutData.NoChildren === 0">
+                    <Gridlayout
+                        @mouseover="m_isHover = editVariables.containerSelectionMode"
+                        @mouseout="m_isHover=false"
+                        @click="editVariables.containerSelectionMode ? ( editVariables.enabled ? storeClickedContainer() : null ) : null"
+                        
+                        :component_ID="m_LayoutData.id"
+                        :update_Grid_Flag="m_updateGrid"/>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <template v-if="render_divider">
+            <div v-if="editVariables.enabled && displayDivider()"
+            :class="{
+                'page-drag-Horizontal': ( !m_isVertical),
+                'page-drag-Vertical height-full': (m_isVertical)}"
+            @mousedown="initDividerDrag"
+            ref="divider">
+            </div>
+        </template>
+    </div>
+</template>
+
 <script>
 import { containerData } from '../../Data/containerData.js'
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
+import { editVariables } from '../../Data/SettingVariables.js';
+
 import Gridlayout from './GridLayout.vue'
 
 export default {
@@ -48,7 +108,10 @@ export default {
             layout,
             mouseData,
 
+            editVariables,
+            // Data
 
+            
             /*
                 Each component stores data of the container.
                 This data determines how it is rendered
@@ -56,7 +119,6 @@ export default {
                 The values are taken from the global variable and 
                 watchers update the values
             */
-            // 
             m_LayoutData:
             {
                 level: 0,
@@ -88,7 +150,6 @@ export default {
 
             // Default instantiate values
             m_EditMode: false,
-            m_isStoredClick: false,
             m_isVertical: true,
             m_isMoveContainer: false,
             
@@ -128,58 +189,8 @@ export default {
     },
     methods:{
 
-// Logging Functions 
-// -----------------------------------------------------------------------------------------------------
-        printLayoutInfo(){
-                console.log("Container Info\n",
-                            "\nLevel: ",        this.m_LayoutData.level,
-                            "\nDivision Type:", this.m_LayoutData.divisionType,
-                            "\nID:",            this.m_LayoutData.id,
-                            "\nSiblings:",      this.m_LayoutData.siblings,
-                            "\nEven Split?",    this.m_LayoutData.evenSplit,
-                            "\nFR data:",       this.m_LayoutData.unevenFRData,
-                );
-        },
-        printMouseCoordinate(){
-            console.log("Mouse Coordinate (Absolute)\n",
-                        "\nX:", this.m_MouseCoordinate.x,
-                        "\nY:", this.m_MouseCoordinate.y,
-            );
-        },
-        printParentContainerInfo(){
-            console.log("Parent information\n" ,
-                        "\nx:",      this.$parent.$data.m_ComponentData.x,
-                        "\ny:",      this.$parent.$data.m_ComponentData.y,
-                        "\nheight:", this.$parent.$data.m_ComponentData.height,
-                        "\nwidth:",  this.$parent.$data.m_ComponentData.width);
-        },
-// -------------------------------------------------------------------------------------------------------
-
-// Row + Column Data variable setters
-// -------------------------------------------------------------------------------------------------------
-
-        setGridEven(type){
-            let repeatedData = "1fr ".repeat(this.m_LayoutData.NoChildren);
-            let normal = "1fr";
-
-            this.m_rowData    = (type === "Horizontal")  ? repeatedData : normal;
-            this.m_columnData = (type === "Horizontal")  ? normal : repeatedData;
-        },
-        setGridNonEven(container){
-            let normal = "1fr";
-
-            this.m_rowData    = (container.divisionType === "Horizontal") ? container.unevenFRData : normal;
-            this.m_columnData = (container.divisionType === "Horizontal") ? normal : container.unevenFRData;
-        },
-
-// -------------------------------------------------------------------------------------------------------
-
 // General Container Functions
 // --------------------------------------------------------------------------------------------------------
-
-        isStoredClick(){
-            this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_LayoutData.id) ? false : true;
-        },
 
         // Applies any changed data to the container
         updateContainerData(){
@@ -215,14 +226,14 @@ export default {
         // Loads the fractional data
         loadFractionalData(){
             if(this.m_LayoutData.evenSplit){ this.setGridEven(this.m_LayoutData.divisionType); }
-            else if(this.$GlobalStates.isRenderFinalNode){ this.setGridNonEven(this.m_LayoutData); }
+            else if(editVariables.isRenderFinalNode){ this.setGridNonEven(this.m_LayoutData); }
         },
 
         // Turn off Load rendering
         // Check if the container is the final container to be rendered
         renderLastContainer(){
             let lastRenderContainer = LayoutDataClass.isFinalNode(LayoutDataClass.getLevelData(layout.allData, 0, "0A"), this.m_LayoutData. id);
-            if( lastRenderContainer && this.$GlobalStates.isRenderFinalNode) { this.$GlobalStates.isRenderFinalNode = false;}
+            if( lastRenderContainer && editVariables.isRenderFinalNode) { editVariables.disableRenderFinalNode(); }
         },
 
 // Singleton Data Config
@@ -231,16 +242,14 @@ export default {
         // On Unmount, remove it
         removeGlobalData(){
             containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
-            
-            // Remove LayoutData
         },
 
         // Store container data on click to singleton
         storeClickedContainer(){
             if(this.m_LayoutData.id === null) {return;}
-            this.$GlobalStates.value.edit.containerSelected = this.m_LayoutData.id;
-            this.$GlobalStates.value.containerSelectionMode = false;
-            this.$GlobalStates.value.edit.enabled = true;
+            editVariables.setContainerSelected(this.m_LayoutData.id);
+            editVariables.disableContainerSelection();
+            editVariables.enabled = true;
         },
         
 // Divider drag functions
@@ -257,29 +266,25 @@ export default {
             This runs N times for N containers on window resize 
             Modifies (in px) the threshold of mouse position to move per stepsize
         */
-        recalculateThreshold(){ this.m_pxThreshold = ContainerDividerClass.calculateThreshold(this.m_LayoutData, this.$parent.$data, this.m_StepSize); },
+        recalculateThreshold(){ this.m_pxThreshold = ContainerDividerClass.calculateThreshold(this.m_LayoutData, this.$parent.$data, editVariables.dragStepSize); },
 
         // Start event on mouse down on divider. End event on mouse up.
-        onMouseHold(event, holding){
-            this.m_isMoveContainer = true;
+        initDividerDrag(){
+
+            // Mouse Functions
+            mouseData.movementFunctions( [ this.drag_MouseMove ]);
+            mouseData.mouseUpFunctions ( [ this.drag_MouseUp   ]);
             
-            document.addEventListener('mouseup', function(e) {
-                this.m_isMoveContainer = false;
-                this.m_cursor = "default";
-                mouseData.disableTracking();
-                document.documentElement.style.setProperty("--cursor", this.m_cursor); 
-
-            }, { once: true });
-
-            mouseData.movementFunctions( [ this.moveContainer ]);
             mouseData.enableTracking();
+            mouseData.enableMouseUp();
 
+            this.m_isMoveContainer = true;
             this.m_cursor = (this.$parent.$data.m_LayoutData.divisionType === "Vertical") ? "col-resize" : "row-resize";
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
         },
 
         // If drag passes threshold, update parent row/column data
-        moveContainer(){
+        drag_MouseMove(){
 
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
@@ -294,9 +299,18 @@ export default {
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
 
+        drag_MouseUp(){
+            mouseData.disableTracking();
+            mouseData.disableMouseUp();
+
+            this.m_isMoveContainer = false;
+            this.m_cursor = "default";
+            document.documentElement.style.setProperty("--cursor", this.m_cursor); 
+        },
+
         // Only runs at the parent container to modify css variable
         p_updateColumnRow(data){            
-            let newColumnData = ContainerDividerClass.updateParentConfig(data, this.m_StepSize, this.m_columnData, this.m_rowData);
+            let newColumnData = ContainerDividerClass.updateParentConfig(data, editVariables.dragStepSize, this.m_columnData, this.m_rowData);
             if(data.type === "Vertical"){ this.m_columnData = newColumnData; } else { this.m_rowData = newColumnData; } 
 
             // Updates the global container values
@@ -340,11 +354,11 @@ export default {
 
         All this just for contiguous row + column updating...
     */
-        p_storeParentID(){ this.$GlobalStates.value.parentIDGridUpdate = this.m_LayoutData.id; },
+        p_storeParentID(){ editVariables.setParentID(this.m_LayoutData.id); },
 
         // Reset only after last sibling.
         updateContainerGrid(){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$GlobalStates.value.parentIDGridUpdate = null; }
+            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ editVariables.resetParentID(); }
 
             this.m_updateGrid = true;
 
@@ -356,43 +370,96 @@ export default {
 
 // --------------------------------------------------------------------------------------------------------
 
+// Row + Column Data variable setters
+// -------------------------------------------------------------------------------------------------------
+
+        setGridEven(type){
+            let repeatedData = "1fr ".repeat(this.m_LayoutData.NoChildren);
+            let normal = "1fr";
+
+            this.m_rowData    = (type === "Horizontal")  ? repeatedData : normal;
+            this.m_columnData = (type === "Horizontal")  ? normal : repeatedData;
+        },
+        setGridNonEven(container){
+            let normal = "1fr";
+
+            this.m_rowData    = (container.divisionType === "Horizontal") ? container.unevenFRData : normal;
+            this.m_columnData = (container.divisionType === "Horizontal") ? normal : container.unevenFRData;
+        },
+
+// -------------------------------------------------------------------------------------------------------
+
+// Logging Functions 
+// -----------------------------------------------------------------------------------------------------
+        printLayoutInfo(){
+            console.log("Container Info\n",
+                        "\nLevel: ",        this.m_LayoutData.level,
+                        "\nDivision Type:", this.m_LayoutData.divisionType,
+                        "\nID:",            this.m_LayoutData.id,
+                        "\nSiblings:",      this.m_LayoutData.siblings,
+                        "\nEven Split?",    this.m_LayoutData.evenSplit,
+                        "\nFR data:",       this.m_LayoutData.unevenFRData,
+            );
+        },
+        printMouseCoordinate(){
+            console.log("Mouse Coordinate (Absolute)\n",
+                        "\nX:", this.m_MouseCoordinate.x,
+                        "\nY:", this.m_MouseCoordinate.y,
+            );
+        },
+        printParentContainerInfo(){
+            console.log("Parent information\n" ,
+                        "\nx:",      this.$parent.$data.m_ComponentData.x,
+                        "\ny:",      this.$parent.$data.m_ComponentData.y,
+                        "\nheight:", this.$parent.$data.m_ComponentData.height,
+                        "\nwidth:",  this.$parent.$data.m_ComponentData.width);
+        },
+// -------------------------------------------------------------------------------------------------------
+
     },
+
+    computed:{
+        
+        // Updates if the container is the current selected
+        m_isStoredClick(){
+            return (editVariables.containerSelected === this.m_LayoutData.id);
+        },
+    },
+
+
 // Watchers
 // --------------------------------------------------------------------------------------------------------------
 
     watch: {
 
-        // update grid layout
-        // &&&&&
-        'm_LayoutData.siblings'(val, oldval){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
+        'editVariables.dragStepSize'(){ this.recalculateThreshold(); },
+
+        // Updates recalculates the layout when the flag changes
+        'editVariables.recalculateLayout'(flag){
+            if(!flag){ return; }
+
+            this.setComponentDOMValues();
+            this.recalculateThreshold();
+            
+            if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
+            editVariables.disableRecalculation();
         },
-        '$GlobalStates.value.parentIDGridUpdate'(val,oldval){
-            if(val === null) { return; }
+
+        // All containers run this watcher, but only the parent of the selected gets ran.
+        'editVariables.parentID'(p_ID){
+            if(p_ID === null) { return; }
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj === null) { return; }
-            else if(parentObj.id === val){ this.updateContainerGrid(); }
+            else if(parentObj.id === p_ID){ this.updateContainerGrid(); }
+        },
+
+        // update grid layout
+        'm_LayoutData.siblings'(){
+            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
         },
 
         'm_LayoutData.unevenFRData'(){ this.p_storeParentID(); },
         'm_LayoutData.divisionType'(){ this.p_storeParentID(); },
-        // &&&&
-
-        '$GlobalStates.value.edit.containerSelected'(val, oldval){
-            this.isStoredClick();
-        },
-        '$GlobalStates.value.edit.windowSize':{
-            handler(val,oldval){
-                this.setComponentDOMValues();
-                this.recalculateThreshold();
-                
-                if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
-            },
-            deep: true
-        },
-        '$GlobalStates.value.edit.dragStepSize'(val, oldval){
-            this.m_StepSize = val;
-        },
         // When the values in the container data change
         'layout':{
             handler(val, oldval){
@@ -407,63 +474,6 @@ export default {
     }
 }
 </script>
-
-<template>
-    <!-- Container wrapper -->
-    <div class="component-container">
-        
-        <!-- Container -->
-        <div
-            class="page-content-container"
-            ref="refContainer"
-            >
-            
-            <!-- Edit based container functions -->
-            <div 
-            :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
-                    'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
-            'selected-container': (this.m_isStoredClick && this.$GlobalStates.value.edit.enabled),
-            'grid-template' : this.m_LayoutData.NoChildren > 0 }"
-            @mouseover.self="m_isHover = this.$GlobalStates.value.containerSelectionMode"
-            @mouseout.self="m_isHover=false"
-            @click.self="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null">
-
-                <!-- Recurrsion, uses data to determine how many to render -->
-                <template v-if="this.m_LayoutData.NoChildren > 0">
-                    <Container 
-                        v-for="n in this.m_LayoutData.NoChildren" 
-                        :nest_level="nest_level+1"
-                        :parent_ID="this.m_LayoutData.id"
-                        :child_Instance="n-1"
-                        :render_divider="true"
-                        @drag="p_updateColumnRow"
-                        />
-                </template>
-                <template v-else-if="this.m_LayoutData.NoChildren === 0">
-                    <Gridlayout
-                        @mouseover="m_isHover = this.$GlobalStates.value.containerSelectionMode"
-                        @mouseout="m_isHover=false"
-                        @click="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null"
-                        
-                        :component_ID="m_LayoutData.id"
-                        :update_Grid_Flag="m_updateGrid"/>
-                </template>
-            </div>
-        </div>
-        
-        <!-- Divider -->
-        <template v-if="this.render_divider">
-            <div v-if="this.$GlobalStates.value.edit.enabled && this.displayDivider()"
-            :class="{
-                'page-drag-Horizontal': ( !this.m_isVertical),
-                'page-drag-Vertical': (this.m_isVertical)}"
-            @mousedown="onMouseHold"
-            ref="divider">
-            </div>
-        </template>
-    </div>
-</template>
-
 <!---------------------------------------------------------------------------------------------------------------------------
     CSS
 -->
@@ -471,7 +481,7 @@ export default {
 <style scoped>
 @import '../../assets/base.css';
 
-.component-container{
+.height-full{
     height: 100%;
 }
 
@@ -527,7 +537,6 @@ export default {
     Use a standard colour
 */
 .page-drag-Vertical{
-    height: 100%;
     width: 20px;
     transform: translate(-15px, -100%);
     background-color: rgba(255,255,255,0.4);
@@ -545,8 +554,7 @@ export default {
 
 .page-content-container{
     display: grid;
-
-    height: 100%;
+    
     width: 100%;
     background-color: var(--Primary-background-colour);
     transition: all 0.1s ease-in-out;

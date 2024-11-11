@@ -39,12 +39,12 @@
                                       'mouse-pointer': renderIcon(index)}"
 
                             @mouseup="checkDropIcon(index)"
-                            @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectData(index) : null"
+                            @click="(editVariables.isIconSelector) ? setSelectData(index) : null"
                         >
                             <!-- For rendering any icons saved -->
                             <IconHandler v-if="renderIcon(index)"
                                 :icon_data="getIconData(index)"
-                                @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
+                                @mousedown="(editVariables.enabled) ? dragAndDrop(index) : null"
                             />
                         </div>
                     </div>
@@ -70,6 +70,8 @@ import Tabs from '../Window Components/Tabs.vue';
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
 
+import { editVariables } from '../../Data/SettingVariables';
+
 export default {
     components: {
         WindowContainerDivider,
@@ -84,6 +86,7 @@ export default {
             iconStorage,
             mouseData,
             iconSelect,
+            editVariables,
 
             m_Rows: 4,
             m_Columns: 3,
@@ -94,11 +97,10 @@ export default {
         }
     },
     created(){
-        this.$GlobalStates.value.edit.isIconSelector = true;
+        editVariables.enableIsIconSelector();
     },
     unmounted(){
-        this.$GlobalStates.value.edit.isIconSelector = false;
-        
+        editVariables.disableIsIconSelector();
         iconSelect.resetData();
     },
     methods: {
@@ -124,10 +126,10 @@ export default {
 // Perhaps I can move them to a single function later
 
         checkDropIcon(index){ // icon drag onto saved storage
-            if(!this.$GlobalStates.value.edit.iconDragData){ return; } // Requires data
+            if(!editVariables.iconDragData){ return; } // Requires data
 
-            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
-            let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
+            let oldGroupID = editVariables.iconDragData.storedContainer;
+            let iconID     = editVariables.iconDragData.storedID;
             
             if(oldGroupID === this.m_STORAGE){
                 this.rearrangeIcons(index, iconID);
@@ -135,7 +137,8 @@ export default {
             else{
                 iconData.moveIcon(iconID, oldGroupID, this.m_STORAGE, this.m_Columns, false);
             }
-            this.resetSelection();
+
+            editVariables.resetIconDragData()
         },
 
         rearrangeIcons(index_A, iconID){
@@ -148,10 +151,6 @@ export default {
 
         getIconData(index){
             return iconStorage.allData[index];
-        },
-
-        resetSelection(){
-            this.$GlobalStates.value.edit.iconDragData = null;
         },
 
         generateIcon(){
@@ -189,10 +188,10 @@ export default {
 
         edit_Drag_MouseDown(){
             // Find what it is holding and store it.s
-            this.$GlobalStates.value.edit.iconDragData = {
+            editVariables.setIconDragData({
                 storedContainer:  this.m_STORAGE,
                 storedID: this.m_iconID,
-            };
+            });
         },
 
         edit_Drag_Move(){

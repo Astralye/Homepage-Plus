@@ -6,6 +6,7 @@ import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 
+import { editVariables } from '../../Data/SettingVariables.js';
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 
 export default {
@@ -19,6 +20,7 @@ export default {
     data() {
         return{
             LayoutDataClass,
+            editVariables,
             layout,
             
             // Radio Button Object Values
@@ -39,23 +41,27 @@ export default {
             
             m_StepSizeValues: [0.05, 0.125, 0.25, 0.33, 0.5],
             
-
             // These were for rendering, they have no semantic value to the data structure
 
-            States: {
-                selectedContainer: {
-                    level: layout.allData.level,
-                    id: layout.allData.id,
-                    evenlySpaced: layout.allData.evenlySpaced
-                }
-            }
+            selectedContainer: {
+                level: layout.allData.level,
+                id: layout.allData.id,
+                evenlySpaced: layout.allData.evenlySpaced
+            },
         }
     },
-
+    mounted(){
+        editVariables.enableLayoutWindow();
+        editVariables.selectionContainerToggler();
+    },
+    unmounted(){
+        editVariables.disableLayoutWindow();
+        editVariables.selectionContainerToggler();
+    },
     methods: {
 
         activateSelectionMode() {
-            this.$GlobalStates.value.containerSelectionMode = true;
+            editVariables.enableContainerSelection();
         },
 
 // Container Modifiers
@@ -74,26 +80,26 @@ export default {
             if(this.noSelect()) { return; } // Do not allow button presses when no selection
 
             if(this.isNewlySelected(container)){
-                let cont = this.States.selectedContainer;
+                let cont = this.selectedContainer;
                 layout.modifyContainer(container.index, cont.level, cont.id);
             }
         },
 
         // On delete or load layout, we need to currently unselect all the user clicked containers
         resetSelected(){
-            this.States.selectedContainer.level = layout.allData.level;
-            this.States.selectedContainer.id    = layout.allData.id;
-            this.$GlobalStates.value.edit.containerSelected = null;
-            this.$GlobalStates.value.edit.resetSelect       = false;
+            this.selectedContainer.level = layout.allData.level;
+            this.selectedContainer.id    = layout.allData.id;
+            editVariables.setContainerSelected(null);
+            editVariables.disableResetSelect();
         },
 
-        noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
+        noSelect(){ return (editVariables.containerSelected === null); },
 
         // True on a selected container
         isDivisionVertical(index){
             if(this.noSelect()) { return; } // Do not allow button presses when no selection
 
-            const container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            const container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
 
             if(container.divisionType === "Vertical" && index === 0)  { return true;}
             if(container.divisionType === "Horizontal" && index === 1){ return true;}
@@ -105,8 +111,22 @@ export default {
 
         // Update division type of container on click.
         updateDivision(type){
-            let parentContainer = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
+            let parentContainer = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
             parentContainer.divisionType = type;
+        },
+
+        updateSelectedContainerDivision(index){
+            let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            
+            if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
+            return false;
+        },
+        
+        // Update state of checkmark
+        updateSpacingCheckmark(checked){
+            let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            container.evenSplit = checked;
+            this.selectedContainer.evenlySpaced = checked;
         },
 
         // Update selected radio values from watching the global variable 
@@ -115,39 +135,21 @@ export default {
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
             const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
             
-            this.States.selectedContainer.level = level;
-            this.States.selectedContainer.id = newContainerID;
-            this.States.selectedContainer.evenlySpaced = evenSplit;
+            this.selectedContainer.level = level;
+            this.selectedContainer.id = newContainerID;
+            this.selectedContainer.evenlySpaced = evenSplit;
         },
 
-        updateSelectedContainerDivision(index){
-            let container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            
-            if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
-            return false;
-        },
-
-        // Update stepsize
-        updateStepSize(newValue){ this.$GlobalStates.value.edit.dragStepSize = newValue; },
-        
-        // Update state of checkmark
-        updateSpacingCheckmark(checked){
-            let container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            container.evenSplit = checked;
-            this.States.selectedContainer.evenlySpaced = checked;
-        },
-
-// Watchers
-// ---------------------------------------------------------------------------------------------------------
     },
+
+    // Watchers
+    // ---------------------------------------------------------------------------------------------------------
     watch: {
-        '$GlobalStates.value.edit.containerSelected'(val, oldval){
+        'editVariables.containerSelected'(val){
             this.updateSelectedContainer(val);
         },
-        '$GlobalStates.value.edit.resetSelect'(val, oldval){
-            if(val){
-                this.resetSelected();
-            }
+        'editVariables.resetSelect'(val){
+            if(val){ this.resetSelected(); }
         },
     }
 }
@@ -160,6 +162,7 @@ export default {
 -->
 <template>
 
+    {{ b }}
     <SingleButton
         @click="activateSelectionMode" 
         class="center"
@@ -180,7 +183,7 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="DivisionType"
-                :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
+                :enable_-radio="editVariables.containerSelected"
                 :parent_Fnc_Data="{
                     checkedFncDetails:
                     {
@@ -217,7 +220,7 @@ export default {
         <template #content>
             <RadioButton
                 parent_Variable_String="ContainerDivision"
-                :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
+                :enable_-radio="editVariables.containerSelected"
                 :parent_Fnc_Data="{
                     checkedFncDetails:
                     {
@@ -261,7 +264,7 @@ export default {
                     class="EvenSpacing"
                     v-model="check"
                     @change="updateSpacingCheckmark(check)"
-                    :checked="this.States.selectedContainer.evenlySpaced"
+                    :checked="this.selectedContainer.evenlySpaced"
                 >
                     
                 <label class="selection fullWidth"></label>
@@ -295,7 +298,7 @@ export default {
                 <RangeSlider
                     :no_Items="m_StepSizeValues.length"
                     :caption_Data="m_StepSizeValues"
-                    v-model="this.$GlobalStates.value.edit.dragStepSize"
+                    v-model="editVariables.values.dragStepSize"
                     />
             </div>
         </template>
