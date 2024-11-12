@@ -4,22 +4,28 @@ import { iconImageStorage } from '../../Data/iconImages';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { mouseData } from '../../Data/mouseData';
 
+import { windowHandler } from '../../Data/userWindow';
+
 export default {
     components:  {
-        SVGHandler,
+        SVGHandler, 
     },
     props: {
-        title: String,
+        title: {
+            type: String,
+            required: true,
+        },
 
         width: {
             type: Number,
             default: 300
         },
     },
-    emits: ['closeWindow', 'focusTab'],
+    emits: ['focusTab'],
     data() {
         return{
             iconImageStorage,
+            windowHandler,
 
             windowHover: false,
 
@@ -148,10 +154,11 @@ export default {
                 <!-- Exit button -->
                 <button 
                     class="header-Button align-center flex"
-                    @click="$emit('closeWindow', `${title}`)"
+                    @click="windowHandler.disableWindow(title)"
                     @mouseenter.self="windowHover = false"
                     >
                     <SVGHandler 
+                        class="icon-center"
                         width="auto"
                         height="2.5em"
                         :path_Value="iconImageStorage.getPathData('Cross')"

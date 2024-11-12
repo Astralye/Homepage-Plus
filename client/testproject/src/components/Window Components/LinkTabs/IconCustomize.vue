@@ -14,12 +14,14 @@
                     </template>
             
                     <template #content>
+                        <!-- Icon display -->
                         <div class="image-placeholder flex pos-relative mouse-hover"
-                        @click.self="toggleWindow()">
+                        @click.self="windowHandler.toggleWindow('icon menu')">
 
+                            <!-- Empty selection. Display default -->
                             <template v-if="!isCurrentlySelected()">
                                 <div class="icon-fit center fit-content"
-                                    @click="toggleWindow()">
+                                    @click="windowHandler.toggleWindow('icon menu')">
                                     <SVGHandler
                                         height="150"
                                         width="150"
@@ -35,6 +37,8 @@
                                     />
                                 </div>
                             </template>
+                            
+                            <!-- Contains value -->
                             <template v-else>
                                 <SVGHandler
                                     height="100%"
@@ -104,14 +108,14 @@
     </div>
 
     
-
+    <!-- Icon menu Window -->
     <teleport to="body">
         <Transition name="fade">
             <Window
-                v-if="m_DisplayWindow"
+            windowHandler
+                v-if="windowHandler.getEditValue('Icon Menu')"
                 title="Icon Menu"
                 :width="500"
-                @close-window="toggleWindow()"
                 @focusTab="focusClickedTab">
                 <template #window-icon>
                     <SVGHandler
@@ -168,6 +172,7 @@ import TextInput from '../../Input Components/TextInput.vue';
 import SVGHandler from '../../Input Components/SVGHandler.vue';
 
 import Window from '../Window.vue';
+import { windowHandler } from '../../../Data/userWindow';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
 import { iconImageStorage } from '../../../Data/iconImages';
@@ -193,13 +198,12 @@ export default {
         return {
             iconSelect,
             iconImageStorage,
+            windowHandler,
 
             m_SelectedObject: {},
             m_SelectedIconIndex: -1,
             
             displayText: true,
-
-            m_DisplayWindow: false,
 
             m_Rows: 7,
             m_Columns: 0,
@@ -215,7 +219,7 @@ export default {
     },
 
     unmounted(){
-        this.m_DisplayWindow = false; 
+        windowHandler.disableWindow("Icon menu")
     },
 
     methods:{
@@ -282,11 +286,6 @@ export default {
                 this.$windowStack.value.splice(index, 1);
                 this.$windowStack.value.push(tmp);
             }
-        },
-
-        toggleWindow(){
-            this.m_DisplayWindow = !this.m_DisplayWindow;
-            return this.m_DisplayWindow;
         },
 
         // Check for empty object

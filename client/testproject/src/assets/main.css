@@ -5,6 +5,13 @@
   base.css was for variable initalization.
 */
 
+.icon-center{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 #app {
   font-weight: normal;
 }
