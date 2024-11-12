@@ -14,12 +14,15 @@
                 :fill_Colour="iconData.colour"
                 :view_Box="iconData.viewBox"
                 @dblclick="(editVariables.enabled) ? null : openLink()"
+                class="center"
             />
         </div>
 
-        <template v-if="iconData.displayText">
-            <div class="center fit-content text-padding">
-                <p>
+        <template v-if="iconData.isDisplayText">
+            <div class="fit-content text-padding">
+                <p class="text"
+                    :class="{'small-text' : textShrink,
+                             'normal-text-size' : !textShrink}">
                     {{ iconData.text }}
                 </p>
             </div>
@@ -56,8 +59,12 @@ export default {
                 viewBox: "10 10 10 10",
                 link: "",
                 text: "",
-                displayText : false,
-            }
+                isDisplayText : false,
+            },
+
+            shrinkLength: 20,
+            maxDisplayCharLength: 35,
+            textShrink: false,
         }
     },
     created(){
@@ -71,8 +78,23 @@ export default {
             this.iconData.colour  = this.icon_data.iconColour;
             this.iconData.viewBox = iconImageStorage.getViewBoxName(this.icon_data.iconImage);
             this.iconData.link    = this.icon_data.link;
-            this.iconData.text    = this.icon_data.text;
-            this.iconData.displayText = this.icon_data.displayText; 
+            this.iconData.isDisplayText = this.icon_data.displayText; 
+            
+            // Max chararacter length to display
+            // -3 represents an ellipses
+            var displayString;
+            let str = this.icon_data.iconString;
+
+            if(str.length >= this.shrinkLength){ // Shrink text within here
+                this.textShrink = true; 
+                displayString = (str.length >= this.maxDisplayCharLength) ? str.substring(0,this.maxDisplayCharLength - 3) + "..." : str;
+            }
+            else{
+                this.textShrink = false; 
+                displayString = str;
+            }
+
+            this.iconData.text = displayString;
         },
         openLink(){
             window.open(this.iconData.link, '_blank');
@@ -95,12 +117,37 @@ export default {
 <style scoped>
 @import '../../assets/main.css';
 
+.text-padding{
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.normal-text-size{
+    font-size: 16px;
+}
+
+.small-text-size{
+    font-size: 10px;
+}
+
+.text{
+    word-wrap: break-word;
+    text-wrap: balance;
+
+    width: 100px;
+    text-align : center;
+}
+
 .fit-content{
     max-width: fit-content;
 }
 
 .center{
-    margin: auto;
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
 }
 
 </style>

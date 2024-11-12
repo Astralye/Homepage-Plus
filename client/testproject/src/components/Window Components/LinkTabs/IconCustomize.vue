@@ -204,7 +204,7 @@ export default {
             m_Rows: 7,
             m_Columns: 0,
 
-            m_iconSizePixels: ['50', '75', '100'],
+            m_iconSizePixels: ['50', '75', '100', '125'],
 
             m_localIconColourHex: "#CCCCCC"
         }

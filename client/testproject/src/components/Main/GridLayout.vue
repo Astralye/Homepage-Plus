@@ -598,7 +598,13 @@ export default {
 }
 
 .icon{
-    cursor: pointer
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    
+    justify-content: center;
+    align-items: center;
 }
 
 .icon-Selection{
