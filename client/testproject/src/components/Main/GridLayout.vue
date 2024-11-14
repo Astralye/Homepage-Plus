@@ -302,7 +302,6 @@ export default {
         */
         initDragDrop: function(event, index){
 
-            console.log("run");
             var runFnc = false;
             this.m_draggableFnc = setTimeout(() => { 
 
