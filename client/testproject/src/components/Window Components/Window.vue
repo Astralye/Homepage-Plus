@@ -21,7 +21,6 @@ export default {
             default: 300
         },
     },
-    emits: ['focusTab'],
     data() {
         return{
             iconImageStorage,
@@ -34,30 +33,37 @@ export default {
                 clientY: undefined,
             },
             
-            windowWidth: `${this.width}px`
+            windowWidth: `${this.width}px`,
+
+            windowObj: null,
+
+            // Css values
+            m_zIndex: 0,
+            m_left: 0,
+            m_top: 0,
         }
     },
+    created(){
+        // Window stack is automatically deleted during 'disableWindow'
+        // No need for unmounted
+        windowHandler.checkAddStack(this.title);
+        this.windowObj = windowHandler.getEditObj(this.title);
+    },
+    mounted(){
+        this.updateZIndex();
+    },
     watch: {
-
         // When the array changes, update all the other z-index values
-        // indirectly update values.
-        '$windowStack.value': {
-            handler(val, oldval){
-                this.updateZIndex();
-            },
+        'windowHandler.windowStack':{
+            handler(){ this.updateZIndex(); },
             deep: true
-        }
+        },
     },
     methods: {          
         updateZIndex(){
-            let tmpArray = this.$windowStack.value;
-            let name = this.title.toLowerCase();
-            let index = tmpArray.indexOf(name);
-
-            if(index > -1){
-                index += 10; // always in front
-                this.$refs['draggableContainer'].style.zIndex = index;
-            }
+            let index = windowHandler.getIndexWindowStack(this.windowObj.name);
+            if(index === -1){ return; } // return if not found
+            this.m_zIndex = index + 10;
         },
 
         elementDrag(){
@@ -74,10 +80,8 @@ export default {
             this.positions.clientY = mouse.y;
 
             // Update style coordinate
-            this.$refs['draggableContainer'].style.top  = (this.$refs['draggableContainer'].offsetTop  - movementY) + 'px';
-            this.$refs['draggableContainer'].style.left = (this.$refs['draggableContainer'].offsetLeft - movementX) + 'px';
-
-            this.updateZIndex();
+            this.m_top  = (this.$refs['draggableContainer'].offsetTop  - movementY) + 'px';
+            this.m_left = (this.$refs['draggableContainer'].offsetLeft - movementX) + 'px';
         },
         // Touchscreen
         touchDown(event){
@@ -121,12 +125,15 @@ export default {
 <template>
     <!-- main container -->
     <div
-        @mousedown="$emit('focusTab', `${title}`)"
-        @touchstart="$emit('focusTab', `${title}`)"
+        @mousedown="windowHandler.moveToTopStack(windowObj)"
+        @touchstart="windowHandler.moveToTopStack(windowObj)"
 
         ref="draggableContainer" 
         class="window"
-        >
+        :style="{ 'z-index' : m_zIndex,
+                  'top' : m_top,
+                  'left': m_left,
+        }">
 
         <!-- Header -->
         <div 

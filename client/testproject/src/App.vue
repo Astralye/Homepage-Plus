@@ -96,8 +96,7 @@ export default{
             <Window 
                 v-if="windowHandler.getEditValue('edit')"
                 title="Edit"
-                :width="200"
-                @focusTab="focusClickedTab">
+                :width="200">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
@@ -121,8 +120,7 @@ export default{
             <Window 
                 v-if="windowHandler.getEditValue('Settings')"
                 title="Settings"
-                :width="400"
-                @focusTab="focusClickedTab">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
@@ -146,8 +144,7 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Layout')"
                 title="Layout"
-                :width="325"
-                @focusTab="focusClickedTab">
+                :width="325">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
@@ -160,9 +157,7 @@ export default{
                 </template>
 
                 <template v-slot:window-content>
-                    <PageSubDivision
-                        @Container-Select="selectContainer">
-                    </PageSubDivision>
+                    <PageSubDivision/>
                 </template>
             </Window>
         </Transition>
@@ -172,8 +167,7 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Containers')"
                 title="Containers"
-                :width="350"
-                @focusTab="focusClickedTab">
+                :width="350">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
@@ -193,8 +187,7 @@ export default{
         <Transition name="fade">
             <Window
                 v-if="windowHandler.getEditValue('Widgets')"
-                title="Widgets"
-                @focusTab="focusClickedTab">
+                title="Widgets">
 
                 <template v-slot:window-icon>
                     <SVGHandler
@@ -217,8 +210,7 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Link Maker')"
                 title="Link Maker"
-                :width="400"
-                @focusTab="focusClickedTab">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"

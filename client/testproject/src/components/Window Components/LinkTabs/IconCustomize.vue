@@ -115,8 +115,7 @@
             windowHandler
                 v-if="windowHandler.getEditValue('Icon Menu')"
                 title="Icon Menu"
-                :width="500"
-                @focusTab="focusClickedTab">
+                :width="500">
                 <template #window-icon>
                     <SVGHandler
                         height="35px"

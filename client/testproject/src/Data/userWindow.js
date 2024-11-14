@@ -17,49 +17,65 @@ class WindowHandler{
             { name: "colour picker", toggle: false },
         ],
 
+        windowStack: []
     } }
 
     // Setter
 
     closeAllWindows(){
+        console.log("close!");
         this.windows.EditBtns.forEach(window => {
             window.toggle = false;
         });
-    }
-    
-    toggleWindowStack(toggleItem, itemName){
 
-        if(toggleItem.toggle){
-            this.$windowStack.value.push(itemName);
-        }else{
-            let index = this.$windowStack.value.indexOf(itemName);
-
-            if(index > -1){
-                this.$windowStack.value.splice(index, 1);
-            }
-        }
+        this.windows.windowStack = [];
     }
 
-    focusClickedTab(name){
+    // Stack
 
+    moveToTopStack(obj){
+        // Only run if length min 2 or value not already the top. 
+        if(this.windowStackLength <= 1 || this.windowStack[this.windowStackLength-1] == obj.name){ return; }
+
+        this.checkRemoveStack(obj.name);
+        this.checkAddStack(obj.name);
+    }
+
+
+    // Add to stack
+    checkAddStack(name){
         // Run code if > 1 element
-        if(this.$windowStack.length <= 1) { return; }
-    
-        let windowString = name.toLowerCase();
-        let index = this.$windowStack.value.indexOf(windowString);
-
-        // Run code if not last
-        if(index == this.$windowStack.value.length-1) { return; }
-
-        if (index > -1) {
-            let tmp = this.$windowStack.value[index];
-            this.$windowStack.value.splice(index, 1);
-            this.$windowStack.value.push(tmp);
+        if(this.windows.windowStack.length == 0) { 
+            this.windows.windowStack.push(name);
+            return;
         }
+    
+        // Skip if value within array
+        if(this.getIndexWindowStack(name) >= 0) { return; }
+        this.windows.windowStack.push(name);
     }
 
-    checkIfEdit(name, value){
-        if(name === "edit"){ editVariables.setEdit(value); }
+    // Remove from stack
+    checkRemoveStack(name){
+        if(this.windows.windowStack.length == 0 ) { return; }
+    
+        // Find index of the tab
+        let index = this.getIndexWindowStack(name);
+        this.windows.windowStack.splice(index, 1);
+    }
+
+
+    // Check which function to use
+    modifyStack(window){ (window.toggle) ? this.checkAddStack(window.name) : this.checkRemoveStack(window.name); }
+
+    // Value functions
+
+    // Enable or disable Edit menu
+    checkIfEdit(obj){ 
+        if(obj.name === "edit"){ 
+            if(!obj.toggle){ this.closeAllWindows(); }
+            editVariables.setEdit(obj.toggle);
+        }
     }
 
     enableWindow(name){
@@ -67,7 +83,8 @@ class WindowHandler{
         if(!val){ return; } // no value
 
         val.toggle = true;
-        this.checkIfEdit(name,val.toggle);
+        this.checkIfEdit(val);
+        this.modifyStack(val);
     }
 
     disableWindow(name){
@@ -75,7 +92,8 @@ class WindowHandler{
         if(!val){ return; } // no value
         
         val.toggle = false;
-        this.checkIfEdit(name, val.toggle);
+        this.checkIfEdit(val);
+        this.modifyStack(val);
     }
 
     // Flip the value.
@@ -84,19 +102,18 @@ class WindowHandler{
         if(!val){ return; } // no value
 
         val.toggle = !val.toggle;
-        this.checkIfEdit(name, val.toggle);
+        this.checkIfEdit(val);
+        this.modifyStack(val);
     }
 
     // Getters
-    
-    getEditValue(input){
-        return this.getEditObj(input).toggle;
-    }
 
-    getEditObj(input){
-        return this.windows.EditBtns[this.getIndex(input)];
-    }
+    getEditValue(input){ return this.getEditObj(input).toggle; }
 
+    // obj of edit button
+    getEditObj(input){ return this.windows.EditBtns[this.getIndex(input)]; }
+
+    // index of Edit button,
     getIndex(input){
         for(let i = 0; i < this.windows.EditBtns.length; i++){
             if(this.windows.EditBtns[i].name === input.toLowerCase()){ return i; }
@@ -105,6 +122,12 @@ class WindowHandler{
         console.error(`Error (userWindow.js): Window type, '${type}' does not exist`);
         return null;
     }
+
+    getIndexWindowStack(name){ return this.windowStack.indexOf(name.toLowerCase()); }
+
+    // Read only
+    get windowStack(){ return this.windows.windowStack; }
+    get windowStackLength(){ return this.windows.windowStack.length; }
 }
 
 const windowHandlerInstance = new WindowHandler;
