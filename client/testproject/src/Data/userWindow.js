@@ -23,11 +23,7 @@ class WindowHandler{
     // Setter
 
     closeAllWindows(){
-        console.log("close!");
-        this.windows.EditBtns.forEach(window => {
-            window.toggle = false;
-        });
-
+        this.windows.EditBtns.forEach(window => { window.toggle = false; });
         this.windows.windowStack = [];
     }
 
