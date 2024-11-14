@@ -249,7 +249,6 @@ export default {
             if(this.m_LayoutData.id === null) {return;}
             editVariables.setContainerSelected(this.m_LayoutData.id);
             editVariables.disableContainerSelection();
-            editVariables.disableEdit();
         },
         
 // Divider drag functions
