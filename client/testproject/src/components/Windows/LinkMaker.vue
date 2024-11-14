@@ -44,7 +44,7 @@
                             <!-- For rendering any icons saved -->
                             <IconHandler v-if="renderIcon(index)"
                                 :icon_data="getIconData(index)"
-                                @mousedown="(editVariables.enabled) ? dragAndDrop(index) : null"
+                                @mousedown="(editVariables.isEnabled) ? dragAndDrop(index) : null"
                             />
                         </div>
                     </div>

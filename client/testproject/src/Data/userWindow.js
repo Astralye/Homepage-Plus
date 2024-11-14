@@ -1,5 +1,7 @@
 import { reactive } from "vue";
 
+import { editVariables } from './SettingVariables.js' // Used to enable and disable edit.
+
 class WindowHandler{
     constructor(){ this.windows= {
         EditBtns: [
@@ -56,22 +58,24 @@ class WindowHandler{
         }
     }
 
-
-
+    checkIfEdit(name, value){
+        if(name === "edit"){ editVariables.setEdit(value); }
+    }
 
     enableWindow(name){
         let val = this.getEditObj(name);
         if(!val){ return; } // no value
 
         val.toggle = true;
+        this.checkIfEdit(name,val.toggle);
     }
 
     disableWindow(name){
         let val = this.getEditObj(name);
         if(!val){ return; } // no value
-        if(val.name === "edit"){ this.closeAllWindows(); }
-
+        
         val.toggle = false;
+        this.checkIfEdit(name, val.toggle);
     }
 
     // Flip the value.
@@ -80,6 +84,7 @@ class WindowHandler{
         if(!val){ return; } // no value
 
         val.toggle = !val.toggle;
+        this.checkIfEdit(name, val.toggle);
     }
 
     // Getters

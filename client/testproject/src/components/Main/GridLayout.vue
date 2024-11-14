@@ -2,7 +2,7 @@
     <div class="fill grid border-box"
         id="gridTop"
         ref="container"
-        @mouseup="resetSelection(); (editVariables.enabled) ? resetTimer() : null"
+        @mouseup="resetSelection(); (editVariables.isEnabled) ? resetTimer() : null"
         >
 
         <!-- Draws all grids -->
@@ -26,7 +26,7 @@
                             :class="{'opacity-none' : ( m_DraggingEvent && isStoredIndex(index)) ,
                                      'opacity-full' : !m_DraggingEvent }"
                             :icon_data="getIconData(index)"
-                            @mousedown="(editVariables.enabled) ? initDragDrop($event, index) : null"
+                            @mousedown="(editVariables.isEnabled) ? initDragDrop($event, index) : null"
                         />
                     </Transition>
             </div>
@@ -302,6 +302,7 @@ export default {
         */
         initDragDrop: function(event, index){
 
+            console.log("run");
             var runFnc = false;
             this.m_draggableFnc = setTimeout(() => { 
 

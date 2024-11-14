@@ -13,7 +13,7 @@
                 :path_Value="iconData.image"
                 :fill_Colour="iconData.colour"
                 :view_Box="iconData.viewBox"
-                @dblclick="(editVariables.enabled) ? null : openLink()"
+                @dblclick="(editVariables.isEnabled) ? null : openLink()"
                 class="center"
             />
         </div>

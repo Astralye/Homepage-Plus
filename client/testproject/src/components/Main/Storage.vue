@@ -1,6 +1,6 @@
 <template>
     <Transition name="fade">
-        <div class="action-container" v-if="editVariables.enabled">
+        <div class="action-container" v-if="editVariables.isEnabled">
             <!-- Save button -->
             <button @click="saveLayout">
                 <SVGHandler

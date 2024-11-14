@@ -51,6 +51,7 @@ export class EditVariables{
     }
 
     // Setters
+    setEdit(val){ this.values.enabled = val } // Only boolean values
     setContainerSelected(cont){ this.values.containerSelected = cont; }
     setDragStepSize(val) { this.values.dragStepSize = val; }
     setIconDragData(val) { this.values.iconDragData = val; }
@@ -59,6 +60,7 @@ export class EditVariables{
     resetIconDragData()  { this.setIconDragData(null); }
 
     // Getters
+    get isEnabled() { return this.values.enabled; }
     get containerSelected(){ return this.values.containerSelected; }
     get windowSize() { return this.values.windowSize; }
     get recalculateLayout() { return this.values.recalculateLayout; }

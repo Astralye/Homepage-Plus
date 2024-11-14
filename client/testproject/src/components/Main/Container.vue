@@ -10,13 +10,13 @@
             
             <!-- Edit based container functions -->
             <div 
-            :class="{'edit-mode': editVariables.enabled, 
-                    'edit-hover': (editVariables.enabled && m_isHover && !m_isStoredClick),
-            'selected-container': (m_isStoredClick && editVariables.enabled && editVariables.activeContainerSelection),
+            :class="{'edit-mode': editVariables.isEnabled, 
+                    'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
+            'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
             @mouseover.self="m_isHover = editVariables.containerSelectionMode"
             @mouseout.self="m_isHover=false"
-            @click.self="editVariables.containerSelectionMode ? ( editVariables.enabled ? storeClickedContainer() : null ) : null">
+            @click.self="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null">
 
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
@@ -35,7 +35,7 @@
                     <Gridlayout
                         @mouseover="m_isHover = editVariables.containerSelectionMode"
                         @mouseout="m_isHover=false"
-                        @click="editVariables.containerSelectionMode ? ( editVariables.enabled ? storeClickedContainer() : null ) : null"
+                        @click="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null"
                         
                         :component_ID="m_LayoutData.id"
                         :update_Grid_Flag="m_updateGrid"/>
@@ -45,7 +45,7 @@
         
         <!-- Divider -->
         <template v-if="render_divider">
-            <div v-if="editVariables.enabled && displayDivider()"
+            <div v-if="editVariables.isEnabled && displayDivider()"
             :class="{
                 'page-drag-Horizontal': ( !m_isVertical),
                 'page-drag-Vertical height-full': (m_isVertical)}"
@@ -249,7 +249,7 @@ export default {
             if(this.m_LayoutData.id === null) {return;}
             editVariables.setContainerSelected(this.m_LayoutData.id);
             editVariables.disableContainerSelection();
-            editVariables.enabled = true;
+            editVariables.disableEdit();
         },
         
 // Divider drag functions
