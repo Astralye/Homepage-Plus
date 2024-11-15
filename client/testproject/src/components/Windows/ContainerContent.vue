@@ -3,7 +3,7 @@
       @click="activateSelectionMode"
       m_iconString="Dotted_Square"
       class="center">
-      <h2 class="single-button-dark"> Select Container </h2>
+      Select
     </SingleButton>
 
     <WindowContainerDivider>

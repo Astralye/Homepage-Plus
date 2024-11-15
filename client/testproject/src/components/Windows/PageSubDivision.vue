@@ -43,12 +43,11 @@ export default {
             
             // These were for rendering, they have no semantic value to the data structure
 
-            selectedContainer: {
-                level: layout.allData.level,
-                id: layout.allData.id,
-                evenlySpaced: layout.allData.evenlySpaced
-            },
+            selectedContainer: {},
         }
+    },
+    created(){
+        this.setContainerData(null, null, null)
     },
     mounted(){
         editVariables.enableLayoutWindow();
@@ -64,42 +63,61 @@ export default {
             editVariables.enableContainerSelection();
         },
 
+        setContainerData(level, id, evenlySpaced){
+            this.selectedContainer.level = level;
+            this.selectedContainer.id = id;
+            this.selectedContainer.evenlySpaced = evenlySpaced;
+        },
+
+
 // Container Modifiers
 // -------------------------------------------------------------------------------------------------------------------------
 
-        // Selects a clicked container and deselect previous container
-        isNewlySelected(container){
-            // Resets all the other values
-            this.ContainerDivision.forEach(cont => { cont.selected = false; });
-            container.selected = true;
-            return true;
-        },
-
         // Function for determining user click behaviour on a container
         selectAndModifyContainer(container){ 
-            if(this.noSelect()) { return; } // Do not allow button presses when no selection
+            if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
+            
+            let cont = this.selectedContainer;
 
-            if(this.isNewlySelected(container)){
-                let cont = this.selectedContainer;
-                layout.modifyContainer(container.index, cont.level, cont.id);
-            }
+            this.isNewlySelected(container); 
+            layout.modifyContainer(container.index, cont.level, cont.id);
         },
 
         // On delete or load layout, we need to currently unselect all the user clicked containers
         resetSelected(){
-            this.selectedContainer.level = layout.allData.level;
-            this.selectedContainer.id    = layout.allData.id;
+            this.setContainerData(null, null, null);
             editVariables.setContainerSelected(null);
             editVariables.disableResetSelect();
         },
 
-        noSelect(){ return (editVariables.containerSelected === null); },
+        // Deletes container from layout and resets the selection
+        deleteContainer(){
+            // A modal should appear to make sure if the user wants to confirm their action
+            // Give an option 'do not show again'
+
+            if(!this.isDeleteButtonActive) return; // Return in the event of somehow being active. 
+
+            LayoutDataClass.removeChildByID(layout.data, this.selectedContainer.id, this.selectedContainer.level );
+            this.resetSelected()
+        },
+
+    // Boolean
+
+        // If a container is selected
+        isNoSelect(){ return (editVariables.containerSelected === null); },
+        
+        // Resets all values but enables the selected
+        isNewlySelected(container){
+            this.ContainerDivision.forEach(cont => { cont.selected = false; });
+            container.selected = true;
+        },
 
         // True on a selected container
         isDivisionVertical(index){
-            if(this.noSelect()) { return; } // Do not allow button presses when no selection
-
+            if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
+            
             const container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            if(!container) return false; // No data
 
             if(container.divisionType === "Vertical" && index === 0)  { return true;}
             if(container.divisionType === "Horizontal" && index === 1){ return true;}
@@ -117,29 +135,41 @@ export default {
 
         updateSelectedContainerDivision(index){
             let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
-            
-            if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
-            return false;
+            if(!container) return false; // no data
+
+            // If no data OR , selected is the 
+            return (container.NoChildren !== 0 && container.NoChildren-1 === index);
         },
         
         // Update state of checkmark
         updateSpacingCheckmark(checked){
             let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            if(!container) return; // If no data selected
+
             container.evenSplit = checked;
             this.selectedContainer.evenlySpaced = checked;
         },
 
         // Update selected radio values from watching the global variable 
         updateSelectedContainer(newContainerID){
-            if(this.noSelect()){ return; }
+            if(this.isNoSelect()) return;
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
             const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
-            
-            this.selectedContainer.level = level;
-            this.selectedContainer.id = newContainerID;
-            this.selectedContainer.evenlySpaced = evenSplit;
+
+            this.setContainerData(level, newContainerID, evenSplit);
         },
 
+    },
+    computed:{
+        displayID(){
+            return (this.selectedContainer.id) ? this.selectedContainer.id : "Not selected"
+        },
+        displayLevel(){
+            return (this.selectedContainer.level) ? this.selectedContainer.level : "Not selected"
+        },
+        isDeleteButtonActive(){
+            return (this.selectedContainer.id != null || this.selectedContainer.level != null);
+        }
     },
 
     // Watchers
@@ -162,14 +192,64 @@ export default {
 -->
 <template>
 
-    {{ b }}
-    <SingleButton
-        @click="activateSelectionMode" 
-        class="center"
-        m_IconString="Dotted_Square"
-        >
-        <h2 class="single-button-dark"> Select Container </h2>
-    </SingleButton>
+<!-- Container Selection -->
+ 
+    <WindowContainerDivider>
+    <template #header>
+        <h2 class="inline">
+            Container Selection
+        </h2>
+    </template>
+    <template #content>
+        
+        <div class="space-between flex">
+            <div class="flex-row flex">
+                <SingleButton
+                    class="flex"
+                    @click="activateSelectionMode" 
+                    button_toggle="true"
+                    m_IconString="Dotted_Square"
+                    >
+                    Select
+                </SingleButton>
+                <SingleButton
+                    class="flex button-left-padding"
+                    @click="resetSelected"
+                    m_IconString="Remove_Select"
+                    >
+                    Deselect
+                </SingleButton>
+            </div>
+            <SingleButton
+                class="flex"
+                @click="deleteContainer" 
+                m_IconString="Delete"
+                :enabled="isDeleteButtonActive"
+                >
+                Delete
+            </SingleButton>
+        </div>
+
+        <WindowContainerDivider>
+            <template #header>
+                <h3> Selected container </h3>
+            </template>
+            <template #content>
+                <p>
+                    ID: {{ displayID }} 
+                </p>
+                <p>
+                    Level : {{  displayLevel }}
+                </p>
+            </template>
+        </WindowContainerDivider>
+        
+    </template>
+    <template #tooltip>
+
+    </template>
+    </WindowContainerDivider>
+
 
 <!-- Division Type
 -------------------------------------------------------------------------------------------------------->
@@ -315,8 +395,16 @@ export default {
 
 <style scoped>
 
+.space-between{
+    justify-content: space-between;
+}
+
+.button-left-padding{
+    margin-left: 0.5em;
+}
+
 .container-content-margin-top{
-    margin-top: 0.5rem;
+    margin-top: 0.5em;
 }
 
 .width-100{
@@ -329,6 +417,10 @@ export default {
 
 .inline{
     display: inline;
+}
+
+.flex-row{
+    flex-direction: row;
 }
 
 .center{

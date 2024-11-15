@@ -144,7 +144,7 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Layout')"
                 title="Layout"
-                :width="325">
+                :width="350">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
