@@ -28,14 +28,14 @@ export default {
             // Radio Button Object Values
             // --------------------------------------------------------------------------
             ContainerDivision: [
-                { index: 1, id: "One",   selected: true },
-                { index: 2, id: "Two",   selected: false },
-                { index: 3, id: "Three", selected: false },
-                { index: 4, id: "Four",  selected: false }
+                { id: "One",    selected: false },
+                { id: "Two",    selected: false },
+                { id: "Three",  selected: false },
+                { id: "Four",   selected: false },
             ],
             DivisionType: [
-                { index: 0, id: "Vertical",   selected: true},
-                { index: 1, id: "Horizontal", selected: false},
+                { id: "Vertical",   selected: false },
+                { id: "Horizontal", selected: false },
             ],
 
             // Range Slider Data
@@ -44,7 +44,6 @@ export default {
             m_StepSizeValues: [0.05, 0.125, 0.25, 0.33, 0.5],
             
             // These were for rendering, they have no semantic value to the data structure
-
             selectedContainer: {},
         }
     },
@@ -61,66 +60,76 @@ export default {
     },
     methods: {
 
+    // Setter
+    
         setContainerData(level, id, evenlySpaced){
             this.selectedContainer.level = level;
             this.selectedContainer.id = id;
             this.selectedContainer.evenlySpaced = evenlySpaced;
         },
 
-
-// Container Modifiers
-// -------------------------------------------------------------------------------------------------------------------------
-
-        // Function for determining user click behaviour on a container
-        selectAndModifyContainer(container){ 
-            if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
-            
-            let cont = this.selectedContainer;
-
-            this.isNewlySelected(container); 
-            layout.modifyContainer(container.index, cont.level, cont.id);
-        },
-        
     // Boolean
 
         // If a container is selected
         isNoSelect(){ return (editVariables.containerSelected === null); },
+
+    // Array resetters and setters
         
-        // Resets all values but enables the selected
-        isNewlySelected(container){
-            this.ContainerDivision.forEach(cont => { cont.selected = false; });
-            container.selected = true;
+        // Resets all values of a given array
+        resetAll(array){ array.forEach(cont => { cont.selected = false; }); },
+
+        // Enables the currently selected property from save
+        itemEnable(array, property){
+            array.forEach(el => {
+                if(el.id == property){ el.selected = true;}
+            })
         },
 
-        // True on a selected container
-        isDivisionVertical(index){
-            if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
-            
-            const container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
-            if(!container) return false; // No data
+    // Converter
 
-            if(container.divisionType === "Vertical" && index === 0)  { return true;}
-            if(container.divisionType === "Horizontal" && index === 1){ return true;}
-            return false;
+        // Text displays number as the word
+        // Algorithm to code and decode it from storage
+        numToString(num){
+            switch(num){
+                case 1: { return "One"; }
+                case 2: { return "Two"; }
+                case 3: { return "Three"; }
+                case 4: { return "Four"; }
+            }
         },
+
+        stringToNum(str){
+            switch(str){
+                case 'One':  { return 1; }
+                case 'Two':  { return 2; }
+                case 'Three':{ return 3; }
+                case 'Four': { return 4; }
+            }
+        },
+
 
 // Update value functions
 // -------------------------------------------------------------------------------------------------------------------------
 
+        // Function for determining user click behaviour on a container
+        updateNoDivisions(number){ 
+            if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
+            let cont = this.selectedContainer;
+
+            // Reset all and enable specific item
+            this.resetAll(this.ContainerDivision);
+            this.itemEnable(this.ContainerDivision, number)
+
+            // Set layout value data
+            layout.modifyContainer(this.stringToNum(number), cont.level, cont.id);
+        },
+
         // Update division type of container on click.
         updateDivision(type){
-            let parentContainer = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
-            parentContainer.divisionType = type;
+            let cont = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            cont.divisionType = type;
         },
 
-        updateSelectedContainerDivision(index){
-            let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
-            if(!container) return false; // no data
-
-            // If no data OR , selected is the 
-            return (container.NoChildren !== 0 && container.NoChildren-1 === index);
-        },
-        
         // Update state of checkmark
         updateSpacingCheckmark(checked){
             let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
@@ -137,9 +146,20 @@ export default {
             const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
 
             this.setContainerData(level, newContainerID, evenSplit);
-        },
 
+            // Load Division data
+            this.itemEnable(this.DivisionType, this.parentContainer.divisionType);
+            this.itemEnable(this.ContainerDivision, this.numToString(this.parentContainer.NoChildren));
+            
+            // Load 
+        },
     },
+    computed:{
+        parentContainer(){
+            let data = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            return (data) ? data : null;
+        }
+    }
 }
 </script>
 
@@ -151,7 +171,7 @@ export default {
 <template>
 
 <!-- Container Selection -->
- 
+
     <ContainerSelection
         @reset="setContainerData(null, null, null)"
         @updateSelected="val => updateSelectedContainer(val)"
@@ -168,23 +188,10 @@ export default {
 
         <template #content>
             <RadioButton
-                parent_Variable_String="DivisionType"
-                :enable_-radio="editVariables.containerSelected"
-                :parent_Fnc_Data="{
-                    checkedFncDetails:
-                    {
-                        fncName: 'isDivisionVertical',
-                        parameterType: 'index',
-                    },
-
-                    clickedFncDetails:
-                    {
-                        fncName: 'updateDivision',
-                        parameterType: 'id',
-                    }
-                }"
-                >
-            </RadioButton>
+                v-model="DivisionType"
+                :enable_Radio="(editVariables.containerSelected) ? true : false"
+                @clickEvent="id => updateDivision(id)"
+            />
         </template>
 
         <template #tooltip>
@@ -205,22 +212,10 @@ export default {
 
         <template #content>
             <RadioButton
-                parent_Variable_String="ContainerDivision"
-                :enable_-radio="editVariables.containerSelected"
-                :parent_Fnc_Data="{
-                    checkedFncDetails:
-                    {
-                        fncName: 'updateSelectedContainerDivision',
-                        parameterType: 'index',
-                    },
-                    clickedFncDetails:
-                    {
-                        fncName: 'selectAndModifyContainer',
-                        parameterType: 'object',
-                    }
-                    }"
-                >
-            </RadioButton>
+                v-model="ContainerDivision"
+                :enable_Radio="(editVariables.containerSelected) ? true : false"
+                @clickEvent="id => updateNoDivisions(id)"
+            />
         </template>
 
         <template #tooltip>
