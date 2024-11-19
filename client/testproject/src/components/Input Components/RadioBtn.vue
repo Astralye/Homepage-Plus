@@ -21,12 +21,12 @@ export default {
     },
 
     props: {
-        modelValue: { required: true },
         enable_Radio:{
             type: Boolean,
             default: false,
         },
     },
+    props: ['modelValue'],
     emits: [ 'update:modelValue', 'clickEvent' ],
 
     // This needs to be as generalizable as it can be so that it can be used anywhere
@@ -44,6 +44,7 @@ export default {
 
         // Creates a copy and resets everything
         emitValue(index){
+            if(!this.modelValue) return;
             let cpy = this.modelValue;
 
             // Resets all in the array
