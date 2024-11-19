@@ -47,9 +47,6 @@ export default {
             selectedContainer: {},
         }
     },
-    created(){
-        this.setContainerData(null, null, null)
-    },
     mounted(){
         editVariables.enableLayoutWindow();
         editVariables.selectionContainerToggler();
@@ -83,6 +80,13 @@ export default {
             array.forEach(el => {
                 if(el.id == property){ el.selected = true;}
             })
+        },
+
+        // Resets all values
+        noSelection(){
+            this.setContainerData(null, null, null);
+            this.resetAll(this.ContainerDivision);
+            this.resetAll(this.DivisionType);
         },
 
     // Converter
@@ -150,8 +154,7 @@ export default {
             // Load Division data
             this.itemEnable(this.DivisionType, this.parentContainer.divisionType);
             this.itemEnable(this.ContainerDivision, this.numToString(this.parentContainer.NoChildren));
-            
-            // Load 
+ 
         },
     },
     computed:{
@@ -173,7 +176,7 @@ export default {
 <!-- Container Selection -->
 
     <ContainerSelection
-        @reset="setContainerData(null, null, null)"
+        @reset="noSelection"
         @updateSelected="val => updateSelectedContainer(val)"
     />
 

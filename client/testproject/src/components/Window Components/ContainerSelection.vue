@@ -76,6 +76,14 @@ export default {
             m_SelectedLevel: null,
         }
     },
+    
+    /*
+        Check if there is already loaded data
+        Automatically update parents data due to emitter
+    */
+    created(){
+        if(editVariables.containerSelected){ this.updateSelected(editVariables.containerSelected); }
+    },
     emit: [ 'updateSelected', 'reset' ],
     methods: {
         activateSelectionMode() {
