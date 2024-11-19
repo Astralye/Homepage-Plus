@@ -1,133 +1,130 @@
 <template>
-    <SingleButton
-      @click="activateSelectionMode"
-      m_iconString="Dotted_Square"
-      class="center">
-      Select
-    </SingleButton>
+  <ContainerSelection
+    @updateSelected="val => loadData(val)"
+  />
 
-    <WindowContainerDivider>
-      <template #header> 
-        <h2> Container Name </h2>
-      </template>
+  <WindowContainerDivider>
+    <template #header> 
+      <h2> Container Name </h2>
+    </template>
 
-      <template #content>
-        <TextInput></TextInput>
+    <template #content>
+      <TextInput></TextInput>
 
-        <input type="checkbox">
-        <label> Show name?</label>
-      </template>
-    </WindowContainerDivider>
+      <input type="checkbox">
+      <label> Show name?</label>
+    </template>
+  </WindowContainerDivider>
 
-    <WindowContainerDivider>
-      <template #header> 
-        <h2> Display type</h2>
-      </template>
+  <WindowContainerDivider>
+    <template #header> 
+      <h2> Display type</h2>
+    </template>
 
-      <template #tooltip>
-        <ToolTip> How the items in the container are arranged </ToolTip>
-      </template>
+    <template #tooltip>
+      <ToolTip> How the items in the container are arranged </ToolTip>
+    </template>
 
-      <template #content>
-        <RadioButton
-            parent_Variable_String="LayoutType"
-            :enable_-radio="editVariables.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isLayoutChecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeLayout',
-                  parameterType: 'id',
-              }
+    <template #content>
+      <RadioButton
+          parent_Variable_String="LayoutType"
+          :enable_-radio="editVariables.containerSelected"
+          :parent_Fnc_Data="{
+            checkedFncDetails:
+            {
+                fncName: 'isLayoutChecked',
+                parameterType: 'id',
+            },
+            clickedFncDetails:
+            {
+                fncName: 'changeLayout',
+                parameterType: 'id',
+            }
+          }">
+      </RadioButton>  
+    </template>
+  </WindowContainerDivider>
+
+  <WindowContainerDivider>
+    <template #header>
+      <h2> Grid Content Align </h2> 
+    </template>
+
+    <template #tooltip>
+      <ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+    </template>
+
+    <template #content>
+      <RadioButton
+          parent_Variable_String="ContentAlign"
+          :enable_-radio="editVariables.containerSelected"
+          :parent_Fnc_Data="{
+            checkedFncDetails:
+            {
+                fncName: 'isAlignchecked',
+                parameterType: 'id',
+            },
+            clickedFncDetails:
+            {
+                fncName: 'changeAlign',
+                parameterType: 'id',
+            }
+          }">
+      </RadioButton>  
+    </template>
+  </WindowContainerDivider>
+
+  <WindowContainerDivider>
+    <template #header>
+      <h3>Container Dimensions</h3>
+    </template>
+
+    <template #tooltip>
+      <ToolTip> Content align direction of the y axis </ToolTip>
+    </template>
+
+    <template #content>
+      <h4>
+        X Axis Direction
+      </h4>
+      <RadioButton
+          parent_Variable_String="OrientationLeftRight"
+          :enable_-radio="editVariables.containerSelected"
+          :parent_Fnc_Data="{
+            checkedFncDetails:
+            {
+                fncName: 'isXAxisChecked',
+                parameterType: 'id',
+            },
+            clickedFncDetails:
+            {
+                fncName: 'changeXAxis',
+                parameterType: 'id',
+            }
+          }">
+      </RadioButton>  
+
+      <h4>
+        Y Axis Direction
+      </h4>
+      <RadioButton
+          parent_Variable_String="OrientationTopBottom"
+          :enable_-radio="editVariables.containerSelected"
+          :parent_Fnc_Data="{
+            checkedFncDetails:
+            {
+                fncName: 'isYaxisChecked',
+                parameterType: 'id',
+            },
+            clickedFncDetails:
+            {
+                fncName: 'changeYAxis',
+                parameterType: 'id',
+            }
             }">
-        </RadioButton>  
-      </template>
-    </WindowContainerDivider>
-
-    <WindowContainerDivider>
-      <template #header>
-        <h2> Grid Content Align </h2> 
-      </template>
-
-      <template #tooltip>
-        <ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
-      </template>
-
-      <template #content>
-        <RadioButton
-            parent_Variable_String="ContentAlign"
-            :enable_-radio="editVariables.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isAlignchecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeAlign',
-                  parameterType: 'id',
-              }
-            }">
-        </RadioButton>  
-      </template>
-    </WindowContainerDivider>
-
-    <WindowContainerDivider>
-      <template #header>
-        <h3>Container Dimensions</h3>
-      </template>
-
-      <template #tooltip>
-        <ToolTip> Content align direction of the y axis </ToolTip>
-      </template>
-
-      <template #content>
-        <h4>
-          X Axis Direction
-        </h4>
-        <RadioButton
-            parent_Variable_String="OrientationLeftRight"
-            :enable_-radio="editVariables.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isXAxisChecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeXAxis',
-                  parameterType: 'id',
-              }
-            }">
-        </RadioButton>  
-
-        <h4>
-          Y Axis Direction
-        </h4>
-        <RadioButton
-            parent_Variable_String="OrientationTopBottom"
-            :enable_-radio="editVariables.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isYaxisChecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeYAxis',
-                  parameterType: 'id',
-              }
-              }">
-        </RadioButton>  
-      </template>
-    </WindowContainerDivider>
+      </RadioButton>  
+    </template>
+  </WindowContainerDivider>
 
 </template>
 
@@ -140,19 +137,26 @@ import RadioButton from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+import ContainerSelection from '../Window Components/ContainerSelection.vue';
 
 import TextInput from '../Input Components/TextInput.vue';
 
 export default {
     components: {
-        ToolTip,
         WindowContainerDivider,
+        ContainerSelection,
         SingleButton,
         RadioButton,
-        TextInput
+        TextInput,
+        ToolTip,
     },
-    created(){
-      editVariables.setContainerSelected("0A");
+    mounted(){
+      editVariables.enableLayoutWindow();
+      editVariables.selectionContainerToggler();
+    },
+    unmounted(){
+      editVariables.disableLayoutWindow();
+      editVariables.selectionContainerToggler();
     },
     data(){
       return{
@@ -160,7 +164,6 @@ export default {
         containerData,
         editVariables,
 
-        m_currentObject: null,
 // Radio button variables
 // ------------------------------------------------------------------------------------------------
 
@@ -197,6 +200,9 @@ export default {
     },
 
     methods: {
+
+      //
+
       noSelect(){ return (editVariables.containerSelected === null); },
       activateSelectionMode() { editVariables.enableContainerSelection(); },
 
@@ -247,6 +253,7 @@ export default {
 
       // Sets the component selected values to the object data
       loadData(id){
+        this.m_CurrentID = id;
         this.modifyValue(this.LayoutType,           containerData.getLayoutType(id));
         this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
         this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
@@ -265,13 +272,6 @@ export default {
 
 // ------------------------------------------------------------------------------------------------------------------------------
 
-    },
-    
-    watch: {
-      'editVariables.containerSelected'(val){
-        this.loadData(val);
-        this.m_CurrentID = val;
-      },
     }
 }
 </script>

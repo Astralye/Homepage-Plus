@@ -5,17 +5,19 @@ import WindowContainerDivider from '../Window Components/WindowContainerDivider.
 import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
+import ContainerSelection from '../Window Components/ContainerSelection.vue';
 
 import { editVariables } from '../../Data/SettingVariables.js';
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 
 export default {
     components: {
-        SingleButton,
         WindowContainerDivider,
-        ToolTip,
+        ContainerSelection,
+        SingleButton,
         RadioButton,
-        RangeSlider
+        RangeSlider,
+        ToolTip,
     },
     data() {
         return{
@@ -59,10 +61,6 @@ export default {
     },
     methods: {
 
-        activateSelectionMode() {
-            editVariables.enableContainerSelection();
-        },
-
         setContainerData(level, id, evenlySpaced){
             this.selectedContainer.level = level;
             this.selectedContainer.id = id;
@@ -82,25 +80,7 @@ export default {
             this.isNewlySelected(container); 
             layout.modifyContainer(container.index, cont.level, cont.id);
         },
-
-        // On delete or load layout, we need to currently unselect all the user clicked containers
-        resetSelected(){
-            this.setContainerData(null, null, null);
-            editVariables.setContainerSelected(null);
-            editVariables.disableResetSelect();
-        },
-
-        // Deletes container from layout and resets the selection
-        deleteContainer(){
-            // A modal should appear to make sure if the user wants to confirm their action
-            // Give an option 'do not show again'
-
-            if(!this.isDeleteButtonActive) return; // Return in the event of somehow being active. 
-
-            LayoutDataClass.removeChildByID(layout.data, this.selectedContainer.id, this.selectedContainer.level );
-            this.resetSelected()
-        },
-
+        
     // Boolean
 
         // If a container is selected
@@ -160,28 +140,6 @@ export default {
         },
 
     },
-    computed:{
-        displayID(){
-            return (this.selectedContainer.id) ? this.selectedContainer.id : "Not selected"
-        },
-        displayLevel(){
-            return (this.selectedContainer.level) ? this.selectedContainer.level : "Not selected"
-        },
-        isDeleteButtonActive(){
-            return (this.selectedContainer.id != null || this.selectedContainer.level != null);
-        }
-    },
-
-    // Watchers
-    // ---------------------------------------------------------------------------------------------------------
-    watch: {
-        'editVariables.containerSelected'(val){
-            this.updateSelectedContainer(val);
-        },
-        'editVariables.resetSelect'(val){
-            if(val){ this.resetSelected(); }
-        },
-    }
 }
 </script>
 
@@ -194,62 +152,10 @@ export default {
 
 <!-- Container Selection -->
  
-    <WindowContainerDivider>
-    <template #header>
-        <h2 class="inline">
-            Container Selection
-        </h2>
-    </template>
-    <template #content>
-        
-        <div class="space-between flex">
-            <div class="flex-row flex">
-                <SingleButton
-                    class="flex"
-                    @click="activateSelectionMode" 
-                    button_toggle="true"
-                    m_IconString="Dotted_Square"
-                    >
-                    Select
-                </SingleButton>
-                <SingleButton
-                    class="flex button-left-padding"
-                    @click="resetSelected"
-                    m_IconString="Remove_Select"
-                    >
-                    Deselect
-                </SingleButton>
-            </div>
-            <SingleButton
-                class="flex"
-                @click="deleteContainer" 
-                m_IconString="Delete"
-                :enabled="isDeleteButtonActive"
-                >
-                Delete
-            </SingleButton>
-        </div>
-
-        <WindowContainerDivider>
-            <template #header>
-                <h3> Selected container </h3>
-            </template>
-            <template #content>
-                <p>
-                    ID: {{ displayID }} 
-                </p>
-                <p>
-                    Level : {{  displayLevel }}
-                </p>
-            </template>
-        </WindowContainerDivider>
-        
-    </template>
-    <template #tooltip>
-
-    </template>
-    </WindowContainerDivider>
-
+    <ContainerSelection
+        @reset="setContainerData(null, null, null)"
+        @updateSelected="val => updateSelectedContainer(val)"
+    />
 
 <!-- Division Type
 -------------------------------------------------------------------------------------------------------->
