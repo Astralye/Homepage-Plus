@@ -84,7 +84,6 @@ export default {
 
         // Reset the parent values to reset the values here
         resetSelected(){ 
-            console.log("reset");
             editVariables.setContainerSelected(null);
             editVariables.disableResetSelect();
 
