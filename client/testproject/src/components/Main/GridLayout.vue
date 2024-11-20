@@ -1,5 +1,5 @@
 <template>
-    <div class="fill grid border-box"
+    <div class="grid-wrapper border-box"
         id="gridTop"
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? resetTimer() : null"
@@ -577,10 +577,6 @@ export default {
     width: 100px;
 }
 
-.border-box{
-    box-sizing: border-box;
-}
-
 .flex-center{
     display: flex;
     justify-content: center;
@@ -639,12 +635,10 @@ export default {
     width: auto;
 }
 
-.fill{
+.grid-wrapper{
     width:  100%;
     height: 100%;
-}
-
-.grid{
+    
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     grid-template-rows:    repeat(auto-fit, minmax(150px, 1fr));

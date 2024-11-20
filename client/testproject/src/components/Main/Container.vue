@@ -31,15 +31,27 @@
                 </template>
 
                 <!-- If no children, display the grid layout -->
-                <template v-else-if="m_LayoutData.NoChildren === 0">
+                <div v-else-if="m_LayoutData.NoChildren === 0"
+                    class="container-wrapper">
+                    <!-- Container header -->
+
+                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle">
+                        <div class="container-header">
+                            {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
+                        </div>
+                        <hr>
+                    </template>
+
+                    <!-- Container Grid -->
                     <Gridlayout
                         @mouseover="m_isHover = editVariables.containerSelectionMode"
                         @mouseout="m_isHover=false"
                         @click="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null"
                         
                         :component_ID="m_LayoutData.id"
-                        :update_Grid_Flag="m_updateGrid"/>
-                </template>
+                        :update_Grid_Flag="m_updateGrid"
+                    />
+                </div>
             </div>
         </div>
         
@@ -180,10 +192,6 @@ export default {
     updated(){
         if(this.m_updateGrid){ this.m_updateGrid = false; }
     },
-    /*
-        Note: when using hot-reloading, saving causes unmounted function to run
-        Not sure why, but keep that in mind when values suddenly change on save
-    */
     unmounted(){
         this.removeGlobalData();
     },
@@ -479,6 +487,27 @@ export default {
 
 <style scoped>
 @import '../../assets/base.css';
+
+hr{
+    border: 1px solid white;
+    margin: 0em 2em;
+}
+
+.container-wrapper{
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.container-header{
+    height: min-content;
+    width: 100%;
+
+    padding: 0.75em 1.25em 0.25em 1.25em;
+    
+    font-size: 24px;
+    font-weight: bold;
+}
 
 .height-full{
     height: 100%;

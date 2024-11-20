@@ -1,8 +1,8 @@
 <template>
-
   <!-- Container selection -->
 	<ContainerSelection
 		@updateSelected="val => loadData(val)"
+		@reset="loadData(null)"
   	/>
 
   <!-- Container Name -->
@@ -13,9 +13,19 @@
 		</template>
 
 		<template #content>
-			<TextInput></TextInput>
+			<TextInput
+				placeholder_text="Container Name"
+				max_length=30
+				v-model="containerString"></TextInput>
 
-			<input type="checkbox">
+			<input 
+				type="checkbox" 
+				id="EvenSpacing"
+				name="displayText" 
+				value="displayText"
+				v-model="showName"
+			>
+
 			<label> Show name?</label>
 		</template>
 	</WindowContainerDivider>
@@ -53,9 +63,9 @@
 
 		<template #content>
 			<RadioButton
-			v-model="ContentAlign"
-			:enable_Radio="(editVariables.containerSelected) ? true : false"
-			@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
+				v-model="ContentAlign"
+				:enable_Radio="(editVariables.containerSelected) ? true : false"
+				@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
 			/>
 		</template>
 	</WindowContainerDivider>
@@ -151,7 +161,10 @@ export default {
         OrientationLeftRight: [
           { id: "Left",    selected: false},
           { id: "Right",   selected: false},
-        ],    
+        ],
+
+		containerString: "",
+		showName: false,
 	    }
     },
 
@@ -192,26 +205,37 @@ export default {
 
 		// Sets the component selected values to the object data
 		loadData(id){
-		this.m_CurrentID = id;
-		this.modifyValue(this.LayoutType,           containerData.getLayoutType(id));
-		this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
-		this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
-		this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
+			this.m_CurrentID = id;
+			this.containerString = containerData.getHeaderName(id);
+			this.showName = containerData.isHeaderToggled(id);
+
+			// Only gets past if selection
+			if(!id){ return; } 
+			this.modifyValue(this.LayoutType,           containerData.getLayoutType(id));
+			this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
+			this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
+			this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
 		},
 
 // ------------------------------------------------------------------------------------------------------------------------------
 
-// Slider Function
-// ------------------------------------------------------------------------------------------------------------------------------
-      
-      changeIconSize(value){
-        // Temporary
-        console.log(value);
-      },
+    },
+	watch:{
+		// Update the container data if containes data.
+		'containerString'(val){
+			if(this.m_CurrentID && val){
+				containerData.setContainerName(this.m_CurrentID, val);
+			}
+		},
+		// Enables and disables show name
+		'showName'(isShow){
+			if(!this.m_CurrentID) return ;
 
-// ------------------------------------------------------------------------------------------------------------------------------
-
-    }
+			(isShow) ? containerData.enableContainerText(this.m_CurrentID) : 
+				containerData.disableContainerText(this.m_CurrentID);
+			
+		}
+	}
 }
 </script>
 
