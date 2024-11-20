@@ -15,6 +15,8 @@ import SVGHandler from './components/Input Components/SVGHandler.vue'
 import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
 
+import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
+
 export default{
     name: "App",
     components: {
@@ -26,6 +28,7 @@ export default{
         ContainerContent,
         LinkMaker,
         Storage,
+        WindowContainerDivider,
 
         SVGHandler
     },
@@ -60,17 +63,16 @@ export default{
 
 <template>
 
-    <teleport to="body">        
-        <!-- icon div 
-            Make this a loop later-->
+    <teleport to="body">
+
         <div class="btnContainer"> 
             <IconButton
                 message="Edit"
                 @click="windowHandler.toggleWindow('edit')"
                 >
                 <SVGHandler
-                    height="50px"
-                    width="auto"
+                    height="3em"
+                    width="3em"
                     view_Box="0 -960 960 960"
                     :path_Value="iconImageStorage.getPathData('Pencil')"
                 />
@@ -80,8 +82,8 @@ export default{
                 message="Settings"
                 @click="windowHandler.toggleWindow('settings')">
                 <SVGHandler
-                    height="50px"
-                    width="auto"
+                    height="3em"
+                    width="3em"
                     view_Box="0 -960 960 960"
                     :path_Value="iconImageStorage.getPathData('Gear')"
                 />
@@ -96,22 +98,28 @@ export default{
             <Window 
                 v-if="windowHandler.getEditValue('edit')"
                 title="Edit"
-                :width="200">
+                :width="225">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
-                        height="35px"
-                        width="35px"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Pencil')"
                     />
                 </template>
                 <template v-slot:window-content>
-                    <WindowButton 
-                        v-for="val in EditBtns" @click="windowHandler.toggleWindow(val)"> 
-                        {{ val }} 
-                    </WindowButton>
+                    <WindowContainerDivider>
+                        <template #header>
+                        </template>
+                        <template #content>
+                            <WindowButton 
+                                v-for="val in EditBtns" @click="windowHandler.toggleWindow(val)"> 
+                                {{ val }} 
+                            </WindowButton>
+                        </template>
+                    </WindowContainerDivider>
                 </template>
             </Window>
         </Transition>
@@ -124,8 +132,8 @@ export default{
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Gear')"
@@ -144,12 +152,12 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Layout')"
                 title="Layout"
-                :width="350">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Row_Column')"
@@ -167,12 +175,12 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Containers')"
                 title="Containers"
-                :width="350">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Shelf')"
@@ -192,8 +200,8 @@ export default{
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Block_TR_Tilt')"
@@ -214,8 +222,8 @@ export default{
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"

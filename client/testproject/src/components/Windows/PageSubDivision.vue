@@ -179,125 +179,181 @@ export default {
         @reset="noSelection"
         @updateSelected="val => updateSelectedContainer(val)"
     />
-
-<!-- Division Type
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider>
-        <template #header> 
-            <h2 class="inline">
-                Division type
-            </h2>
-        </template>
-
-        <template #content>
-            <RadioButton
-                v-model="DivisionType"
-                :enable_Radio="(editVariables.containerSelected) ? true : false"
-                @clickEvent="id => updateDivision(id)"
-            />
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Determines how the container is divided
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-<!-- No. divisions
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider> 
-        <template #header> 
-            <h2 class="inline">
-                No. Container Divisions
-            </h2>
-        </template>
-
-        <template #content>
-            <RadioButton
-                v-model="ContainerDivision"
-                :enable_Radio="(editVariables.containerSelected) ? true : false"
-                @clickEvent="id => updateNoDivisions(id)"
-            />
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Number of divisions the container will have
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-<!-- Toggle even spacing
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider> 
-        <template #header>
-            <h3 class="inline">
-                Toggle Even Spacing
-            </h3>
-        </template>
-
-        <template #content>
-            <div class="container-content-margin-top">
-
-                <input 
-                    type="checkbox" 
-                    id="EvenSpacing"
-                    name="EvenSpacing" 
-                    value="EvenSpacing"
-                    class="EvenSpacing"
-                    v-model="check"
-                    @change="updateSpacingCheckmark(check)"
-                    :checked="this.selectedContainer.evenlySpaced"
-                >
-                    
-                <label class="selection fullWidth"></label>
-            </div>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Enable to maintain even spacing between all the child containers
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-<!-- Step size Slider
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider>
     
-    <!-- 
-        TODO
-        Within the container, have an option to enable and disable it.
-    -->
+    <div
+        class="relative">
+    
+        <!-- Overlay to disable if nothing is selected -->
+        <div 
+            :class="{'no-select-container': isNoSelect(),
+                     'no-select-transition': !isNoSelect()}"
+        />
 
-    <template #header>
-        <h4 class="inline">
-            Drag step size
-        </h4>
-    </template>
 
-        <template #content>
-            <div class="container-content-margin-top">
-                <RangeSlider
-                    :no_Items="m_StepSizeValues.length"
-                    :caption_Data="m_StepSizeValues"
-                    v-model="editVariables.values.dragStepSize"
-                    />
-            </div>
-        </template>
+        <WindowContainerDivider>
+            <template #header> 
+                <h2 class="inline">
+                    Page Layout
+                </h2>
+            </template>
+            
+            <template #content>
 
-        
-        <template #tooltip>
-            <ToolTip>
-                Step size are in fractional units of the parent container
-            </ToolTip>
-    </template>
-    </WindowContainerDivider>
+                <!-- Division Type -------------------------------------------------------------------------------------------------------->
+                <WindowContainerDivider
+                    class="contiguous-divider"> 
+                    <template #header> 
+                        <h3 class="inline">
+                            Division Type
+                        </h3>
+                    </template>
+            
+                    <template #content>
+                        <RadioButton
+                            v-model="DivisionType"
+                            :enable_Radio="(editVariables.containerSelected) ? true : false"
+                            @clickEvent="id => updateDivision(id)"
+                            />
+                    </template>
+            
+                    <template #tooltip>
+                        <ToolTip>
+                            Number of divisions the container will have
+                        </ToolTip>
+                    </template>
+                </WindowContainerDivider>
 
+                <!-- No. divisions -------------------------------------------------------------------------------------------------------->
+                <WindowContainerDivider
+                    class="contiguous-divider"> 
+                    <template #header> 
+                        <h3 class="inline">
+                            No. Container Divisions
+                        </h3>
+                    </template>
+            
+                    <template #content>
+                        <RadioButton
+                            v-model="ContainerDivision"
+                            :enable_Radio="(editVariables.containerSelected) ? true : false"
+                            @clickEvent="id => updateNoDivisions(id)"
+                        />
+                    </template>
+            
+                    <template #tooltip>
+                        <ToolTip>
+                            Number of divisions the container will have
+                        </ToolTip>
+                    </template>
+                </WindowContainerDivider>
+            </template>
+        </WindowContainerDivider>
+
+
+    <!-- Toggle even spacing
+    -------------------------------------------------------------------------------------------------------->
+        <WindowContainerDivider> 
+            <template #header>
+                <h2 class="inline">
+                    Toggle Even Spacing
+                </h2>
+            </template>
+
+            <template #content>
+                <div class="container-content-margin-top">
+
+                    <input 
+                        type="checkbox" 
+                        id="EvenSpacing"
+                        name="EvenSpacing" 
+                        value="EvenSpacing"
+                        class="EvenSpacing"
+                        v-model="check"
+                        @change="updateSpacingCheckmark(check)"
+                        :checked="this.selectedContainer.evenlySpaced"
+                    >
+                        
+                    <label class="selection fullWidth"></label>
+                    <!-- Step size Slider
+                    -------------------------------------------------------------------------------------------------------->
+                    <WindowContainerDivider
+                        class="contiguous-divider">
+                        
+                        <!-- 
+                            TODO
+                            Within the container, have an option to enable and disable it.
+                        -->
+                    
+                        <template #header>
+                            <h3 class="inline">
+                                Drag step size
+                            </h3>
+                        </template>
+                    
+                        <template #content>
+                            <div class="container-content-margin-top relative">
+                                <RangeSlider
+                                    :no_Items="m_StepSizeValues.length"
+                                    :caption_Data="m_StepSizeValues"
+                                    v-model="editVariables.values.dragStepSize"
+                                />
+                            </div>
+                        </template>
+                
+                        
+                        <template #tooltip>
+                            <ToolTip>
+                                Step size are in fractional units of the parent container
+                            </ToolTip>
+                        </template>
+                    </WindowContainerDivider>
+                </div>
+            </template>
+
+            <template #tooltip>
+                <ToolTip>
+                    Enable to maintain even spacing between all the child containers
+                </ToolTip>
+            </template>
+        </WindowContainerDivider>
+    </div>
 </template>
 
 <style scoped>
+
+.relative{
+    position: relative;
+}
+
+.no-select-transition{
+    width: 100%;
+    height: 100%;
+    border-radius: 1em;
+    pointer-events: none;
+
+    background-color: rgba(97, 97, 97, 0);
+    position: absolute;
+    z-index: 0; /* Able to click through by changing the z-index back */
+
+    transition: all 250ms ease-out;
+}
+
+.no-select-container{
+    width: 100%;
+    height: 100%;
+    border-radius: 1em;
+
+    background-color: rgba(97, 97, 97, 0.74);
+    position: absolute;
+    z-index: 1;
+
+    transition: all 250ms ease-out;
+}
+
+.contiguous-divider{
+    margin-bottom: 0;
+    padding-bottom: 0.25em;
+}
 
 .space-between{
     justify-content: space-between;

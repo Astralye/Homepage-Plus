@@ -105,23 +105,15 @@ export default {
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     background-color: #EEE;
     box-sizing: border-box;
     box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
-    padding: 0.25rem;
+    padding: 0.2em;
     width: 100%;
     font-size: 16px;
     height: auto;
 }
-
-/*
-    Todo: 
-
-    Single focus two button -> height 60px
-    Otherwise: auto
-*/
-
   
 .radio-inputs .radio {
     flex: 1 1;
@@ -136,17 +128,18 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     border: none;
-    padding: .5rem 0;
+    padding: 0.3rem 0;
     color: rgba(51, 65, 85, 1);
-    transition: all .1s ease-out;
+
+    transition: all 200ms ease-in-out;
+    
     height: 100%;
 }
 
 .radio-inputs .radio input:checked + .name {
     background-color: silver;
     font-weight: 600;
-    height: 100%;
 }
 </style>

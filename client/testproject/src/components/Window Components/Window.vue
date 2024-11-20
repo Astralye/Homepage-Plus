@@ -148,32 +148,34 @@ export default {
             
 
                 <!--  Title -->
-                <div class="header-Title flex">
+                <div class="flex">
+                    <!-- Icon -->
                     <div class="margin-right flex align-center">
                         <slot name="window-icon"> </slot>
                     </div>
 
-                    <h1 class="header-title__line-height--small flex align-center"> 
+                    <h1 class="header-title flex align-center"> 
                         {{ title }} 
                     </h1>
                 </div>
 
                 <!-- Exit button -->
                 <button 
-                    class="header-Button align-center flex"
                     @click="windowHandler.disableWindow(title)"
                     @mouseenter.self="windowHover = false"
                     >
                     <SVGHandler 
-                        class="icon-center"
-                        width="auto"
-                        height="2.5em"
+                        class="align-center flex"
+                        height="3em"
+                        width="3em"
                         :path_Value="iconImageStorage.getPathData('Cross')"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         />
                 </button>
         </div>
+
+        <hr>
 
         <!-- Main content -->
         <div
@@ -201,23 +203,27 @@ export default {
 <style scoped>
 @import '../../assets/base.css';
 
-.header-title__line-height--small{
+hr{
+    border: solid #C9CBA3 1px;
+    margin: 0 0.5em 0.25em 0.5em;
+}
+
+.header-title{
     position: relative;
-    line-height: 1.1;
+    line-height: 1.5;
 }
 
 .margin-right{
-    margin-right: 0.5em;
+    margin-right: 1em;
 }
 
 .wind-container{
-    background-color: var(--Tertiary-background-colour);
+    position: relative;
+    background-color: var(--Secondary-background-colour);
     height: auto;
     
-    border-bottom-left-radius: 7px;
-    border-bottom-right-radius: 7px;
-
-    padding: var(--window-padding);
+    border-radius: 1em;
+    padding: 0.25em;
 }
 
 .flex{
@@ -234,7 +240,10 @@ export default {
 
 .header{
     background-color: var(--Secondary-background-colour);
-    padding: var(--window-padding);
+
+    padding-top: 5px;
+    padding-bottom: 0.25em;
+    padding-left: 0.5em;
 }
 
 .header:hover{
@@ -243,16 +252,17 @@ export default {
 
 .window{
     width: v-bind("windowWidth");
+    background-color: var(--Secondary-background-colour);
     height: auto;
     position: absolute;
     top: 0;
     left: 0;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), -3px -3px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0.75em rgb(0, 0, 0);
     z-index: 30;
 
-    border-radius: 10px;
+    border-radius: 14px;
     border-style: solid;
-    border-width: 3px;
+    border-width: 5px;
     border-color: var(--Secondary-background-colour);
 }
 
