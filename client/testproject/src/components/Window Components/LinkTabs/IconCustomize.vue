@@ -14,12 +14,14 @@
                     </template>
             
                     <template #content>
+                        <!-- Icon display -->
                         <div class="image-placeholder flex pos-relative mouse-hover"
-                        @click.self="toggleWindow()">
+                        @click.self="windowHandler.toggleWindow('icon menu')">
 
+                            <!-- Empty selection. Display default -->
                             <template v-if="!isCurrentlySelected()">
                                 <div class="icon-fit center fit-content"
-                                    @click="toggleWindow()">
+                                    @click="windowHandler.toggleWindow('icon menu')">
                                     <SVGHandler
                                         height="150"
                                         width="150"
@@ -35,6 +37,8 @@
                                     />
                                 </div>
                             </template>
+                            
+                            <!-- Contains value -->
                             <template v-else>
                                 <SVGHandler
                                     height="100%"
@@ -97,22 +101,24 @@
 
         <div>
             <label>
-                <input type="checkbox" v-model="m_SelectedObject.displayText">
-                Display text
+                <Checkbox
+                    @onChange="check => m_SelectedObject.displayText = check"
+                    :checkValue="m_SelectedObject.displayText"
+                    text="Toggle display Text"
+                />
             </label>
         </div>
     </div>
 
     
-
+    <!-- Icon menu Window -->
     <teleport to="body">
         <Transition name="fade">
             <Window
-                v-if="m_DisplayWindow"
+            windowHandler
+                v-if="windowHandler.getEditValue('Icon Menu')"
                 title="Icon Menu"
-                :width="500"
-                @close-window="toggleWindow()"
-                @focusTab="focusClickedTab">
+                :width="500">
                 <template #window-icon>
                     <SVGHandler
                         height="35px"
@@ -164,10 +170,12 @@ import ToolTip from '../ToolTip.vue';
 import WindowContainerDivider from '../WindowContainerDivider.vue';
 import RangeSlider from '../../Input Components/RangeSlider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
+import Checkbox from '../../Input Components/Checkbox.vue';
 
 import SVGHandler from '../../Input Components/SVGHandler.vue';
 
 import Window from '../Window.vue';
+import { windowHandler } from '../../../Data/userWindow';
 
 import { iconData, iconSelect } from '../../../Data/iconData';
 import { iconImageStorage } from '../../../Data/iconImages';
@@ -177,34 +185,32 @@ import ColourPicker from '../../Input Components/ColourPicker.vue';
 export default {
     components:{
         WindowContainerDivider,
-        ToolTip,
         RangeSlider,
         TextInput,
-
+        Checkbox,
+        ToolTip,
+        
+        Window,
+        
         SVGHandler,
 
-        Window,
-
         ColourPicker,
-
-        RangeSlider
     },
     data() {
         return {
             iconSelect,
             iconImageStorage,
+            windowHandler,
 
             m_SelectedObject: {},
             m_SelectedIconIndex: -1,
             
             displayText: true,
 
-            m_DisplayWindow: false,
-
             m_Rows: 7,
             m_Columns: 0,
 
-            m_iconSizePixels: ['50', '75', '100'],
+            m_iconSizePixels: ['50', '75', '100', '125'],
 
             m_localIconColourHex: "#CCCCCC"
         }
@@ -215,7 +221,7 @@ export default {
     },
 
     unmounted(){
-        this.m_DisplayWindow = false; 
+        windowHandler.disableWindow("Icon menu")
     },
 
     methods:{
@@ -282,11 +288,6 @@ export default {
                 this.$windowStack.value.splice(index, 1);
                 this.$windowStack.value.push(tmp);
             }
-        },
-
-        toggleWindow(){
-            this.m_DisplayWindow = !this.m_DisplayWindow;
-            return this.m_DisplayWindow;
         },
 
         // Check for empty object

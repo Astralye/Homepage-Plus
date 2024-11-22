@@ -1,3 +1,10 @@
 daemon/testingservice.err.log
 daemon/testingservice.exe
+<<<<<<< HEAD
 daemon/testingservice.out.log
+=======
+daemon/testingservice.exe.config
+daemon/testingservice.out.log
+daemon/testingservice.wrapper.log
+daemon/testingservice.xml
+>>>>>>> 7a182c310864ed5110d1c4aa84451b8173abb2c2
