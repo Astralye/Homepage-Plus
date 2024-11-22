@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="margin">
         <input 
             class="input" 
             type="text" 
@@ -25,6 +25,11 @@
 
 <style scoped>
 /* From Uiverse.io by ErzenXz */ 
+.margin{
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+
 .input {
     width: 100%;
     height: 30px;

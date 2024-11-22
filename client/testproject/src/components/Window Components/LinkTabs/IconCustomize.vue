@@ -101,8 +101,11 @@
 
         <div>
             <label>
-                <input type="checkbox" v-model="m_SelectedObject.displayText">
-                Display text
+                <Checkbox
+                    @onChange="check => m_SelectedObject.displayText = check"
+                    :checkValue="m_SelectedObject.displayText"
+                    text="Toggle display Text"
+                />
             </label>
         </div>
     </div>
@@ -167,6 +170,7 @@ import ToolTip from '../ToolTip.vue';
 import WindowContainerDivider from '../WindowContainerDivider.vue';
 import RangeSlider from '../../Input Components/RangeSlider.vue';
 import TextInput from '../../Input Components/TextInput.vue';
+import Checkbox from '../../Input Components/Checkbox.vue';
 
 import SVGHandler from '../../Input Components/SVGHandler.vue';
 
@@ -181,17 +185,16 @@ import ColourPicker from '../../Input Components/ColourPicker.vue';
 export default {
     components:{
         WindowContainerDivider,
-        ToolTip,
         RangeSlider,
         TextInput,
-
+        Checkbox,
+        ToolTip,
+        
+        Window,
+        
         SVGHandler,
 
-        Window,
-
         ColourPicker,
-
-        RangeSlider
     },
     data() {
         return {

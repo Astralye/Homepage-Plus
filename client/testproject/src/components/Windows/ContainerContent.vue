@@ -9,24 +9,32 @@
 
 	<WindowContainerDivider>
 		<template #header> 
-			<h2> Container Name </h2>
+			<h2> Container Data </h2>
 		</template>
 
 		<template #content>
-			<TextInput
-				placeholder_text="Container Name"
-				max_length=30
-				v-model="containerString"></TextInput>
+			<WindowContainerDivider>
+				<template #header> 
+					<h3> Container Name </h3>
+				</template>
+		
+				<template #content>
+					<TextInput
+						placeholder_text="Container Name"
+						max_length=30
+						v-model="containerString"
+					/>
+		
+					<Checkbox
+						@onChange="check => showName = check"
+						:checkValue="showName"
+						text="Display name"
+					/>
+		
+					<!-- Maybe have more stuff to display here -->
+				</template>
+			</WindowContainerDivider>
 
-			<input 
-				type="checkbox" 
-				id="EvenSpacing"
-				name="displayText" 
-				value="displayText"
-				v-model="showName"
-			>
-
-			<label> Show name?</label>
 		</template>
 	</WindowContainerDivider>
 
@@ -47,63 +55,63 @@
 				:enable_Radio="(editVariables.containerSelected) ? true : false"
 				@clickEvent="id => changeSelectedValue(this.LayoutType, 'setLayout', id)"
 			/>
+
+			<!-- Content Align -->
+
+			<WindowContainerDivider>
+				<template #header>
+					<h3> Grid Content Align </h3> 
+				</template>
+
+				<template #tooltip>
+					<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+				</template>
+
+				<template #content>
+					<RadioButton
+						v-model="ContentAlign"
+						:enable_Radio="(editVariables.containerSelected) ? true : false"
+						@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
+					/>
+				</template>
+			</WindowContainerDivider>
+			<!-- Dimensions -->
+			
+			<WindowContainerDivider>
+				<template #header>
+					<h3>Container Dimensions</h3>
+				</template>
+		
+				<template #tooltip>
+					<ToolTip> Content align direction of the y axis </ToolTip>
+				</template>
+		
+				<template #content>
+				<h4>
+					X Axis Direction
+				</h4>
+		
+				<RadioButton
+					v-model="OrientationLeftRight"
+					:enable_Radio="(editVariables.containerSelected) ? true : false"
+					@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
+				/>
+		
+				<h4>
+					Y Axis Direction
+				</h4>
+		
+				<RadioButton
+					v-model="OrientationTopBottom"
+					:enable_Radio="(editVariables.containerSelected) ? true : false"
+					@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
+				/>
+		
+				</template>
+			</WindowContainerDivider>
 		</template>
 	</WindowContainerDivider>
 
-<!-- Content Align -->
-
-	<WindowContainerDivider>
-		<template #header>
-			<h2> Grid Content Align </h2> 
-		</template>
-
-		<template #tooltip>
-			<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
-		</template>
-
-		<template #content>
-			<RadioButton
-				v-model="ContentAlign"
-				:enable_Radio="(editVariables.containerSelected) ? true : false"
-				@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
-			/>
-		</template>
-	</WindowContainerDivider>
-
-<!-- Dimensions -->
-
-	<WindowContainerDivider>
-		<template #header>
-			<h3>Container Dimensions</h3>
-		</template>
-
-		<template #tooltip>
-			<ToolTip> Content align direction of the y axis </ToolTip>
-		</template>
-
-		<template #content>
-		<h4>
-			X Axis Direction
-		</h4>
-
-		<RadioButton
-			v-model="OrientationLeftRight"
-			:enable_Radio="(editVariables.containerSelected) ? true : false"
-			@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
-		/>
-
-		<h4>
-			Y Axis Direction
-		</h4>
-
-		<RadioButton
-			v-model="OrientationTopBottom"
-			:enable_Radio="(editVariables.containerSelected) ? true : false"
-			@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
-		/>
-
-		</template>
-	</WindowContainerDivider>
 
 </template>
 
@@ -117,6 +125,7 @@ import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import ContainerSelection from '../Window Components/ContainerSelection.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
 
 import TextInput from '../Input Components/TextInput.vue';
 
@@ -127,6 +136,7 @@ export default {
         SingleButton,
         RadioButton,
         TextInput,
+		Checkbox,
         ToolTip,
     },
     mounted(){

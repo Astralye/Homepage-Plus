@@ -6,10 +6,10 @@ import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import ContainerSelection from '../Window Components/ContainerSelection.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
 
 import { editVariables } from '../../Data/SettingVariables.js';
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
-
 export default {
     components: {
         WindowContainerDivider,
@@ -17,7 +17,9 @@ export default {
         SingleButton,
         RadioButton,
         RangeSlider,
+        Checkbox,
         ToolTip,
+        
     },
     data() {
         return{
@@ -154,7 +156,7 @@ export default {
             // Reset everything first before setting.
             this.resetAll(this.ContainerDivision);
             this.resetAll(this.DivisionType);
-            
+
             // Load Division data
             this.itemEnable(this.DivisionType, this.parentContainer.divisionType);
             this.itemEnable(this.ContainerDivision, this.numToString(this.parentContainer.NoChildren));
@@ -222,7 +224,8 @@ export default {
             
                     <template #tooltip>
                         <ToolTip>
-                            Number of divisions the container will have
+                            How the container is split.
+                            Vertical gives rows, while Horizontal gives columns 
                         </ToolTip>
                     </template>
                 </WindowContainerDivider>
@@ -259,25 +262,17 @@ export default {
         <WindowContainerDivider> 
             <template #header>
                 <h2 class="inline">
-                    Toggle Even Spacing
+                    Layout Spacing
                 </h2>
             </template>
 
             <template #content>
                 <div class="container-content-margin-top">
-
-                    <input 
-                        type="checkbox" 
-                        id="EvenSpacing"
-                        name="EvenSpacing" 
-                        value="EvenSpacing"
-                        class="EvenSpacing"
-                        v-model="check"
-                        @change="updateSpacingCheckmark(check)"
-                        :checked="this.selectedContainer.evenlySpaced"
-                    >
-                        
-                    <label class="selection fullWidth"></label>
+                    <Checkbox
+                        @onChange="check => updateSpacingCheckmark(check)"
+                        :checkValue="selectedContainer.evenlySpaced"
+                        text="Toggle Even spacing"
+                    />
                     <!-- Step size Slider
                     -------------------------------------------------------------------------------------------------------->
                     <WindowContainerDivider
@@ -450,10 +445,6 @@ input[type="radio"]:checked + label{
     background-color: silver;
     border: 2px solid black;
     border-radius: 5px;
-}
-
-.EvenSpacing{
-    margin-right: 10px;
 }
 
 .division-item{
