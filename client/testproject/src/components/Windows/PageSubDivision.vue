@@ -151,6 +151,10 @@ export default {
 
             this.setContainerData(level, newContainerID, evenSplit);
 
+            // Reset everything first before setting.
+            this.resetAll(this.ContainerDivision);
+            this.resetAll(this.DivisionType);
+            
             // Load Division data
             this.itemEnable(this.DivisionType, this.parentContainer.divisionType);
             this.itemEnable(this.ContainerDivision, this.numToString(this.parentContainer.NoChildren));
