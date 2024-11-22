@@ -1,153 +1,97 @@
+<!-- 
+
+    This requires a certain v-model to work:
+
+    Model array of buttons:
+    [
+    
+    { id: "" , selected: }
+    { id: "" , selected: }
+    ...
+
+    ]
+
+-->
 <script>
 export default {
     data() {
         return{
-            m_ParentVariableData: null,
-            m_functions: {},
-            m_cursor: "not-allowed",
+            m_SelectedIndex: -1
         }
     },
-    /*
-        IMPORTANT
-        -----------------------------------------------------------------------------------------------------
-        Read before manipulating and or using the radio button.
 
-        To ensure reusability, this has a specific architecture.
-        This has dependencies on the PARENT component:
+    props: [ 'modelValue', 'enable_Radio'],
+    emits: [ 'update:modelValue', 'clickEvent' ],
 
-        E.g This component is expected to be placed in another component to manipulate the data
-            and allow radio buttons to modify and update values.
-
-        If you require to global variables, you need to add extra code.
-
-        REQUIREMENTS:        
-        > This is placed in a parent container
-        > A parent to contain a selected state 
-        _______________________________________
-            state_name: Array
-                [
-                    {
-                        index: Number,
-                        id: String,
-                        selected: Boolean,
-                    }
-                    ...
-                ]
-            }
-
-        > Prop data MUST be structured as such:
-            That means only two functions are allowed, 
-            One for the checked and clicked condition.
-
-        > fncName MUST be a parent function that returns a | boolean |
-        _______________________________________________
-            
-            checkedFncDetails
-            {
-                fncName: ""
-                parameterType: index / object / id 
-            }
-            clickedFncDetails{
-                fncName: ""
-                parameterType: index / object / id 
-            }
-        
-        Therefore the prop values are:
-        a. Parent component variable needed to modify (String)
-        b. Function name suggested from 2.
-
-    */
-    props: {
-        parent_Variable_String: {
-            type: String,
-            default: "",
-            required: true,
-        },
-        parent_Fnc_Data: {
-            type: Object,
-            default: {},
-            required: true,
-        },
-        enable_Radio:{
-            type: Object,
-            default: null,
-        }
-    },
-    created() {
-        if(this.$parent.$parent[this.parent_Fnc_Data.checkedFncDetails.fncName] === undefined ||
-        this.$parent.$parent[this.parent_Fnc_Data.clickedFncDetails.fncName] === undefined) { 
-            console.warn(`ERROR (RadioBtn.vue): There is no parent function named '${this.parent_Fnc_Data}'`);
-            return;
-        }
-        
-        this.m_ParentVariableData = this.$parent.$parent.$data[this.parent_Variable_String];
-        // Runs the parent function of the prop name to return an object
-        this.m_functions = this.parent_Fnc_Data;
-        this.checkEnabled();
-    },
     // This needs to be as generalizable as it can be so that it can be used anywhere
     methods: {
-        checkEnabled(){ this.cursor = (this.enable_Radio === null) ? "not-allowed" : "pointer"; },
 
-        runParentFunction(index, object, type){
-            const checkedFnc = (type === "click") ? this.m_functions.clickedFncDetails : this.m_functions.checkedFncDetails;
-            var result;
+        // Disable all but re-enable the used value.
+        clickSelection(index){
+            if(this.m_SelectedIndex === index){ return; }
+            this.m_SelectedIndex = index;
+            this.emitValue(index);    // To update modal value
             
-            if(checkedFnc === undefined) {
-                console.warn(`ERROR (RadioBtn.vue): Function does not exist.`);                
-            }
+            // Emits to parent the ID of selected modal
+            this.$emit('clickEvent', this.modelValue[index].id); 
+        },
 
-            if(!(checkedFnc.parameterType === "index" || checkedFnc.parameterType === "object" || checkedFnc.parameterType === "id" )){
-                console.warn(`ERROR (RadioBtn.vue): Parameter Type undefined, '${checkedFnc.parameterType}'`);
-                return;
-            }
+        // Creates a copy and resets everything
+        emitValue(index){
+            if(!this.modelValue) return;
+            let cpy = this.modelValue;
 
-            
-            // Runs the parent function with the correct parameter
-            switch(checkedFnc.parameterType){
-                case "index":{
-                    result = this.$parent.$parent[checkedFnc.fncName](index);
-                    break;
-                }
-                case "object":{
-                    result = this.$parent.$parent[checkedFnc.fncName](object);
-                    break;
-                }
-                case "id":{
-                    result = this.$parent.$parent[checkedFnc.fncName](object.id);
-                    break;
-                }
-            }
+            // Resets all in the array
+            cpy.forEach(el => { el.selected = false; });
 
-            return result;
-        }
+            // Re-enable selected
+            if(index >= 0) { cpy[index].selected = true; } 
+            this.$emit('update:modelValue', cpy);
+        },
     },
-    watch: { 'enable_Radio'(){ this.checkEnabled(); } }
+    watch: {
+        // resets if disabled
+        'enable_Radio'(val){ if(!val){ this.emitValue(-1); } }
+    }
 }
 </script>
 
 <template>
     <div class="radio-inputs">
-        <template v-for="(object, index) in this.m_ParentVariableData" :key="index">
+        <template v-for="(object, index) in modelValue" :key="index">
+
+            <!-- Label -->
             <label 
                 class="radio"
-                :style="{ 'cursor': cursor }"
-                :for="this.m_ParentVariableData[index].id"
-                @click="this.runParentFunction(index, object, 'click')">
+                :class="{
+                    'pointer' : enable_Radio,
+                    'not-allowed' : !enable_Radio,                    
+                }"
+                :for="object.id"
+                @click=" (enable_Radio) ? clickSelection(index) : null" >
                 
                 <input 
                     type="radio" 
-                    :name="this.parent_Variable_String"
-                    :checked="this.runParentFunction(index, object, 'checked')"
+                    :name="object.id"
+                    :checked="object.selected"
                 >
 
                 <div class="name">{{ object.id }} </div>
             </label>
         </template>
     </div>
+
 </template>
 
 <style scoped>
+
+.pointer{
+    cursor: pointer;
+}
+
+.not-allowed{
+    cursor: not-allowed;
+}
 
 /* 
 
@@ -161,23 +105,15 @@ export default {
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     background-color: #EEE;
     box-sizing: border-box;
     box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
-    padding: 0.25rem;
+    padding: 0.2em;
     width: 100%;
     font-size: 16px;
     height: auto;
 }
-
-/*
-    Todo: 
-
-    Single focus two button -> height 60px
-    Otherwise: auto
-*/
-
   
 .radio-inputs .radio {
     flex: 1 1;
@@ -192,17 +128,18 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     border: none;
-    padding: .5rem 0;
+    padding: 0.3rem 0;
     color: rgba(51, 65, 85, 1);
-    transition: all .1s ease-out;
+
+    transition: all 200ms ease-in-out;
+    
     height: 100%;
 }
 
 .radio-inputs .radio input:checked + .name {
     background-color: silver;
     font-weight: 600;
-    height: 100%;
 }
 </style>

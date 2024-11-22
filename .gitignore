@@ -1,0 +1,6 @@
+daemon/testingservice.err.log
+daemon/testingservice.exe
+daemon/testingservice.exe.config
+daemon/testingservice.out.log
+daemon/testingservice.wrapper.log
+daemon/testingservice.xml

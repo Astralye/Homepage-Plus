@@ -267,7 +267,7 @@ export default {
 }
 
 .delete-button:hover{
-    background-color: var(--Tertiary-background-colour);
+    background-color: var(--Secondary-background-colour);
 }
 
 .full-width{
@@ -311,7 +311,7 @@ export default {
 }
 
 .text:hover{
-    background-color: var(--Tertiary-background-colour);
+    background-color: var(--Secondary-background-colour);
     cursor: pointer;
 }
 

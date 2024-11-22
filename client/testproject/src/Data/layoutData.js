@@ -110,7 +110,7 @@ export class LayoutDataClass{
     }
 
     // Sibling identifier, A,B,C,D
-    static getSiblingNumber(id){
+    static getSiblingNumber(id, ){
         let LastValue = id.substring(id.length - 1).toLowerCase();
         return LastValue.charCodeAt(0) - 97;
     };
@@ -138,6 +138,16 @@ export class LayoutDataClass{
     static isBaseContainer(id){ return id === "0A" };
     static isExtraContainer(containerData, verticalData){ return !verticalData ? !LayoutDataClass.isLastSibling(containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
 
+    // Gets the index of the childContainers array of a given id;
+    static getChildIndex(parent, childID){
+
+        for(let i = 0; i < parent.childContainers.length; i++){ 
+            if (parent.childContainers[i].id == childID) return i;
+        }
+
+        console.error(`Error (layoutData.js): Child ID: '${childID}', does not exist within parent '${parent.id}'`);
+        return -1;
+    }
 
 // ---------------------------------------------------------------------------------------------------------------------------
 
@@ -180,7 +190,26 @@ export class LayoutDataClass{
         container.childContainers.forEach( (data) => { data.siblings = noSiblings;});
     };
 
-    // Remove child
+    // Remove child by looking at parent and deleting reference
+    static removeChildByID(layoutData, id, level){
+
+        let dataToBeDeleted = LayoutDataClass.getLevelData(layoutData, level, id);
+        let parentData = LayoutDataClass.getParentObj(dataToBeDeleted);
+        // delete data;
+        let index = LayoutDataClass.getChildIndex(parentData, id);
+
+        parentData.childContainers.splice(index, 1); // Remove data
+        parentData.NoChildren -= 1; // Remove parent
+
+        parentData.childContainers.forEach(child => {
+            child.siblings -= 1;
+        });
+        console.log("after:", parentData.childContainers);
+
+        // Because of the ID, it may break the entire system.
+
+        // Need to refactor this class to make sure it isn't as entangled.
+    }
 
     static removeNChildren(parentContainer, noRemoved){
         noRemoved = Math.abs(noRemoved);

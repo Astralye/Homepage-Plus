@@ -1,6 +1,5 @@
 <script>
 
-import ModifyButtons from './components/Main/MainButton.vue'
 import Window from './components/Window Components/Window.vue'
 import WindowButton from './components/Main/ListButton.vue'
 import PageContainer from './components/Main/Container.vue'
@@ -8,14 +7,20 @@ import PageSubDivision from './components/Windows/PageSubDivision.vue'
 import ContainerContent from './components/Windows/ContainerContent.vue'
 import LinkMaker from './components/Windows/LinkMaker.vue'
 import Storage from './components/Main/Storage.vue'
+import IconButton from './components/Input Components/IconButton.vue'
 
 import { iconImageStorage } from './Data/iconImages'
 import SVGHandler from './components/Input Components/SVGHandler.vue'
 
+import { editVariables } from './Data/SettingVariables'
+import { windowHandler } from './Data/userWindow'
+
+import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
+
 export default{
     name: "App",
     components: {
-        ModifyButtons,
+        IconButton,
         Window,
         WindowButton,
         PageContainer,
@@ -23,23 +28,23 @@ export default{
         ContainerContent,
         LinkMaker,
         Storage,
+        WindowContainerDivider,
 
         SVGHandler
     },
     data() {
         return{
             iconImageStorage,
+            editVariables,
+            windowHandler,
 
-            toggleTab: [
-                { type: "edit", toggle: false},
-                { type: "settings", toggle: false},
-            ],
-
+            // This is used just for iteration. To find the values,
+            // See userWindow.js
             EditBtns: [
-                { name: "Layout", toggle: false },
-                { name: "Containers", toggle: false },
-                { name: "Widgets", toggle: false},
-                { name: "Link Maker", toggle: false},
+                "Layout",
+                "Containers",
+                "Widgets",
+                "Link Maker"
             ],
 
             containerData: {
@@ -50,123 +55,41 @@ export default{
     },
     created(){
         // Resize window
-        window.addEventListener("resize", () => {
-            this.$GlobalStates.value.edit.windowSize.height = window.innerHeight;
-            this.$GlobalStates.value.edit.windowSize.width = window.innerWidth;
-        });
+        window.addEventListener("resize", () => { editVariables.enableRecalculation(); });
     },
-    methods: {
-        // This opens a blank window with no content.
-
-        closeAllWindows(){
-            this.EditBtns.forEach(window => {
-                window.toggle = false;
-            });
-        },
-        
-        openWindowTab(type){
-
-            let windowType;
-            let windowString = type.toLowerCase();
-
-            switch (windowString){
-                case "edit":
-                {
-                    windowType = this.toggleTab[0];
-                    this.$GlobalStates.value.edit.enabled = !this.$GlobalStates.value.edit.enabled;
-                    this.closeAllWindows();
-                    break;
-                }
-                case "settings":
-                {
-                    windowType = this.toggleTab[1];
-                    break;
-                }
-            }
-
-            windowType.toggle = !windowType.toggle;
-            this.toggleWindowStack(windowType, windowString);
-        },
-
-        toggleWindowStack(toggleItem, itemName){
-
-            if(toggleItem.toggle){
-                this.$windowStack.value.push(itemName);
-            }else{
-                let index = this.$windowStack.value.indexOf(itemName);
-
-                if(index > -1){
-                    this.$windowStack.value.splice(index, 1);
-                }
-            }
-        },
-
-        // TODO
-        // Maybe combined this with the function above
-        test(btnType) {
-
-            let windowType;
-            let windowString = btnType.toLowerCase();
-
-            switch (windowString){
-                case "layout":
-                {
-                    windowType = this.EditBtns[0];
-                    break;
-                }
-                case "containers":
-                {
-                    windowType = this.EditBtns[1]; 
-                    break;
-                }                
-                case "widgets":
-                {
-                    windowType = this.EditBtns[2]; 
-                    break;
-                }
-                case "link maker":
-                {
-                    windowType = this.EditBtns[3]; 
-                    break;
-                }
-            }
-
-            windowType.toggle = !windowType.toggle;
-            this.toggleWindowStack(windowType, windowString);
-        },
-
-        selectContainer(){
-            this.containerData.isSelectionContainer = true;
-        },
-        focusClickedTab(name){
-
-            // Run code if > 1 element
-            if(this.$windowStack.length <= 1) { return; }
-        
-            let windowString = name.toLowerCase();
-            let index = this.$windowStack.value.indexOf(windowString);
-
-            // Run code if not last
-            if(index == this.$windowStack.value.length-1) { return; }
-
-            if (index > -1) {
-                let tmp = this.$windowStack.value[index];
-                this.$windowStack.value.splice(index, 1);
-                this.$windowStack.value.push(tmp);
-            }
-        },
-    }
 }
 
 </script>
 
 <template>
 
-    <teleport to="body">        
-        <!-- icon div 
-            Make this a loop later-->
+    <teleport to="body">
+
         <div class="btnContainer"> 
-            <ModifyButtons @open-window-tab="openWindowTab"> </ModifyButtons>
+            <IconButton
+                message="Edit"
+                @click="windowHandler.toggleWindow('edit')"
+                >
+                <SVGHandler
+                    height="3em"
+                    width="3em"
+                    view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
+                    :path_Value="iconImageStorage.getPathData('Pencil')"
+                />
+            </IconButton>
+            
+            <IconButton
+                message="Settings"
+                @click="windowHandler.toggleWindow('settings')">
+                <SVGHandler
+                    height="3em"
+                    width="3em"
+                    view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
+                    :path_Value="iconImageStorage.getPathData('Gear')"
+                />
+            </IconButton>
         </div>
     </teleport>
 
@@ -175,37 +98,44 @@ export default{
 
         <Transition name="fade">
             <Window 
-                v-if="this.toggleTab[0].toggle"
+                v-if="windowHandler.getEditValue('edit')"
                 title="Edit"
-                :width="200"
-                @close-window="openWindowTab"
-                @focusTab="focusClickedTab">
+                :width="225">
                 <template v-slot:window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Pencil')"
                     />
                 </template>
                 <template v-slot:window-content>
-                    <WindowButton v-for="btn in EditBtns" @click="test(btn.name)"> {{ btn.name }} </WindowButton>
+                    <WindowContainerDivider>
+                        <template #header>
+                        </template>
+                        <template #content>
+                            <WindowButton 
+                                v-for="val in EditBtns" @click="windowHandler.toggleWindow(val)"> 
+                                {{ val }} 
+                            </WindowButton>
+                        </template>
+                    </WindowContainerDivider>
                 </template>
             </Window>
         </Transition>
 
         <Transition name="fade">
             <Window 
-                v-show="this.toggleTab[1].toggle"
+                v-if="windowHandler.getEditValue('Settings')"
                 title="Settings"
-                :width="400"
-                @close-window="openWindowTab"
-                @focusTab="focusClickedTab">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Gear')"
@@ -222,15 +152,14 @@ export default{
         <!-- Layout button -->
         <Transition name="fade">
             <Window
-                v-if="this.EditBtns[0].toggle"
+                v-if="windowHandler.getEditValue('Layout')"
                 title="Layout"
-                :width="325"
-                @close-window="test"
-                @focusTab="focusClickedTab">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Row_Column')"
@@ -238,9 +167,7 @@ export default{
                 </template>
 
                 <template v-slot:window-content>
-                    <PageSubDivision
-                        @Container-Select="selectContainer">
-                    </PageSubDivision>
+                    <PageSubDivision/>
                 </template>
             </Window>
         </Transition>
@@ -248,15 +175,14 @@ export default{
         <!-- Container button -->
         <Transition name="fade">
             <Window
-                v-if="this.EditBtns[1].toggle"
+                v-if="windowHandler.getEditValue('Containers')"
                 title="Containers"
-                :width="350"
-                @close-window="test"
-                @focusTab="focusClickedTab">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Shelf')"
@@ -270,15 +196,14 @@ export default{
 
         <Transition name="fade">
             <Window
-                v-if="this.EditBtns[2].toggle"
-                title="Widgets"
-                @close-window="test"
-                @focusTab="focusClickedTab">
+                v-if="windowHandler.getEditValue('Widgets')"
+                title="Widgets">
 
                 <template v-slot:window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Block_TR_Tilt')"
@@ -293,15 +218,14 @@ export default{
 
         <Transition name="fade">
             <Window
-                v-if="this.EditBtns[3].toggle"
+                v-if="windowHandler.getEditValue('Link Maker')"
                 title="Link Maker"
-                :width="400"
-                @close-window="test"
-                @focusTab="focusClickedTab">
+                :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
@@ -326,10 +250,7 @@ export default{
         <PageContainer :nest_level="0"/>
     </div>
 </template>
-
-<!-- 'scoped' means css only applies to this file -->
 <style>
-
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.1s ease-in-out;
@@ -352,9 +273,13 @@ export default{
     display: flex;
     flex-direction: row ;
     margin: 10px;
-    background-color: aliceblue;
-    border-radius: 5px;
-    border-color: black
+
+    background-color: var(--Secondary-background-colour);
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+    border-radius: var(--WindowBorder-Radius);
+    box-shadow: var(--box-shadow);
+
+    box-shadow: 0 0 0.75em rgb(0, 0, 0);
 }
 
 .iconSize{

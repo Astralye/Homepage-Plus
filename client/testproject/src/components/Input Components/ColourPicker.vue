@@ -2,7 +2,7 @@
 
     <!-- Button to open window -->
     <div class="palette-button palette-padding palette-margin"
-        @click="toggleWindow">
+        @click="windowHandler.toggleWindow('colour picker')">
         <SVGHandler
             view_Box="0 -960 960 960"
             height="100%"
@@ -18,11 +18,9 @@
     <teleport to="body">
         <Transition name="fade">
             <Window
-                v-if="m_DisplayWindow"
+                v-if="windowHandler.getEditValue('colour picker')"
                 title="Colour Picker"
-                :width="350"
-                @close-window="toggleWindow()">
-                <!-- @focusTab="focusClickedTab"> -->
+                :width="350">
                 <template #window-icon>
                     <SVGHandler
                         height="35px"
@@ -130,6 +128,7 @@ import { colourQueue } from '../../Data/savedColours';
 
 import Window from '../Window Components/Window.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+import { windowHandler } from '../../Data/userWindow';
 
 import SingleButton from './SingleButton.vue';
 
@@ -158,6 +157,7 @@ export default {
         return{
             iconImageStorage,
             colourQueue,
+            windowHandler,
 
             // Values modified by the vmodel
             // Because they are number, cannot use them directly
@@ -177,8 +177,6 @@ export default {
             m_HSLString: "",
 
             isUpdateString: true,
-
-            m_DisplayWindow: false,
         }
     },
     methods:{
@@ -323,11 +321,6 @@ export default {
             this.isUpdateString = true;
         },
 
-        toggleWindow(){
-            this.m_DisplayWindow = !this.m_DisplayWindow;
-            return this.m_DisplayWindow;
-        },
-
         loadIconColourData(){
             this.m_HexValue = this.loaded_Data;
         }
@@ -339,7 +332,7 @@ export default {
         this.setHSL(this.hexToHSL(this.m_HexValue));
     },
     unmounted(){
-        this.m_DisplayWindow = false;
+        windowHandler.disableWindow('colour picker');
     },
     watch:{
         'loaded_Data'(){

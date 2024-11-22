@@ -1,265 +1,251 @@
 <template>
-    <SingleButton
-      @click="activateSelectionMode"
-      m_iconString="Dotted_Square"
-      class="center">
-      <h2 class="single-button-dark"> Select Container </h2>
-    </SingleButton>
+  <!-- Container selection -->
+	<ContainerSelection
+		@updateSelected="val => loadData(val)"
+		@reset="loadData(null)"
+  	/>
 
-    <WindowContainerDivider>
-      <template #header> 
-        <h2> Container Name </h2>
-      </template>
+  <!-- Container Name -->
 
-      <template #content>
-        <TextInput></TextInput>
+	<WindowContainerDivider>
+		<template #header> 
+			<h2> Container Data </h2>
+		</template>
 
-        <input type="checkbox">
-        <label> Show name?</label>
-      </template>
-    </WindowContainerDivider>
+		<template #content>
+			<WindowContainerDivider>
+				<template #header> 
+					<h3> Container Name </h3>
+				</template>
+		
+				<template #content>
+					<TextInput
+						placeholder_text="Container Name"
+						max_length=30
+						v-model="containerString"
+					/>
+		
+					<Checkbox
+						@onChange="check => showName = check"
+						:checkValue="showName"
+						text="Display name"
+					/>
+		
+					<!-- Maybe have more stuff to display here -->
+				</template>
+			</WindowContainerDivider>
 
-    <WindowContainerDivider>
-      <template #header> 
-        <h2> Display type</h2>
-      </template>
+		</template>
+	</WindowContainerDivider>
 
-      <template #tooltip>
-        <ToolTip> How the items in the container are arranged </ToolTip>
-      </template>
+  <!-- Container Display Type -->
 
-      <template #content>
-        <RadioButton
-            parent_Variable_String="LayoutType"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isLayoutChecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeLayout',
-                  parameterType: 'id',
-              }
-            }">
-        </RadioButton>  
-      </template>
-    </WindowContainerDivider>
+	<WindowContainerDivider>
+		<template #header> 
+			<h2> Display type</h2>
+		</template>
 
-    <WindowContainerDivider>
-      <template #header>
-        <h2> Grid Content Align </h2> 
-      </template>
+		<template #tooltip>
+			<ToolTip> How the items in the container are arranged </ToolTip>
+		</template>
 
-      <template #tooltip>
-        <ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
-      </template>
+		<template #content>
+			<RadioButton
+				v-model="LayoutType"
+				:enable_Radio="(editVariables.containerSelected) ? true : false"
+				@clickEvent="id => changeSelectedValue(this.LayoutType, 'setLayout', id)"
+			/>
 
-      <template #content>
-        <RadioButton
-            parent_Variable_String="ContentAlign"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isAlignchecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeAlign',
-                  parameterType: 'id',
-              }
-            }">
-        </RadioButton>  
-      </template>
-    </WindowContainerDivider>
+			<!-- Content Align -->
 
-    <WindowContainerDivider>
-      <template #header>
-        <h3>Container Dimensions</h3>
-      </template>
+			<WindowContainerDivider>
+				<template #header>
+					<h3> Grid Content Align </h3> 
+				</template>
 
-      <template #tooltip>
-        <ToolTip> Content align direction of the y axis </ToolTip>
-      </template>
+				<template #tooltip>
+					<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+				</template>
 
-      <template #content>
-        <h4>
-          X Axis Direction
-        </h4>
-        <RadioButton
-            parent_Variable_String="OrientationLeftRight"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isXAxisChecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeXAxis',
-                  parameterType: 'id',
-              }
-            }">
-        </RadioButton>  
+				<template #content>
+					<RadioButton
+						v-model="ContentAlign"
+						:enable_Radio="(editVariables.containerSelected) ? true : false"
+						@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
+					/>
+				</template>
+			</WindowContainerDivider>
+			<!-- Dimensions -->
+			
+			<WindowContainerDivider>
+				<template #header>
+					<h3>Container Dimensions</h3>
+				</template>
+		
+				<template #tooltip>
+					<ToolTip> Content align direction of the y axis </ToolTip>
+				</template>
+		
+				<template #content>
+				<h4>
+					X Axis Direction
+				</h4>
+		
+				<RadioButton
+					v-model="OrientationLeftRight"
+					:enable_Radio="(editVariables.containerSelected) ? true : false"
+					@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
+				/>
+		
+				<h4>
+					Y Axis Direction
+				</h4>
+		
+				<RadioButton
+					v-model="OrientationTopBottom"
+					:enable_Radio="(editVariables.containerSelected) ? true : false"
+					@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
+				/>
+		
+				</template>
+			</WindowContainerDivider>
+		</template>
+	</WindowContainerDivider>
 
-        <h4>
-          Y Axis Direction
-        </h4>
-        <RadioButton
-            parent_Variable_String="OrientationTopBottom"
-            :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
-            :parent_Fnc_Data="{
-              checkedFncDetails:
-              {
-                  fncName: 'isYaxisChecked',
-                  parameterType: 'id',
-              },
-              clickedFncDetails:
-              {
-                  fncName: 'changeYAxis',
-                  parameterType: 'id',
-              }
-              }">
-        </RadioButton>  
-      </template>
-    </WindowContainerDivider>
 
 </template>
 
 <script>
 
 import { containerData } from '../../Data/containerData.js';
+import { editVariables } from '../../Data/SettingVariables.js';
+
 import RadioButton from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+import ContainerSelection from '../Window Components/ContainerSelection.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
 
 import TextInput from '../Input Components/TextInput.vue';
 
 export default {
     components: {
-        ToolTip,
         WindowContainerDivider,
+        ContainerSelection,
         SingleButton,
         RadioButton,
-        TextInput
+        TextInput,
+		Checkbox,
+        ToolTip,
     },
-    created(){
-      this.m_CurrentID = "0A";
+    mounted(){
+      editVariables.enableContainerWindow();
+      editVariables.selectionContainerToggler();
+    },
+    unmounted(){
+      editVariables.disableContainerWindow();
+      editVariables.selectionContainerToggler();
     },
     data(){
       return{
+        
         containerData,
-        m_currentObject: null,
-// Radio button variables
-// ------------------------------------------------------------------------------------------------
+        editVariables,
 
         LayoutType: [
-                { index: 0, id: "Grid",    selected: true},
-                { index: 1, id: "List",    selected: false},
+          { id: "Grid",    selected: false},
+          { id: "List",    selected: false},
         ],
 
         ContentAlign: [
-                { index: 0, id: "Compact", selected: true},
-                { index: 1, id: "Free",    selected: false},
+          { id: "Compact", selected: false},
+          { id: "Free",    selected: false},
         ],
 
         OrientationTopBottom: [
-                { index: 0, id: "Top",     selected: true},
-                { index: 1, id: "Bottom",  selected: false},
+          { id: "Top",     selected: false},
+          { id: "Bottom",  selected: false},
         ],
 
         OrientationLeftRight: [
-                { index: 0, id: "Left",    selected: true},
-                { index: 1, id: "Right",   selected: false},
+          { id: "Left",    selected: false},
+          { id: "Right",   selected: false},
         ],
-        
-// ----------------------------------------------------------------------------------------------------------------------------
-      }
+
+		containerString: "",
+		showName: false,
+	    }
     },
 
     methods: {
-      noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
-      activateSelectionMode() { this.$GlobalStates.value.containerSelectionMode = true; },
+
+		noSelect(){ return (editVariables.containerSelected === null); },
+		activateSelectionMode() { editVariables.enableContainerSelection(); },
 
 // Radio button functions
 // ----------------------------------------------------------------------------------------------------------------------------
-      
-      // Function prop values, States whether the value should be checked.
-      isLayoutChecked(id){ return this.isPropertyChecked(this.LayoutType,           id); },
-      isAlignchecked(id) { return this.isPropertyChecked(this.ContentAlign,         id); },
-      isXAxisChecked(id) { return this.isPropertyChecked(this.OrientationLeftRight, id); },
-      isYaxisChecked(id) { return this.isPropertyChecked(this.OrientationTopBottom, id); },
-      
-      // Generalized radio selected value
-      isPropertyChecked(stateVariable, id){
-        for(let i = 0; i < stateVariable.length; i++ ){ if(stateVariable[i].id === id) { return stateVariable[i].selected; } }
-        return false;
-      },
+	
+		// Changes the property value of a given id to true and everything to false
+		changeSelectedValue(valueType, functionPrefix, idValue){
+			valueType.forEach(element => {
+				element.selected = false;
 
-      // On click, updates the selected value
-      changeLayout(id){ if(id.selected){ return; } this.changeSelectedValue(this.LayoutType,           "setLayout",     id);},
-      changeAlign(id) { if(id.selected){ return; } this.changeSelectedValue(this.ContentAlign,         "setGridAlign",  id);},
-      changeXAxis(id) { if(id.selected){ return; } this.changeSelectedValue(this.OrientationLeftRight, "setXDirection", id);},
-      changeYAxis(id) { if(id.selected){ return; } this.changeSelectedValue(this.OrientationTopBottom, "setYDirection", id);},
+				// Only pass the correct value
+				if(element.id !== idValue){ return; } 
 
-      // Changes the property value of a given id to true and everything to false
-      changeSelectedValue(valueType, functionPrefix, idValue){
-        valueType.forEach(element => {
-          element.selected = false;
+				element.selected = true;
+				let functionName = functionPrefix + element.id;
 
-          if(element.id === idValue){ 
-            element.selected = true;
-            let functionName = functionPrefix + element.id;
+				if(containerData[functionName] === undefined){
+					console.error(`Error (ContainerContent.vue): ${functionName} does not exist as a function from ${containerData}`);
+					return;
+				}
+				containerData[functionName](this.m_CurrentID);
+			});
+		},
 
-            if(containerData[functionName] === undefined){
-              console.error(`Error (ContainerContent.vue): ${functionName} does not exist as a function from ${containerData}`);
-              return;
-            }
-            containerData[functionName](this.m_CurrentID);
-          }
-        });
-      },
+		// Reset all values to false then turn the correct option true
+		modifyValue(property, value){
+			property.forEach( propertyValue => { 
+				propertyValue.selected = false; 
+				if(propertyValue.id === value){ propertyValue.selected = true; } 
+			});
+		},
 
-      // Reset all values to false then turn the correct option true
-      modifyValue(property, value){
-        property.forEach(propertyValue => { propertyValue.selected = false; });
-        property.forEach(propertyValue => { if(propertyValue.id === value) { propertyValue.selected = true; } });
-      },
+		// Sets the component selected values to the object data
+		loadData(id){
+			this.m_CurrentID = id;
+			this.containerString = containerData.getHeaderName(id);
+			this.showName = containerData.isHeaderToggled(id);
 
-      // Sets the component selected values to the object data
-      loadData(){
-        this.modifyValue(this.LayoutType,           containerData.getLayoutType(this.m_CurrentID));
-        this.modifyValue(this.ContentAlign,         containerData.getGridAlign (this.m_CurrentID));
-        this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(this.m_CurrentID));
-        this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(this.m_CurrentID));
-      },
-
-// ------------------------------------------------------------------------------------------------------------------------------
-
-// Slider Function
-// ------------------------------------------------------------------------------------------------------------------------------
-      
-      changeIconSize(value){
-        // Temporary
-        console.log(value);
-      },
+			// Only gets past if selection
+			if(!id){ return; } 
+			this.modifyValue(this.LayoutType,           containerData.getLayoutType(id));
+			this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
+			this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
+			this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
+		},
 
 // ------------------------------------------------------------------------------------------------------------------------------
 
     },
-    watch: {
-      // Retrieves the selected container
-      '$GlobalStates.value.edit.containerSelected'(val){
-        this.m_CurrentID = val;
-        this.loadData();
-      },
-    }
+	watch:{
+		// Update the container data if containes data.
+		'containerString'(val){
+			if(this.m_CurrentID && val){
+				containerData.setContainerName(this.m_CurrentID, val);
+			}
+		},
+		// Enables and disables show name
+		'showName'(isShow){
+			if(!this.m_CurrentID) return ;
+
+			(isShow) ? containerData.enableContainerText(this.m_CurrentID) : 
+				containerData.disableContainerText(this.m_CurrentID);
+			
+		}
+	}
 }
 </script>
 

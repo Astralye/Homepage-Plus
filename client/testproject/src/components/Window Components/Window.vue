@@ -4,22 +4,27 @@ import { iconImageStorage } from '../../Data/iconImages';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { mouseData } from '../../Data/mouseData';
 
+import { windowHandler } from '../../Data/userWindow';
+
 export default {
     components:  {
-        SVGHandler,
+        SVGHandler, 
     },
     props: {
-        title: String,
+        title: {
+            type: String,
+            required: true,
+        },
 
         width: {
             type: Number,
             default: 300
         },
     },
-    emits: ['closeWindow', 'focusTab'],
     data() {
         return{
             iconImageStorage,
+            windowHandler,
 
             windowHover: false,
 
@@ -28,47 +33,39 @@ export default {
                 clientY: undefined,
             },
             
-            windowWidth: `${this.width}px`
+            windowWidth: `${this.width}px`,
+
+            windowObj: null,
+
+            // Css values
+            m_zIndex: 0,
+            m_left: 0,
+            m_top: 0,
         }
     },
+    created(){
+        // Window stack is automatically deleted during 'disableWindow'
+        // No need for unmounted
+        windowHandler.checkAddStack(this.title);
+        this.windowObj = windowHandler.getEditObj(this.title);
+    },
+    mounted(){
+        this.updateZIndex();
+    },
     watch: {
-
         // When the array changes, update all the other z-index values
-        // indirectly update values.
-        '$windowStack.value': {
-            handler(val, oldval){
-                this.updateZIndex();
-            },
+        'windowHandler.windowStack':{
+            handler(){ this.updateZIndex(); },
             deep: true
-        }
+        },
     },
     methods: {          
         updateZIndex(){
-            let tmpArray = this.$windowStack.value;
-            let name = this.title.toLowerCase();
-            let index = tmpArray.indexOf(name);
-
-            if(index > -1){
-                index += 10; // always in front
-                this.$refs.draggableContainer.style.zIndex = index;
-            }
+            let index = windowHandler.getIndexWindowStack(this.windowObj.name);
+            if(index === -1){ return; } // return if not found
+            this.m_zIndex = index + 10;
         },
-        dragMouseDown(event){
 
-            if(!this.windowHover) {return; }
-            event.preventDefault();
-            
-            // Get current mouse location
-            this.positions.clientX = event.clientX;
-            this.positions.clientY = event.clientY;
-
-            // register on mouse move and mouse up events
-            mouseData.movementFunctions( [ this.elementDrag ]);
-            mouseData.mouseUpFunctions ( [ this.closeDragElement ]);
-            
-            mouseData.enableTracking();
-            mouseData.enableMouseUp();
-        },
         elementDrag(){
 
             // Stored mouse coordinates
@@ -83,10 +80,39 @@ export default {
             this.positions.clientY = mouse.y;
 
             // Update style coordinate
-            this.$refs.draggableContainer.style.top  = (this.$refs.draggableContainer.offsetTop  - movementY) + 'px';
-            this.$refs.draggableContainer.style.left = (this.$refs.draggableContainer.offsetLeft - movementX) + 'px';
-        
-            this.updateZIndex();
+            this.m_top  = (this.$refs['draggableContainer'].offsetTop  - movementY) + 'px';
+            this.m_left = (this.$refs['draggableContainer'].offsetLeft - movementX) + 'px';
+        },
+        // Touchscreen
+        touchDown(event){
+            // Position of touch
+            this.positions.clientX = event.changedTouches[0].clientX;
+            this.positions.clientY = event.changedTouches[0].clientY;
+
+            mouseData.movementFunctions([ this.elementDrag ]);
+            mouseData.touchUpFunctions([ this.closeDrag ]);
+
+            mouseData.enableTouchMove();
+            mouseData.enableTouchUp();
+        },
+        closeDrag(){
+            mouseData.disableTouchMove();
+            mouseData.disableTouchUp();
+        },
+
+        dragMouseDown(event){
+            if(!this.windowHover) {return; }
+            
+            // Get current mouse location
+            this.positions.clientX = event.clientX;
+            this.positions.clientY = event.clientY;
+
+            // register on mouse move and mouse up events
+            mouseData.movementFunctions( [ this.elementDrag ]);
+            mouseData.mouseUpFunctions ( [ this.closeDragElement ]);
+            
+            mouseData.enableTracking();
+            mouseData.enableMouseUp();
         },
         closeDragElement() {
             mouseData.disableMouseUp();
@@ -99,46 +125,57 @@ export default {
 <template>
     <!-- main container -->
     <div
-        @mousedown="$emit('focusTab', `${title}`)"
+        @mousedown="windowHandler.moveToTopStack(windowObj)"
+        @touchstart="windowHandler.moveToTopStack(windowObj)"
+
         ref="draggableContainer" 
         class="window"
-        >
+        :style="{ 'z-index' : m_zIndex,
+                  'top' : m_top,
+                  'left': m_left,
+        }">
 
         <!-- Header -->
         <div 
             class="header flex noselect" 
             
+            @touchstart="touchDown"
+
             @mousedown="dragMouseDown"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
+            
 
                 <!--  Title -->
-                <div class="header-Title flex">
+                <div class="flex">
+                    <!-- Icon -->
                     <div class="margin-right flex align-center">
                         <slot name="window-icon"> </slot>
                     </div>
 
-                    <h1 class="header-title__line-height--small flex align-center"> 
+                    <h1 class="header-title flex align-center"> 
                         {{ title }} 
                     </h1>
                 </div>
 
                 <!-- Exit button -->
                 <button 
-                    class="header-Button align-center flex"
-                    @click="$emit('closeWindow', `${title}`)"
+                    @click="windowHandler.disableWindow(title)"
                     @mouseenter.self="windowHover = false"
                     >
                     <SVGHandler 
-                        width="auto"
-                        height="2.5em"
+                        class="align-center flex"
+                        height="3em"
+                        width="3em"
                         :path_Value="iconImageStorage.getPathData('Cross')"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         />
                 </button>
         </div>
+
+        <hr>
 
         <!-- Main content -->
         <div
@@ -166,23 +203,27 @@ export default {
 <style scoped>
 @import '../../assets/base.css';
 
-.header-title__line-height--small{
+hr{
+    border: solid #C9CBA3 1px;
+    margin: 0 0.5em 0.25em 0.5em;
+}
+
+.header-title{
     position: relative;
-    line-height: 1.1;
+    line-height: 1.5;
 }
 
 .margin-right{
-    margin-right: 0.5em;
+    margin-right: 1em;
 }
 
 .wind-container{
-    background-color: var(--Tertiary-background-colour);
+    position: relative;
+    background-color: var(--Secondary-background-colour);
     height: auto;
     
-    border-bottom-left-radius: 7px;
-    border-bottom-right-radius: 7px;
-
-    padding: var(--window-padding);
+    border-radius: 1em;
+    padding: 0.25em;
 }
 
 .flex{
@@ -199,7 +240,10 @@ export default {
 
 .header{
     background-color: var(--Secondary-background-colour);
-    padding: var(--window-padding);
+
+    padding-top: 5px;
+    padding-bottom: 0.25em;
+    padding-left: 0.5em;
 }
 
 .header:hover{
@@ -208,17 +252,16 @@ export default {
 
 .window{
     width: v-bind("windowWidth");
+    background-color: var(--Secondary-background-colour);
     height: auto;
     position: absolute;
     top: 0;
     left: 0;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), -3px -3px 20px rgba(0, 0, 0, 0.2);
     z-index: 30;
-
-    border-radius: 10px;
-    border-style: solid;
-    border-width: 3px;
-    border-color: var(--Secondary-background-colour);
+    
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+    border-radius: var(--WindowBorder-Radius);
+    box-shadow: var(--box-shadow);
 }
 
 </style>

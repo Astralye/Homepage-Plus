@@ -5,33 +5,39 @@ import WindowContainerDivider from '../Window Components/WindowContainerDivider.
 import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
+import ContainerSelection from '../Window Components/ContainerSelection.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
 
+import { editVariables } from '../../Data/SettingVariables.js';
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
-
 export default {
     components: {
-        SingleButton,
         WindowContainerDivider,
-        ToolTip,
+        ContainerSelection,
+        SingleButton,
         RadioButton,
-        RangeSlider
+        RangeSlider,
+        Checkbox,
+        ToolTip,
+        
     },
     data() {
         return{
             LayoutDataClass,
+            editVariables,
             layout,
             
             // Radio Button Object Values
             // --------------------------------------------------------------------------
             ContainerDivision: [
-                { index: 1, id: "One",   selected: true },
-                { index: 2, id: "Two",   selected: false },
-                { index: 3, id: "Three", selected: false },
-                { index: 4, id: "Four",  selected: false }
+                { id: "One",    selected: false },
+                { id: "Two",    selected: false },
+                { id: "Three",  selected: false },
+                { id: "Four",   selected: false },
             ],
             DivisionType: [
-                { index: 0, id: "Vertical",   selected: true},
-                { index: 1, id: "Horizontal", selected: false},
+                { id: "Vertical",   selected: false },
+                { id: "Horizontal", selected: false },
             ],
 
             // Range Slider Data
@@ -39,116 +45,129 @@ export default {
             
             m_StepSizeValues: [0.05, 0.125, 0.25, 0.33, 0.5],
             
-
             // These were for rendering, they have no semantic value to the data structure
-
-            States: {
-                selectedContainer: {
-                    level: layout.allData.level,
-                    id: layout.allData.id,
-                    evenlySpaced: layout.allData.evenlySpaced
-                }
-            }
+            selectedContainer: {},
         }
     },
-
+    mounted(){
+        editVariables.enableLayoutWindow();
+        editVariables.selectionContainerToggler();
+    },
+    unmounted(){
+        editVariables.disableLayoutWindow();
+        editVariables.selectionContainerToggler();
+    },
     methods: {
 
-        activateSelectionMode() {
-            this.$GlobalStates.value.containerSelectionMode = true;
+    // Setter
+    
+        setContainerData(level, id, evenlySpaced){
+            this.selectedContainer.level = level;
+            this.selectedContainer.id = id;
+            this.selectedContainer.evenlySpaced = evenlySpaced;
         },
 
-// Container Modifiers
-// -------------------------------------------------------------------------------------------------------------------------
+    // Boolean
 
-        // Selects a clicked container and deselect previous container
-        isNewlySelected(container){
-            // Resets all the other values
-            this.ContainerDivision.forEach(cont => { cont.selected = false; });
-            container.selected = true;
-            return true;
+        // If a container is selected
+        isNoSelect(){ return (editVariables.containerSelected === null); },
+
+    // Array resetters and setters
+        
+        // Resets all values of a given array
+        resetAll(array){ array.forEach(cont => { cont.selected = false; }); },
+
+        // Enables the currently selected property from save
+        itemEnable(array, property){
+            array.forEach(el => {
+                if(el.id == property){ el.selected = true;}
+            })
         },
 
-        // Function for determining user click behaviour on a container
-        selectAndModifyContainer(container){ 
-            if(this.noSelect()) { return; } // Do not allow button presses when no selection
+        // Resets all values
+        noSelection(){
+            this.setContainerData(null, null, null);
+            this.resetAll(this.ContainerDivision);
+            this.resetAll(this.DivisionType);
+        },
 
-            if(this.isNewlySelected(container)){
-                let cont = this.States.selectedContainer;
-                layout.modifyContainer(container.index, cont.level, cont.id);
+    // Converter
+
+        // Text displays number as the word
+        // Algorithm to code and decode it from storage
+        numToString(num){
+            switch(num){
+                case 1: { return "One"; }
+                case 2: { return "Two"; }
+                case 3: { return "Three"; }
+                case 4: { return "Four"; }
             }
         },
 
-        // On delete or load layout, we need to currently unselect all the user clicked containers
-        resetSelected(){
-            this.States.selectedContainer.level = layout.allData.level;
-            this.States.selectedContainer.id    = layout.allData.id;
-            this.$GlobalStates.value.edit.containerSelected = null;
-            this.$GlobalStates.value.edit.resetSelect       = false;
+        stringToNum(str){
+            switch(str){
+                case 'One':  { return 1; }
+                case 'Two':  { return 2; }
+                case 'Three':{ return 3; }
+                case 'Four': { return 4; }
+            }
         },
 
-        noSelect(){ return (this.$GlobalStates.value.edit.containerSelected === null); },
-
-        // True on a selected container
-        isDivisionVertical(index){
-            if(this.noSelect()) { return; } // Do not allow button presses when no selection
-
-            const container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
-
-            if(container.divisionType === "Vertical" && index === 0)  { return true;}
-            if(container.divisionType === "Horizontal" && index === 1){ return true;}
-            return false;
-        },
 
 // Update value functions
 // -------------------------------------------------------------------------------------------------------------------------
 
+        // Function for determining user click behaviour on a container
+        updateNoDivisions(number){ 
+            if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
+            let cont = this.selectedContainer;
+
+            // Reset all and enable specific item
+            this.resetAll(this.ContainerDivision);
+            this.itemEnable(this.ContainerDivision, number)
+
+            // Set layout value data
+            layout.modifyContainer(this.stringToNum(number), cont.level, cont.id);
+        },
+
         // Update division type of container on click.
         updateDivision(type){
-            let parentContainer = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            parentContainer.divisionType = type;
+            let cont = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            cont.divisionType = type;
+        },
+
+        // Update state of checkmark
+        updateSpacingCheckmark(checked){
+            let container = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            if(!container) return; // If no data selected
+
+            container.evenSplit = checked;
+            this.selectedContainer.evenlySpaced = checked;
         },
 
         // Update selected radio values from watching the global variable 
         updateSelectedContainer(newContainerID){
-            if(this.noSelect()){ return; }
+            if(this.isNoSelect()) return;
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
             const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
-            
-            this.States.selectedContainer.level = level;
-            this.States.selectedContainer.id = newContainerID;
-            this.States.selectedContainer.evenlySpaced = evenSplit;
-        },
 
-        updateSelectedContainerDivision(index){
-            let container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            
-            if(container.NoChildren !== 0 && container.NoChildren-1 === index) { return true; }
-            return false;
-        },
+            this.setContainerData(level, newContainerID, evenSplit);
 
-        // Update stepsize
-        updateStepSize(newValue){ this.$GlobalStates.value.edit.dragStepSize = newValue; },
-        
-        // Update state of checkmark
-        updateSpacingCheckmark(checked){
-            let container = LayoutDataClass.getLevelData(layout.allData, this.States.selectedContainer.level , this.States.selectedContainer.id);
-            container.evenSplit = checked;
-            this.States.selectedContainer.evenlySpaced = checked;
-        },
+            // Reset everything first before setting.
+            this.resetAll(this.ContainerDivision);
+            this.resetAll(this.DivisionType);
 
-// Watchers
-// ---------------------------------------------------------------------------------------------------------
+            // Load Division data
+            this.itemEnable(this.DivisionType, this.parentContainer.divisionType);
+            this.itemEnable(this.ContainerDivision, this.numToString(this.parentContainer.NoChildren));
+ 
+        },
     },
-    watch: {
-        '$GlobalStates.value.edit.containerSelected'(val, oldval){
-            this.updateSelectedContainer(val);
-        },
-        '$GlobalStates.value.edit.resetSelect'(val, oldval){
-            if(val){
-                this.resetSelected();
-            }
-        },
+    computed:{
+        parentContainer(){
+            let data = LayoutDataClass.getLevelData(layout.allData, this.selectedContainer.level , this.selectedContainer.id);
+            return (data) ? data : null;
+        }
     }
 }
 </script>
@@ -160,160 +179,191 @@ export default {
 -->
 <template>
 
-    <SingleButton
-        @click="activateSelectionMode" 
-        class="center"
-        m_IconString="Dotted_Square"
-        >
-        <h2 class="single-button-dark"> Select Container </h2>
-    </SingleButton>
+<!-- Container Selection -->
 
-<!-- Division Type
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider>
-        <template #header> 
-            <h2 class="inline">
-                Division type
-            </h2>
-        </template>
-
-        <template #content>
-            <RadioButton
-                parent_Variable_String="DivisionType"
-                :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
-                :parent_Fnc_Data="{
-                    checkedFncDetails:
-                    {
-                        fncName: 'isDivisionVertical',
-                        parameterType: 'index',
-                    },
-
-                    clickedFncDetails:
-                    {
-                        fncName: 'updateDivision',
-                        parameterType: 'id',
-                    }
-                }"
-                >
-            </RadioButton>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Determines how the container is divided
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-<!-- No. divisions
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider> 
-        <template #header> 
-            <h2 class="inline">
-                No. Container Divisions
-            </h2>
-        </template>
-
-        <template #content>
-            <RadioButton
-                parent_Variable_String="ContainerDivision"
-                :enable_-radio="this.$GlobalStates.value.edit.containerSelected"
-                :parent_Fnc_Data="{
-                    checkedFncDetails:
-                    {
-                        fncName: 'updateSelectedContainerDivision',
-                        parameterType: 'index',
-                    },
-                    clickedFncDetails:
-                    {
-                        fncName: 'selectAndModifyContainer',
-                        parameterType: 'object',
-                    }
-                    }"
-                >
-            </RadioButton>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Number of divisions the container will have
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-<!-- Toggle even spacing
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider> 
-        <template #header>
-            <h3 class="inline">
-                Toggle Even Spacing
-            </h3>
-        </template>
-
-        <template #content>
-            <div class="container-content-margin-top">
-
-                <input 
-                    type="checkbox" 
-                    id="EvenSpacing"
-                    name="EvenSpacing" 
-                    value="EvenSpacing"
-                    class="EvenSpacing"
-                    v-model="check"
-                    @change="updateSpacingCheckmark(check)"
-                    :checked="this.States.selectedContainer.evenlySpaced"
-                >
-                    
-                <label class="selection fullWidth"></label>
-            </div>
-        </template>
-
-        <template #tooltip>
-            <ToolTip>
-                Enable to maintain even spacing between all the child containers
-            </ToolTip>
-        </template>
-    </WindowContainerDivider>
-
-<!-- Step size Slider
--------------------------------------------------------------------------------------------------------->
-    <WindowContainerDivider>
+    <ContainerSelection
+        @reset="noSelection"
+        @updateSelected="val => updateSelectedContainer(val)"
+    />
     
-    <!-- 
-        TODO
-        Within the container, have an option to enable and disable it.
-    -->
+    <div
+        class="relative">
+    
+        <!-- Overlay to disable if nothing is selected -->
+        <div 
+            :class="{'no-select-container': isNoSelect(),
+                     'no-select-transition': !isNoSelect()}"
+        />
 
-    <template #header>
-        <h4 class="inline">
-            Drag step size
-        </h4>
-    </template>
 
-        <template #content>
-            <div class="container-content-margin-top">
-                <RangeSlider
-                    :no_Items="m_StepSizeValues.length"
-                    :caption_Data="m_StepSizeValues"
-                    v-model="this.$GlobalStates.value.edit.dragStepSize"
+        <WindowContainerDivider>
+            <template #header> 
+                <h2 class="inline">
+                    Page Layout
+                </h2>
+            </template>
+            
+            <template #content>
+
+                <!-- Division Type -------------------------------------------------------------------------------------------------------->
+                <WindowContainerDivider
+                    class="contiguous-divider"> 
+                    <template #header> 
+                        <h3 class="inline">
+                            Division Type
+                        </h3>
+                    </template>
+            
+                    <template #content>
+                        <RadioButton
+                            v-model="DivisionType"
+                            :enable_Radio="(editVariables.containerSelected) ? true : false"
+                            @clickEvent="id => updateDivision(id)"
+                            />
+                    </template>
+            
+                    <template #tooltip>
+                        <ToolTip>
+                            How the container is split.
+                            Vertical gives rows, while Horizontal gives columns 
+                        </ToolTip>
+                    </template>
+                </WindowContainerDivider>
+
+                <!-- No. divisions -------------------------------------------------------------------------------------------------------->
+                <WindowContainerDivider
+                    class="contiguous-divider"> 
+                    <template #header> 
+                        <h3 class="inline">
+                            No. Container Divisions
+                        </h3>
+                    </template>
+            
+                    <template #content>
+                        <RadioButton
+                            v-model="ContainerDivision"
+                            :enable_Radio="(editVariables.containerSelected) ? true : false"
+                            @clickEvent="id => updateNoDivisions(id)"
+                        />
+                    </template>
+            
+                    <template #tooltip>
+                        <ToolTip>
+                            Number of divisions the container will have
+                        </ToolTip>
+                    </template>
+                </WindowContainerDivider>
+            </template>
+        </WindowContainerDivider>
+
+
+    <!-- Toggle even spacing
+    -------------------------------------------------------------------------------------------------------->
+        <WindowContainerDivider> 
+            <template #header>
+                <h2 class="inline">
+                    Layout Spacing
+                </h2>
+            </template>
+
+            <template #content>
+                <div class="container-content-margin-top">
+                    <Checkbox
+                        @onChange="check => updateSpacingCheckmark(check)"
+                        :checkValue="selectedContainer.evenlySpaced"
+                        text="Toggle Even spacing"
                     />
-            </div>
-        </template>
+                    <!-- Step size Slider
+                    -------------------------------------------------------------------------------------------------------->
+                    <WindowContainerDivider
+                        class="contiguous-divider">
+                        
+                        <!-- 
+                            TODO
+                            Within the container, have an option to enable and disable it.
+                        -->
+                    
+                        <template #header>
+                            <h3 class="inline">
+                                Drag step size
+                            </h3>
+                        </template>
+                    
+                        <template #content>
+                            <div class="container-content-margin-top relative">
+                                <RangeSlider
+                                    :no_Items="m_StepSizeValues.length"
+                                    :caption_Data="m_StepSizeValues"
+                                    v-model="editVariables.values.dragStepSize"
+                                />
+                            </div>
+                        </template>
+                
+                        
+                        <template #tooltip>
+                            <ToolTip>
+                                Step size are in fractional units of the parent container
+                            </ToolTip>
+                        </template>
+                    </WindowContainerDivider>
+                </div>
+            </template>
 
-        
-        <template #tooltip>
-            <ToolTip>
-                Step size are in fractional units of the parent container
-            </ToolTip>
-    </template>
-    </WindowContainerDivider>
-
+            <template #tooltip>
+                <ToolTip>
+                    Enable to maintain even spacing between all the child containers
+                </ToolTip>
+            </template>
+        </WindowContainerDivider>
+    </div>
 </template>
 
 <style scoped>
 
+.relative{
+    position: relative;
+}
+
+.no-select-transition{
+    width: 100%;
+    height: 100%;
+    border-radius: 1em;
+    pointer-events: none;
+
+    background-color: rgba(97, 97, 97, 0);
+    position: absolute;
+    z-index: 0; /* Able to click through by changing the z-index back */
+
+    transition: all 250ms ease-out;
+}
+
+.no-select-container{
+    width: 100%;
+    height: 100%;
+    border-radius: 1em;
+
+    background-color: rgba(97, 97, 97, 0.74);
+    position: absolute;
+    z-index: 1;
+
+    transition: all 250ms ease-out;
+}
+
+.contiguous-divider{
+    margin-bottom: 0;
+    padding-bottom: 0.25em;
+}
+
+.space-between{
+    justify-content: space-between;
+}
+
+.button-left-padding{
+    margin-left: 0.5em;
+}
+
 .container-content-margin-top{
-    margin-top: 0.5rem;
+    margin-top: 0.5em;
 }
 
 .width-100{
@@ -326,6 +376,10 @@ export default {
 
 .inline{
     display: inline;
+}
+
+.flex-row{
+    flex-direction: row;
 }
 
 .center{
@@ -391,10 +445,6 @@ input[type="radio"]:checked + label{
     background-color: silver;
     border: 2px solid black;
     border-radius: 5px;
-}
-
-.EvenSpacing{
-    margin-right: 10px;
 }
 
 .division-item{

@@ -15,13 +15,16 @@
   v-bind() references vuejs variable
 */
 :root {
-  --ThemeA-Primary: #221F26;
-  --ThemeA-Secondary: #3F3F4D;
-  --ThemeA-Tertiary: #505363;
+  --ThemeA-Primary: #723d46;
+  --ThemeA-Secondary: #472d30;
   --ThemeA-Accent: #F2F6D0;
 
-  --ThemeA-Hover: #383540;
-  --ThemeA-Select:  #4E4B59;
+  --WindowBorder-Radius: 15px;
+  --WindowBorder-Thickness: 5px;
+  --box-shadow: 0 0 0.75em rgb(0, 0, 0);
+
+  --ThemeA-Hover: #5e2a33;
+  --ThemeA-Select:  #4b1e26;
 
   --Base-Font-Family: "Libre Franklin", sans-serif;
 
@@ -54,13 +57,12 @@
 
   --Primary-background-colour: var(--ThemeA-Primary);
   --Secondary-background-colour: var(--ThemeA-Secondary);
-  --Tertiary-background-colour: var(--ThemeA-Tertiary);
   --Accent-background-colour: var(--ThemeA-Accent);
 
   --Hover-colour: var(--ThemeA-Hover);
   --Select-colour: var(--ThemeA-Select);
 
-  --window-padding: 5px;
+  --window-padding: 0.5em;
 
   --cursor: "default";
 }
@@ -74,7 +76,6 @@
 
     --Primary-background-colour: var(--ThemeA-Primary);
     --Secondary-background-colour: var(--ThemeA-Secondary);
-    --Tertiary-background-colour: var(--ThemeA-Tertiary);
     --Accent-background-colour: var(--ThemeA-Accent);
 
     --Container-Hover-colour: var(--ThemeA-Container-Hover);

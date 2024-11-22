@@ -55,10 +55,13 @@ class ContainerDataClass{
       return {
       ID: idGenerated,
       layoutType: "Grid",
-      iconSize: "125",
+      iconSize: "150",
       display: true, // If it is not a leaf node, disable it
+      containerHeader:{ // Displays text on top of container
+        toggle: false,
+        text: ""
+      },
       gridData: {
-          gridDimensions: "1,1",
           contentAlign: "Compact",
           xAxisDirection: "Left",
           yAxisDirection: "Top"
@@ -67,7 +70,16 @@ class ContainerDataClass{
       };
   };
 
+  /*
+  I need to remove grid dimensions as this causes bugs 
+  */
+
   // Setters
+
+  setContainerName(objectID, text){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.text = text; }};
+
+  enableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = true; }};
+  disableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = false; }};
 
   setLayoutGrid(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "Grid" }};
   setLayoutList(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "List" }};
@@ -78,24 +90,24 @@ class ContainerDataClass{
   enableDisplay(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.display = true; } };
   // Grid setters
 
-  setGridDimension(objectID, val) { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.gridDimensions = val; }};
   setGridAlignCompact(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.contentAlign = "Compact"}};
   setGridAlignFree(objectID)      { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.contentAlign = "Free"}};
 
   setXDirectionLeft(objectID)     { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.xAxisDirection = "Left"}};
-  setXDirectionRight(objectID)    { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.xAxisDirection = "Right"} };
+  setXDirectionRight(objectID)    { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.xAxisDirection = "Right"}};
 
-  setYDirectionTop(objectID)      { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Top"} };
-  setYDirectionBottom(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Bottom"} };
+  setYDirectionTop(objectID)      { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Top"}};
+  setYDirectionBottom(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Bottom"}};
 
   // Grid Getters
-
-  getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;} }
-  getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;} }
-  getGridDimension(objectID){let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.gridDimensions; }};
-  getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; };}
-  getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; };}
-  getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; };}
+  
+  isHeaderToggled(objectID) {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.toggle; }}
+  getHeaderName(objectID){let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.text; }}
+  getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;}}
+  getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;}}
+  getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; }}
+  getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; }}
+  getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; }}
 }
 
 const containerDataInstance = new ContainerDataClass;
