@@ -130,11 +130,11 @@ export default {
         ToolTip,
     },
     mounted(){
-      editVariables.enableLayoutWindow();
+      editVariables.enableContainerWindow();
       editVariables.selectionContainerToggler();
     },
     unmounted(){
-      editVariables.disableLayoutWindow();
+      editVariables.disableContainerWindow();
       editVariables.selectionContainerToggler();
     },
     data(){
