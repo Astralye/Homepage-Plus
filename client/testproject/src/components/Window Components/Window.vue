@@ -257,13 +257,11 @@ hr{
     position: absolute;
     top: 0;
     left: 0;
-    box-shadow: 0 0 0.75em rgb(0, 0, 0);
     z-index: 30;
-
-    border-radius: 14px;
-    border-style: solid;
-    border-width: 5px;
-    border-color: var(--Secondary-background-colour);
+    
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+    border-radius: var(--WindowBorder-Radius);
+    box-shadow: var(--box-shadow);
 }
 
 </style>

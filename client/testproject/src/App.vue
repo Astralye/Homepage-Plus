@@ -74,6 +74,7 @@ export default{
                     height="3em"
                     width="3em"
                     view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
                     :path_Value="iconImageStorage.getPathData('Pencil')"
                 />
             </IconButton>
@@ -85,6 +86,7 @@ export default{
                     height="3em"
                     width="3em"
                     view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
                     :path_Value="iconImageStorage.getPathData('Gear')"
                 />
             </IconButton>
@@ -271,9 +273,13 @@ export default{
     display: flex;
     flex-direction: row ;
     margin: 10px;
-    background-color: aliceblue;
-    border-radius: 5px;
-    border-color: black
+
+    background-color: var(--Secondary-background-colour);
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+    border-radius: var(--WindowBorder-Radius);
+    box-shadow: var(--box-shadow);
+
+    box-shadow: 0 0 0.75em rgb(0, 0, 0);
 }
 
 .iconSize{

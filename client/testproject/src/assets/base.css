@@ -19,6 +19,10 @@
   --ThemeA-Secondary: #472d30;
   --ThemeA-Accent: #F2F6D0;
 
+  --WindowBorder-Radius: 15px;
+  --WindowBorder-Thickness: 5px;
+  --box-shadow: 0 0 0.75em rgb(0, 0, 0);
+
   --ThemeA-Hover: #5e2a33;
   --ThemeA-Select:  #4b1e26;
 
