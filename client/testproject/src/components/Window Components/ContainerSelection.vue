@@ -7,43 +7,39 @@
         </template>
         <template #content>
             
-            <div class="space-between flex">
-                <div class="flex-row flex">
-                    <SingleButton
-                        class="flex"
-                        @click="activateSelectionMode" 
-                        button_toggle="true"
-                        m_IconString="Dotted_Square"
-                        >
-                        Select
-                    </SingleButton>
-                    <SingleButton
-                        class="flex button-left-padding"
-                        @click="resetSelected"
-                        m_IconString="Remove_Select"
-                        >
-                        Deselect
-                    </SingleButton>
-                </div>
-                <SingleButton
-                    class="flex"
-                    @click="deleteContainer" 
-                    m_IconString="Delete"
-                    :enabled="isDeleteButtonActive"
-                    >
-                    Delete
-                </SingleButton>
-            </div>
-    
             <WindowContainerDivider>
-                <template #header>
-                    <h3> Selected container </h3>
-                </template>
                 <template #content>
+                    <div class="space-between flex">
+                        <div class="flex-row flex">
+                            <SingleButton
+                                class="flex"
+                                @click="activateSelectionMode" 
+                                button_toggle="true"
+                                m_IconString="Dotted_Square"
+                                >
+                                Select
+                            </SingleButton>
+                            <SingleButton
+                                class="flex button-left-padding"
+                                @click="resetSelected"
+                                m_IconString="Remove_Select"
+                                >
+                                Deselect
+                            </SingleButton>
+                        </div>
+                        <SingleButton
+                            class="flex"
+                            @click="deleteContainer" 
+                            m_IconString="Delete"
+                            :enabled="isDeleteButtonActive"
+                            >
+                            Delete
+                        </SingleButton>
+                    </div>
+                    <br>
                     <p>
                         ID: {{ displayID }} 
-                    </p>
-                    <p>
+                    <br>
                         Level : {{  displayLevel }}
                     </p>
                 </template>

@@ -1,5 +1,5 @@
 <template>
-    <div class="max-Height scroll">
+    <div>
         <WindowContainerDivider>
             <template #header>
                 <h2>General</h2>
@@ -303,14 +303,5 @@ a:hover{
 
     Maybe this should be put on the window container instead
 */
-
-.max-Height{
-    max-height: 70vh;
-}
-
-.scroll{
-    overflow-y: scroll;
-}
-
 
 </style>

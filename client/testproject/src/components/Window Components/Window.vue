@@ -4,6 +4,7 @@ import { iconImageStorage } from '../../Data/iconImages';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { mouseData } from '../../Data/mouseData';
 
+import { editVariables } from '../../Data/SettingVariables';
 import { windowHandler } from '../../Data/userWindow';
 
 export default {
@@ -25,6 +26,7 @@ export default {
         return{
             iconImageStorage,
             windowHandler,
+            editVariables,
 
             windowHover: false,
 
@@ -41,6 +43,11 @@ export default {
             m_zIndex: 0,
             m_left: 0,
             m_top: 0,
+
+            m_WindowEventListener: null,
+            isInsideThreshold: false,
+
+            minWidth: 500,
         }
     },
     created(){
@@ -48,18 +55,28 @@ export default {
         // No need for unmounted
         windowHandler.checkAddStack(this.title);
         this.windowObj = windowHandler.getEditObj(this.title);
+        
+        // Check and set thresholds for smaller windows
+        this.updateIsInsideThreshold();
+        addEventListener("resize", this.updateIsInsideThreshold);
     },
-    mounted(){
-        this.updateZIndex();
+    unmounted(){
+        removeEventListener("resize", this.updateIsInsideThreshold);
     },
+    mounted(){ this.updateZIndex(); },
     watch: {
+
         // When the array changes, update all the other z-index values
         'windowHandler.windowStack':{
             handler(){ this.updateZIndex(); },
             deep: true
         },
     },
-    methods: {          
+    methods: {
+        updateIsInsideThreshold(){
+            this.isInsideThreshold = (window.innerWidth >= this.minWidth);
+        },
+
         updateZIndex(){
             let index = windowHandler.getIndexWindowStack(this.windowObj.name);
             if(index === -1){ return; } // return if not found
@@ -125,28 +142,27 @@ export default {
 <template>
     <!-- main container -->
     <div
-        @mousedown="windowHandler.moveToTopStack(windowObj)"
-        @touchstart="windowHandler.moveToTopStack(windowObj)"
+        @mousedown="(isInsideThreshold) ? windowHandler.moveToTopStack(windowObj) : null"
+        @touchstart="(isInsideThreshold) ? windowHandler.moveToTopStack(windowObj) : null"
 
         ref="draggableContainer" 
-        class="window"
-        :style="{ 'z-index' : m_zIndex,
+        :class="(isInsideThreshold) ? 'window' : 'side-bar'"
+
+        :style="(isInsideThreshold) ? { 'z-index' : m_zIndex,
                   'top' : m_top,
                   'left': m_left,
-        }">
+        } : null">
 
         <!-- Header -->
         <div 
             class="header flex noselect" 
             
-            @touchstart="touchDown"
+            @touchstart="(isInsideThreshold) ? touchDown : null"
 
-            @mousedown="dragMouseDown"
+            @mousedown="(isInsideThreshold) ? dragMouseDown($event) : null"
             @mouseenter.self="windowHover = true"
             @mouseleave.self="windowHover = false"
             >
-            
-
                 <!--  Title -->
                 <div class="flex">
                     <!-- Icon -->
@@ -164,6 +180,7 @@ export default {
                     @click="windowHandler.disableWindow(title)"
                     @mouseenter.self="windowHover = false"
                     >
+
                     <SVGHandler 
                         class="align-center flex"
                         height="3em"
@@ -171,7 +188,7 @@ export default {
                         :path_Value="iconImageStorage.getPathData('Cross')"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
-                        />
+                    />
                 </button>
         </div>
 
@@ -221,7 +238,11 @@ hr{
     position: relative;
     background-color: var(--Secondary-background-colour);
     height: auto;
-    
+
+    max-height: 70vh;
+    overflow-y: visible;
+    overflow-x: hidden;
+
     border-radius: 1em;
     padding: 0.25em;
 }
@@ -253,7 +274,7 @@ hr{
 .window{
     width: v-bind("windowWidth");
     background-color: var(--Secondary-background-colour);
-    height: auto;
+
     position: absolute;
     top: 0;
     left: 0;
@@ -262,6 +283,25 @@ hr{
     border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
     border-radius: var(--WindowBorder-Radius);
     box-shadow: var(--box-shadow);
+}
+
+.side-bar{
+    background-color: var(--Secondary-background-colour);
+    position: absolute;
+    width: 70%;
+    height: 100vh;
+
+    box-shadow: var(--box-shadow);
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+
+    top: 0;
+    right: 0;
+}
+
+@media screen and (max-width: 500px){
+    .wind-container {
+        max-height: 80vh;
+    }
 }
 
 </style>

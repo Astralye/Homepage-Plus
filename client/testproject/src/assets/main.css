@@ -36,19 +36,19 @@ a,
 
 h1{
   font-weight: 500;
-  font-size: 26px;
+  font-size: 30px;
   color: var(--color-heading);
 }
 
 h2{
   font-weight: 500;
-  font-size: 20px;
+  font-size: 24px;
   color: var(--color-heading);
 }
 
 h3{
-  font-weight: 400;
-  font-size: 16px;
+  font-weight: 450;
+  font-size: 18.72px;
   color: var(--color-heading);
 }
 
@@ -57,6 +57,11 @@ h4{
   font-size: 16px;
   color: var(--color-heading);
 }
+
+p{
+  font-size: 16px;
+}
+
 
 @media (hover: hover) {
   a:hover {
