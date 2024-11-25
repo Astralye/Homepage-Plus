@@ -16,19 +16,21 @@ import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
+import Settings from './components/Windows/Settings.vue'
 
 export default{
     name: "App",
     components: {
-        IconButton,
-        Window,
-        WindowButton,
-        PageContainer,
-        PageSubDivision,
-        ContainerContent,
-        LinkMaker,
-        Storage,
         WindowContainerDivider,
+        ContainerContent,
+        PageSubDivision,
+        PageContainer,
+        WindowButton,
+        IconButton,
+        LinkMaker,
+        Settings,
+        Storage,
+        Window,
 
         SVGHandler
     },
@@ -130,7 +132,7 @@ export default{
             <Window 
                 v-if="windowHandler.getEditValue('Settings')"
                 title="Settings"
-                :width="400">
+                :width="450">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
@@ -142,7 +144,7 @@ export default{
                     />
                 </template>
                 <template v-slot:window-content>
-                    <div> Hello world but settings</div>
+                    <Settings/>
                 </template>
             </Window>
         </Transition>
@@ -194,6 +196,7 @@ export default{
             </Window>
         </Transition>
 
+        <!-- Widgets -->
         <Transition name="fade">
             <Window
                 v-if="windowHandler.getEditValue('Widgets')"
@@ -216,6 +219,7 @@ export default{
             </Window>
         </Transition>
 
+        <!-- Link maker -->
         <Transition name="fade">
             <Window
                 v-if="windowHandler.getEditValue('Link Maker')"
