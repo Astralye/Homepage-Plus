@@ -25,7 +25,8 @@ export default {
 /* 
     From Uiverse.io by adamgiebl
     https://uiverse.io/adamgiebl/curly-lizard-40
-*/ 
+
+*/
 .cyberpunk-checkbox {
     appearance: none;
     width: 20px;
@@ -58,7 +59,7 @@ export default {
 }
 
 .cyberpunk-checkbox-label {
-    font-size: 18px;
+    font-size: 16px;
     color: #fff;
     cursor: pointer;
     user-select: none;
