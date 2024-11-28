@@ -1,62 +1,115 @@
 <template>
-    <div>
+
+    <!-- Container for Displaying icons and selection  -->
+    <div @mouseup="resetTimer">
+        <WindowContainerDivider>
+        <template #header>
+            <h2> Icon selection </h2>
+        </template>
+
+        <template #content>
         <div class="flex flex-space">
-            <SingleButton class="flex"
+            <SingleButton
+                class="flex"
+                @click="generateIcon" 
+                button_toggle="true"
                 m_IconString="Dotted_Square"
-                @click="generateIcon"
             >
-                    <h2 class="single-button-dark"> New </h2>
+                New
             </SingleButton>
             
             <SingleButton
                 class="flex"
-                m_IconString="Dotted_Square"
+                m_IconString="Delete"
+                button_toggle="true"
                 @click="deleteIcon"
             >
-                <h2 class="single-button-dark"> Delete </h2>
+                Delete
             </SingleButton>
+
         </div>
-        <WindowContainerDivider
-            class="container-divider">
-                <template #header> 
-                    <h2 class="inline">
-                        Saved Icons
-                    </h2>
-                </template>
 
-                <template #tooltip>
-                    <ToolTip> When the window is open, you can select via clicking</ToolTip>
-                </template>
+        <br>
 
-                <template #content>
-                    <div class="saved-grid width-full grid">
+        <h3> Saved Icons </h3>
+    
+            <div class="saved-grid width-full grid">
 
-                        <!-- Grid pattern -->
-                        <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
-                            class="saved-icons flex"
-                            :class="{ 'icon-Selection' : isSelectedIcon(index), 
-                                      'grid-item' : !isSelectedIcon(index),
-                                      'mouse-pointer': renderIcon(index)}"
+                <!-- Grid pattern -->
+                <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
+                    class="saved-icons flex noselect"
+                    :class="{ 'icon-Selection' : isSelectedIcon(index), 
+                                'grid-item' : !isSelectedIcon(index),
+                                'mouse-pointer': renderIcon(index)}"
 
-                            @mouseup="checkDropIcon(index)"
-                            @click="(editVariables.isIconSelector) ? setSelectData(index) : null"
-                        >
-                            <!-- For rendering any icons saved -->
-                            <IconHandler v-if="renderIcon(index)"
-                                :icon_data="getIconData(index)"
-                                @mousedown="(editVariables.isEnabled) ? dragAndDrop(index) : null"
-                            />
-                        </div>
+                    @mouseup="checkDropIcon(index)"
+                    @click="(editVariables.isIconSelector) ? setSelectData(index) : null"
+                >
+                    <div class="icon-container flex">
+
+                        <!-- 
+                            For rendering any icons saved
+                        -->
+                        <Transition name="fade">
+                            <SVGHandler v-if="renderIcon(index)"
+                                ref="icon-Take"
+                                :ref_Value="'icon-location'"
+
+                                height="90%"
+                                width="90%"
+                                
+                                :path_Value="iconImageStorage.getPathData(getIconData(index).iconImage)"
+                                :fill_Colour="getIconData(index).iconColour"
+                                :view_Box="iconImageStorage.getViewBoxName(getIconData(index).iconImage)"
+                                class="center icon-center"
+                                :class="{'opacity-none' : ( m_DraggingEvent && isStoredIndex(index)),
+                                         'opacity-full' : !m_DraggingEvent }"
+
+                                @mousedown="initDragDrop($event, index)"
+                                />
+                        </Transition>
+
                     </div>
-                </template>
-            </WindowContainerDivider>
+
+                    <!-- Visible icon that follows mouse -->
+                    <Teleport to="body">
+                        <Transition :name="m_TransitionName">
+                            <SVGHandler
+                                v-show="m_DraggingEvent && isStoredIndex(index)"
+                                ref="svgRef"
+                                class="icon-drag-effect"
+                                :ref_Value="'draggingIcon'"
+
+                                :path_Value="m_DisplayIconData.iconImage"
+                                :fill_Colour="m_DisplayIconData.iconColour"
+                                :view_Box="m_DisplayIconData.viewBox"
+                                                                
+                                height="50px"
+                                width="50px"
+                            />
+                        </Transition>
+                    </Teleport>
+                </div>
+            </div>
+
+        </template>
+        </WindowContainerDivider>
     </div>
         <!-- Grid -->
 
     <!-- If none is selected, remove all -->
 
+<!-- 
+    Icon customization 
+    ------------------------------------------------------------------------------------------------------
+-->
+
     <Tabs :tab_Array="[ 'IconCustomize' , 'IconFunction' ]" folder_Name="LinkTabs"/>
 
+<!-- 
+    Icon Function
+    ------------------------------------------------------------------------------------------------------
+-->
 </template>
 
 <script>
@@ -67,33 +120,57 @@ import SingleButton from '../Input Components/SingleButton.vue';
 import IconHandler from '../Main/IconHandler.vue';
 import Tabs from '../Window Components/Tabs.vue';
 
+import { iconImageStorage } from '../../Data/iconImages';
+
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
 
 import { editVariables } from '../../Data/SettingVariables';
 
+import SVGHandler from '../Input Components/SVGHandler.vue';
+
 export default {
     components: {
         WindowContainerDivider,
-        ToolTip,
-        TextInput,
         SingleButton,
         IconHandler,
+        SVGHandler,
+        TextInput,
+        ToolTip,
         Tabs,
     },
     data(){
         return {
-            iconStorage,
-            mouseData,
-            iconSelect,
+            iconImageStorage,
             editVariables,
+            iconStorage,
+            iconSelect,
+            mouseData,
 
             m_Rows: 4,
             m_Columns: 3,
 
-            m_iconID: null,
-
             m_STORAGE: "Storage",
+            
+            // Icon drag visual variables
+
+            m_DisplayIconData:{
+                iconColour: "#000000",
+                iconSize: "100",
+                iconImage: "",
+                viewBox: "",
+            },
+
+            m_TransitionName: 'icon-success',
+
+            m_iconID: null,
+            m_DraggingEvent: false,
+            m_IconDragRef: null,
+            m_SavedIndex: 0,
+            m_MouseOffset:{
+                x: 0,
+                y: 0,
+            }
         }
     },
     created(){
@@ -172,42 +249,116 @@ export default {
 // Mouse functions
 // ------------------------------------------------------------------------------------------------------------
 
-// Reused code from Gridlayout.vue, could put into own file later
+// Reused code from Gridlayout.vue
 
-        dragAndDrop(index){
-            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
-            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
-            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
-            
-            mouseData.enableMouseDown();
-            mouseData.enableTracking();
-            mouseData.enableMouseUp();
+        initDragDrop: function(event, index){
 
-            this.m_iconID = this.getIconData(index).iconID;
-        },
+            var runFnc = false;
+            this.m_draggableFnc = setTimeout(() => { 
 
-        edit_Drag_MouseDown(){
-            // Find what it is holding and store it.s
-            editVariables.setIconDragData({
-                storedContainer:  this.m_STORAGE,
-                storedID: this.m_iconID,
-            });
+                // Checks if the current mouse hover is over the same element
+                document.querySelectorAll( ":hover" ).forEach(el => {
+                    if(el == event.target){ runFnc = true; return;}
+                });
+                
+                if(!runFnc){ return; }
+
+                this.m_iconID = this.getIconData(index).iconID;
+                this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
+                this.m_DraggingEvent = true;
+                this.m_SavedIndex = index;
+                this.m_TransitionName = 'icon-success';
+
+                editVariables.setIconDragData({
+                    storedContainer:  this.m_STORAGE,
+                    storedID: this.m_iconID,
+                });
+
+                mouseData.movementFunctions ([ this.edit_Drag_Move ]);
+                mouseData.mouseUpFunctions  ([ this.disableDrag ]);
+                
+                mouseData.enableTracking();
+                mouseData.enableMouseUp();
+
+                this.setSVGDragData();
+                this.initIconDragPosition(event.clientX, event.clientY);
+
+            }, 125);
+
         },
 
         edit_Drag_Move(){
-
+            this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y);
         },
 
         disableDrag(){
-            mouseData.disableMouseDown();
             mouseData.disableTracking();
             mouseData.disableMouseUp();
+
+            this.m_DraggingEvent = false;
+            this.m_iconID = null;
+            this.m_SavedIndex = 0;
         },
+
+    // Taken from Gridlayout.vue
+        
+        // If user lifts mouse event before timer
+        resetTimer(){
+            clearTimeout(this.m_draggableFnc);
+        },
+
+        isStoredIndex(index){
+            return (index === this.m_SavedIndex);
+        },
+
+        setSVGDragData(){
+            let svgData = this.getStoredIconData();
+            this.m_DisplayIconData.iconImage  = iconImageStorage.getPathData(svgData.iconImage);
+            this.m_DisplayIconData.iconColour = svgData.iconColour;
+            this.m_DisplayIconData.iconSize   = svgData.iconSize;
+            this.m_DisplayIconData.viewBox    = iconImageStorage.getViewBoxName(svgData.iconImage);
+        },
+
+        getStoredIconData(){
+            if(!editVariables.iconDragData || !this.m_iconID){ return; } // Requires data
+
+            let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
+            return iconData.getIconDataFromID(group, this.m_iconID);
+        },
+
+        // Updates the css values to match the cursor
+        updateIconDragPosition(x, y){
+            this.m_IconDragRef['draggingIcon'].style.left = x - this.m_MouseOffset.x + 'px';
+            this.m_IconDragRef['draggingIcon'].style.top  = y - this.m_MouseOffset.y + 'px';
+        },
+
+        // This is the offset of the starting position that the mouse offsets by when moving
+        initIconDragPosition(initX, initY){
+
+            this.setMouseOffset(initX, initY);
+            this.updateIconDragPosition(initX, initY); // This value will always be constant at the start
+        },
+
+        setMouseOffset(x,y){
+
+            let iconRealLocation = this.$refs['icon-Take'][this.m_SavedIndex].$refs['icon-location'].getBoundingClientRect();
+
+            if(!iconRealLocation){ return; }
+
+            // grid item is the coordinates of the container, an offset is added to put it at the center
+            let gridXoffset = iconRealLocation.left + (iconRealLocation.width  / 5);
+            let gridYoffset = iconRealLocation.top  + (iconRealLocation.height / 5);
+
+            // mouseOffset is the difference in px from the mouse to the grid offset.
+            // Used to prevent snapping of top left corner to mouse.
+            this.m_MouseOffset.x = x - gridXoffset;
+            this.m_MouseOffset.y = y - gridYoffset;
+        },
+
 
 // ------------------------------------------------------------------------------------------------------------
 
         renderIcon(index){ // Check if there is data
-            // console.log(iconStorage.allData[index]);
             return (iconStorage.allData[index]) ? true : false;
         },
         tmp(){
@@ -219,6 +370,53 @@ export default {
 </script>
 
 <style scoped>
+/*
+    Copied from Gridlayout
+*/
+
+@keyframes grow {
+    0% {
+      transform: scale(1.5);
+    }
+    100% {
+      transform: scale(2.5);
+    }
+}
+
+
+.icon-success-enter-active {
+    animation: grow 200ms ease-out;
+    transition: opacity 50ms ease-in;
+}
+
+.icon-cancel-leave-active {
+    transition: opacity 50ms ease-in;
+}
+
+.icon-success-leave-active {
+    animation: grow 200ms reverse ease-out;
+    transition: opacity 50ms ease-in;
+}
+
+.icon-drag-effect{
+    pointer-events: none;
+    position: absolute;
+    transform: scale(2.5);
+    z-index: 20;
+}
+
+.opacity-none{
+    opacity: 0;
+}
+
+.opacity-full{
+    transition: all 125ms ease-in-out;
+    transition-delay: 125ms;
+}
+
+/* 
+    ----------------------------------------------------------------
+*/
 
 .mouse-pointer{
     cursor: pointer;
@@ -244,12 +442,19 @@ export default {
             transition: border-color 0.15s linear;
 }
 
+.icon-container{
+    width: 6em;
+    height: auto;
+}
+
 .saved-grid{
-    border: 2px solid black;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+
+    border: 2px solid var(--Accent-background-colour);
     border-radius: 5px;
-    height: 150px;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
+    height: 200px;
     overflow-y: scroll;
 }
 
@@ -259,10 +464,8 @@ export default {
 
 .saved-icons{
     aspect-ratio: 1;
-}
-
-.grid{
-    display: grid;
+    margin: 0.25em;
+    position: relative;
 }
 
 .flex{
