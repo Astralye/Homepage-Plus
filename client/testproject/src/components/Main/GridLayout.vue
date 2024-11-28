@@ -43,7 +43,7 @@
                         :fill_Colour="m_DisplayIconData.iconColour"
                         :path_Value="m_DisplayIconData.iconImage"
                         :height="m_DisplayIconData.iconSize"
-                        :width="'auto'"
+                        :width="m_DisplayIconData.iconSize"
                         :view_Box="m_DisplayIconData.viewBox"
                     />
                 </Transition>
@@ -386,8 +386,8 @@ export default {
         setMouseOffset(x,y,container){
 
             // grid item is the coordinates of the container, an offset is added to put it at the center
-            let gridXoffset = container.x + (container.width   / 10);
-            let gridYoffset = container.y + (container.height  / 10);
+            let gridXoffset = container.x + (container.width   / 5);
+            let gridYoffset = container.y + (container.height  / 5);
 
             // mouseOffset is the difference in px from the mouse to the grid offset.
             // Used to prevent snapping of top left corner to mouse.
@@ -521,16 +521,6 @@ export default {
 </script>
 
 <style scoped>
-
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 200ms ease-in-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
 
 .icon-success-enter-active {
     animation: grow 200ms ease-out;

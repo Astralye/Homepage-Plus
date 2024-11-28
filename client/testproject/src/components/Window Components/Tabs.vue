@@ -78,7 +78,7 @@ export default {
 @import '../../assets/base.css';
 
 .tab-border{
-    border: 2px solid var(--Primary-background-colour);
+    border: 2px solid var(--Accent-background-colour);
     border-radius: 5px;
 }
 
