@@ -222,6 +222,7 @@ export default {
 
         // update HSL slider values
         updateHSLSlider(val){
+            if(!val) return;
             let values = val.replace(/[^\d,]/g, '').split(',');
 
             this.setHSL(this.clamp(values[0], 0, 300),
@@ -275,6 +276,8 @@ export default {
         // Code taken from https://stackoverflow.com/questions/62390243/java-script-how-can-i-pull-the-hsl-value-when-a-colour-is-selected-from-input-t
         hexToHSL(hex) {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+            if(!result) return;
 
             let r = parseInt(result[1], 16);
             let g = parseInt(result[2], 16);
@@ -346,15 +349,14 @@ export default {
             },
             deep: true,
         },
-        'm_HexValue'(val){
-            if(!this.isUpdateString){ return; } // Only the user input string hex should be watched. 
+        'm_HexValue'(val){ 
+            if(!val || !this.isUpdateString) return; // Only the user input string hex should be watched.
             if(val.length != 7)   { return; } // Requires length of 7, # and 3x 2 hex values per channnel
 
             this.userHexParser(val);
         },
         'm_HSLString'(val){
-            if(!this.isUpdateString){ return; } // Only the user input string hex should be watched. 
-            if(!val){ return; }
+            if(!this.isUpdateString || !val) return;  // Only the user input string hex should be watched. 
             this.updateHSLSlider(val);
         }
     }
@@ -414,8 +416,6 @@ export default {
 
 .palette-button{
     background-color: brown;
-    width: 50px;
-    height: 50px;
 
     border: 3px solid black;
     border-radius: 10px;
