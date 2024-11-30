@@ -92,6 +92,7 @@ export default{
 .disabled{
     background-color: #5e5e5e ;
     color: white;
+    cursor: not-allowed;
 }
 
 /* 
@@ -103,6 +104,7 @@ https://uiverse.io/Custyyyy/short-lizard-47
 
 .button-enabled{
     background-color: #FCFCFD;
+    cursor: pointer;
 }
 
 .button-name {
@@ -112,7 +114,6 @@ https://uiverse.io/Custyyyy/short-lizard-47
     border-width: 0;
     box-shadow: rgba(45, 35, 66, 0.2) 0 2px 4px,rgba(45, 35, 66, 0.15) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset;
     box-sizing: border-box;
-    cursor: pointer;
     display: flex;
     font-family: "JetBrains Mono",monospace;
     justify-content: center;
