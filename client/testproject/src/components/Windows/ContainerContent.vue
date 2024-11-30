@@ -121,7 +121,6 @@ import { containerData } from '../../Data/containerData.js';
 import { editVariables } from '../../Data/SettingVariables.js';
 
 import RadioButton from '../Input Components/RadioBtn.vue';
-import SingleButton from '../Input Components/SingleButton.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import ContainerSelection from '../Window Components/ContainerSelection.vue';
@@ -133,7 +132,6 @@ export default {
     components: {
         WindowContainerDivider,
         ContainerSelection,
-        SingleButton,
         RadioButton,
         TextInput,
 		Checkbox,

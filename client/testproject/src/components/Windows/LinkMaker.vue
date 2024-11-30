@@ -21,7 +21,7 @@
             <SingleButton
                 class="flex"
                 m_IconString="Delete"
-                button_toggle="true"
+                :enabled="(iconSelect.dataValue.iconID != '')"
                 @click="deleteIcon"
             >
                 Delete
@@ -32,8 +32,7 @@
         <br>
 
         <h3> Saved Icons </h3>
-    
-            <div class="saved-grid width-full grid">
+            <div class="saved-grid width-full">
 
                 <!-- Grid pattern -->
                 <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
@@ -95,20 +94,186 @@
         </template>
         </WindowContainerDivider>
     </div>
-        <!-- Grid -->
 
-    <!-- If none is selected, remove all -->
+    <!-- Move icon to X  -->
+
+    <!-- Possibly display a tree, or show the screen. -->
+
+    <WindowContainerDivider>
+        <template #header>
+            <h2>  Icon Location </h2>
+        </template>
+
+        <template #content>
+            <SingleButton>
+                Select area to put icon
+            </SingleButton>
+        </template>
+    </WindowContainerDivider>
 
 <!-- 
     Icon customization 
-    ------------------------------------------------------------------------------------------------------
+    &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  
 -->
 
-    <Tabs :tab_Array="[ 'IconCustomize' , 'IconFunction' ]" folder_Name="LinkTabs"/>
+    <!-- Main container -->
+    <div>
+        
+        <!--  -->
+        <div>
+            <!-- Display icon and buttons-->
+            <div class="width-full flex">
+                <WindowContainerDivider>
+                    <template #header>
+                        <h2>
+                            Displayed icon
+                        </h2>
+                    </template>
+            
+                    <template #content>
+                        <!-- Icon display -->
+                        <div class="flex display-wrapper">
+
+                            <!-- Modification buttons -->
+                            <div class="flex button-column"> 
+                            <!-- Colour -->
+                                <div class="modification-button">
+                                    <ColourPicker
+                                        :loaded_Data="m_SelectedObject.iconColour"
+                                        @setColour="(hex) => setColourData(hex)"
+                                    />
+                                </div>
+
+                                <div class="modification-button">
+                                    <SingleButton
+                                        class="width-full"
+                                        m_IconString="Image"
+                                        @click="windowHandler.toggleWindow('icon menu')">
+
+                                        Icon
+                                    </SingleButton>
+                                </div>
+
+                                <div class="modification-button">
+                                    <SingleButton
+                                        class="width-full"
+                                        m_IconString="Aspect-Ratio"
+                                        @click="console.log('iconSize')">
+                                        Icon Size
+                                    </SingleButton>
+                                </div>
+
+                                <div class="modification-button">
+                                    <SingleButton
+                                        class="width-full"
+                                        m_IconString="Edit-Note"
+                                        @click="console.log('icon text')">
+                                        Icon Text
+                                    </SingleButton>
+                                </div>
+
+                                <div class="modification-button">
+                                    <SingleButton
+                                        class="width-full"
+                                        m_IconString="Text-UL"
+                                        @click="console.log('text size')">
+
+                                        Text size
+                                    </SingleButton>
+                                </div>
+                            </div>
+
+                            <div class="image-placeholder flex">
+
+                                <!-- Empty selection. Display default -->
+                                <template v-if="!isCurrentlySelected()">
+                                    <div class="icon-fit center fit-content">
+                                        <SVGHandler
+                                            class="icon-center"
+                                            height="90%"
+                                            width="90%"
+                                            :fill_Colour="m_SelectedObject.iconColour"
+                                            :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
+                                            :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
+                                        />
+                                    </div>
+                                </template>
+                                
+                                <!-- Contains value -->
+                                <template v-else>
+                                    <div class="icon-fit center fit-content">
+                                        <SVGHandler
+                                            class="icon-center"
+                                            height="90%"
+                                            width="90%"
+                                            :path_Value="iconImageStorage.getPathData('Cross')"
+                                            :view_Box="iconImageStorage.getViewBoxName('Cross')"
+                                        />
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </WindowContainerDivider>
+            </div>
+        </div>
+    </div>
+
+<!-- 
+    Icon menu Window 
+    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+-->
+    <teleport to="body">
+    <Transition name="fade">
+        <Window
+            v-if="windowHandler.getEditValue('Icon Menu')"
+            title="Icon Menu"
+            :width="500">
+            <template #window-icon>
+                <SVGHandler
+                    class="icon-center"
+                    height="2em"
+                    width="2em"
+                    view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
+                    :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
+                />
+            </template>
+
+            <template #window-content>
+            <!-- Window content -->
+
+            <WindowContainerDivider>
+                <template #content>
+                    <div class="icon-selection-menu width-full flex">
+                        <template v-for="(item, index) in 50" :key="index">
+                            
+                            <div class="saved-icons icon-wrapper"
+                                :class="{ 'icon-Selection' : selectedIconMenu(index), 'grid-item' : !selectedIconMenu(index) }"
+                                >
+                                <SVGHandler v-if="iconImageStorage.isValidIndex(index)"
+                                    width="100%"
+                                    height="100%"
+                                    :fill_Colour="m_localIconColourHex"
+                                    :path_Value="getSVG(index)"
+                                    :view_Box="iconImageStorage.getViewBoxIndex(index)"
+                                    @click="newSelect(index)"
+                                />
+                                <!-- It needs to load the correct icon -->
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </WindowContainerDivider>
+
+            </template>
+        </Window>
+    </Transition>
+    </teleport>
 
 <!-- 
     Icon Function
-    ------------------------------------------------------------------------------------------------------
+    &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  
 -->
 </template>
 
@@ -119,11 +284,16 @@ import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import IconHandler from '../Main/IconHandler.vue';
 import Tabs from '../Window Components/Tabs.vue';
+import RangeSlider from '../Input Components/RangeSlider.vue';
+import ColourPicker from '../Input Components/ColourPicker.vue';
 
 import { iconImageStorage } from '../../Data/iconImages';
+import Window from '../Window Components/Window.vue';
 
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
+
+import { windowHandler } from '../../Data/userWindow';
 
 import { editVariables } from '../../Data/SettingVariables';
 
@@ -133,16 +303,20 @@ export default {
     components: {
         WindowContainerDivider,
         SingleButton,
+        ColourPicker,
+        RangeSlider,
         IconHandler,
         SVGHandler,
         TextInput,
         ToolTip,
+        Window,
         Tabs,
     },
     data(){
         return {
             iconImageStorage,
             editVariables,
+            windowHandler,
             iconStorage,
             iconSelect,
             mouseData,
@@ -170,7 +344,10 @@ export default {
             m_MouseOffset:{
                 x: 0,
                 y: 0,
-            }
+            },
+
+            m_SelectedObject: {},
+            m_SelectedIconIndex: -1,
         }
     },
     created(){
@@ -182,8 +359,52 @@ export default {
     },
     methods: {
 
-// File handler
-// ----------------------------------------------------------------------------------------------------------
+// Icon Customize
+// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+        displaySelectedData(newIconData){
+            if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
+
+            let group = iconData.getGroup(newIconData.groupID);
+            this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
+
+            this.setSVGIndex(this.m_SelectedObject.iconImage);
+        },
+
+        // // From the name of the icon, get the index at which it appears in iconImages
+        setSVGIndex(svgName){
+            this.m_SelectedIconIndex = iconImageStorage.getIndexFromName(svgName);
+        },
+
+        // Changes the currently selected. Displays
+        newSelect(index){
+            if(this.isCurrentlySelected()){ return; } // No selection
+
+            let svg = iconImageStorage.getPathFromIndex(index);
+            this.m_SelectedObject.iconImage = svg.name;
+            this.setSVGIndex(svg.name);
+        },
+
+        getSVG(index){
+            let svg = iconImageStorage.getPathFromIndex(index);
+            return svg.pathData;
+        },
+
+        isCurrentlySelected(){
+            return (Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object);
+        },
+
+        setColourData(hex){
+            this.m_SelectedObject.iconColour = hex;
+        },
+
+        // Check if current selected icon is the index.
+        selectedIconMenu(index){
+            if(this.isCurrentlySelected()){ return; } // No selection
+            return (this.m_SelectedIconIndex === index);
+        },
+
+// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 // Icon functions
 // ------------------------------------------------------------------------------------------------------------
@@ -361,8 +582,11 @@ export default {
         renderIcon(index){ // Check if there is data
             return (iconStorage.allData[index]) ? true : false;
         },
-        tmp(){
-
+    },
+    watch: {
+        'iconSelect.dataValue': {
+            handler(val){ this.displaySelectedData(val); },
+            deep: true
         },
     }
 }
@@ -475,4 +699,52 @@ export default {
 .flex-space{
     justify-content: space-between;
 }
+
+/* 
+    Icon customization
+*/
+
+.button-column{
+    flex-direction: column;
+    width: 25%;
+}
+
+.modification-button{
+    height: fit-content;
+}
+
+.display-wrapper{
+    width: 85%;
+    margin: auto;
+}
+    
+.icon-fit{
+    max-width: fit-content;
+    height: auto;
+}
+
+.image-placeholder{
+    border: 2px solid var(--Accent-background-colour);
+    border-left: 0;
+
+    width: auto;
+    position: relative;
+    transition: all 0.15s ease-in-out;
+}
+
+/* 
+    Icon Menu
+*/
+
+.icon-selection-menu{
+    flex-wrap: wrap;
+    overflow-y: scroll;
+    height: 300px;
+}
+
+.icon-wrapper{
+    height: 5em;
+    width: 5em;
+}
+
 </style>

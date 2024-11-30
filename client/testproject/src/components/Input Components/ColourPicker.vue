@@ -1,30 +1,25 @@
 <template>
 
     <!-- Button to open window -->
-    <div class="palette-button palette-padding palette-margin"
-        @click="windowHandler.toggleWindow('colour picker')">
-        <SVGHandler
-            view_Box="0 -960 960 960"
-            height="100%"
-            width="100%"
-            fill_Colour="#E8EAED"
-            :path_Value="iconImageStorage.getPathData('Colour_Palette')"
-            >
-            
-        </SVGHandler>
-    </div>
+    <SingleButton
+        class="full-width"
+        @click="windowHandler.toggleWindow('colour picker')"
+        m_IconString="Colour_Palette">
+        Colour
+    </SingleButton>
     
     <!-- Colour picker window -->
     <teleport to="body">
         <Transition name="fade">
+
             <Window
                 v-if="windowHandler.getEditValue('colour picker')"
                 title="Colour Picker"
                 :width="350">
                 <template #window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Colour_Palette')"
@@ -366,6 +361,10 @@ export default {
 
 <style scoped>
 
+.full-width{
+    width: 100%;
+}
+
 .flex-space{
     justify-content: space-between;
 }
@@ -408,16 +407,5 @@ export default {
     border: 3px solid black;
     border-radius: 10px;
     aspect-ratio: 1;
-}
-
-.palette-padding{
-    padding: 0.1em;
-}
-
-.palette-button{
-    background-color: brown;
-
-    border: 3px solid black;
-    border-radius: 10px;
 }
 </style>
