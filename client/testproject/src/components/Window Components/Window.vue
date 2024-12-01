@@ -229,15 +229,15 @@ export default {
     margin-right: auto;
 }
 
+hr{
+    border: solid var(--Accent-background-colour) 1px;
+    margin: 0 0.5em 0.25em 0.5em;
+}
 </style>
 
 <style scoped>
 @import '../../assets/base.css';
 
-hr{
-    border: solid #C9CBA3 1px;
-    margin: 0 0.5em 0.25em 0.5em;
-}
 
 .header-title{
     position: relative;

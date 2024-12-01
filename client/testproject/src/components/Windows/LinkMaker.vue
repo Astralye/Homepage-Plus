@@ -95,8 +95,6 @@
         </WindowContainerDivider>
     </div>
 
-    <!-- Move icon to X  -->
-
     <!-- Possibly display a tree, or show the screen. -->
 
     <WindowContainerDivider>
@@ -111,113 +109,137 @@
         </template>
     </WindowContainerDivider>
 
+    <WindowContainerDivider>
+        <template #content>
+
+        <!-- Tabs -->
+        <TabWrapper
+            :tab_Buttons="m_IconTypeTabs"
+            :default_Tab="0"
+            >
+
 <!-- 
     Icon customization 
     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  
 -->
-
-    <!-- Main container -->
-    <div>
-        
-        <!--  -->
-        <div>
-            <!-- Display icon and buttons-->
-            <div class="width-full flex">
+            <template #Tab-0>
+                <div class="width-full flex">
+                    <WindowContainerDivider>
+                        <template #header>
+                            <h2>
+                                Displayed icon
+                            </h2>
+                        </template>
+                
+                        <template #content>
+                            <!-- Icon display -->
+                            <div class="flex display-wrapper">
+            
+                                <!-- Modification buttons -->
+                                <div class="flex button-column"> 
+                                <!-- Colour -->
+                                    <div class="modification-button">
+                                        <ColourPicker
+                                            :loaded_Data="m_SelectedObject.iconColour"
+                                            @setColour="(hex) => setColourData(hex)"
+                                        />
+                                    </div>
+            
+                                    <div class="modification-button">
+                                        <SingleButton
+                                            class="width-full"
+                                            m_IconString="Image"
+                                            @click="windowHandler.toggleWindow('icon menu')">
+            
+                                            Icon
+                                        </SingleButton>
+                                    </div>
+            
+                                    <div class="modification-button">
+                                        <SingleButton
+                                            class="width-full"
+                                            m_IconString="Aspect-Ratio"
+                                            @click="console.log('iconSize')">
+                                            Icon Size
+                                        </SingleButton>
+                                    </div>
+            
+                                    <div class="modification-button">
+                                        <SingleButton
+                                            class="width-full"
+                                            m_IconString="Edit-Note"
+                                            @click="console.log('icon text')">
+                                            Icon Text
+                                        </SingleButton>
+                                    </div>
+            
+                                    <div class="modification-button">
+                                        <SingleButton
+                                            class="width-full"
+                                            m_IconString="Text-UL"
+                                            @click="console.log('text size')">
+            
+                                            Text size
+                                        </SingleButton>
+                                    </div>
+                                </div>
+            
+                                <div class="image-placeholder flex">
+            
+                                    <!-- Empty selection. Display default -->
+                                    <template v-if="!isCurrentlySelected()">
+                                        <div class="icon-fit center fit-content">
+                                            <SVGHandler
+                                                class="icon-center"
+                                                height="90%"
+                                                width="90%"
+                                                :fill_Colour="m_SelectedObject.iconColour"
+                                                :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
+                                                :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
+                                            />
+                                        </div>
+                                    </template>
+                                    
+                                    <!-- Contains value -->
+                                    <template v-else>
+                                        <div class="icon-fit center fit-content">
+                                            <SVGHandler
+                                                class="icon-center"
+                                                height="90%"
+                                                width="90%"
+                                                :path_Value="iconImageStorage.getPathData('Cross')"
+                                                :view_Box="iconImageStorage.getViewBoxName('Cross')"
+                                            />
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </WindowContainerDivider>
+                </div>
+            
                 <WindowContainerDivider>
                     <template #header>
-                        <h2>
-                            Displayed icon
-                        </h2>
+                        <h3> Setting that changes</h3>
                     </template>
             
                     <template #content>
-                        <!-- Icon display -->
-                        <div class="flex display-wrapper">
-
-                            <!-- Modification buttons -->
-                            <div class="flex button-column"> 
-                            <!-- Colour -->
-                                <div class="modification-button">
-                                    <ColourPicker
-                                        :loaded_Data="m_SelectedObject.iconColour"
-                                        @setColour="(hex) => setColourData(hex)"
-                                    />
-                                </div>
-
-                                <div class="modification-button">
-                                    <SingleButton
-                                        class="width-full"
-                                        m_IconString="Image"
-                                        @click="windowHandler.toggleWindow('icon menu')">
-
-                                        Icon
-                                    </SingleButton>
-                                </div>
-
-                                <div class="modification-button">
-                                    <SingleButton
-                                        class="width-full"
-                                        m_IconString="Aspect-Ratio"
-                                        @click="console.log('iconSize')">
-                                        Icon Size
-                                    </SingleButton>
-                                </div>
-
-                                <div class="modification-button">
-                                    <SingleButton
-                                        class="width-full"
-                                        m_IconString="Edit-Note"
-                                        @click="console.log('icon text')">
-                                        Icon Text
-                                    </SingleButton>
-                                </div>
-
-                                <div class="modification-button">
-                                    <SingleButton
-                                        class="width-full"
-                                        m_IconString="Text-UL"
-                                        @click="console.log('text size')">
-
-                                        Text size
-                                    </SingleButton>
-                                </div>
-                            </div>
-
-                            <div class="image-placeholder flex">
-
-                                <!-- Empty selection. Display default -->
-                                <template v-if="!isCurrentlySelected()">
-                                    <div class="icon-fit center fit-content">
-                                        <SVGHandler
-                                            class="icon-center"
-                                            height="90%"
-                                            width="90%"
-                                            :fill_Colour="m_SelectedObject.iconColour"
-                                            :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
-                                            :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
-                                        />
-                                    </div>
-                                </template>
-                                
-                                <!-- Contains value -->
-                                <template v-else>
-                                    <div class="icon-fit center fit-content">
-                                        <SVGHandler
-                                            class="icon-center"
-                                            height="90%"
-                                            width="90%"
-                                            :path_Value="iconImageStorage.getPathData('Cross')"
-                                            :view_Box="iconImageStorage.getViewBoxName('Cross')"
-                                        />
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
+                        Display Content
                     </template>
                 </WindowContainerDivider>
-            </div>
-        </div>
-    </div>
+            
+            </template>
+            <template #Tab-1>
+                Tab2
+            </template>
+            <template #Tab-2>
+                Tab-3
+            </template>
+        </TabWrapper>
+
+        
+    </template>
+    </WindowContainerDivider>
 
 <!-- 
     Icon menu Window 
@@ -271,6 +293,8 @@
     </Transition>
     </teleport>
 
+
+
 <!-- 
     Icon Function
     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  
@@ -283,7 +307,7 @@ import WindowContainerDivider from '../Window Components/WindowContainerDivider.
 import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import IconHandler from '../Main/IconHandler.vue';
-import Tabs from '../Window Components/Tabs.vue';
+import TabWrapper from '../Window Components/TabWrapper.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
 
@@ -307,10 +331,10 @@ export default {
         RangeSlider,
         IconHandler,
         SVGHandler,
+        TabWrapper,
         TextInput,
         ToolTip,
         Window,
-        Tabs,
     },
     data(){
         return {
@@ -348,6 +372,22 @@ export default {
 
             m_SelectedObject: {},
             m_SelectedIconIndex: -1,
+
+            // Tabs
+            m_IconTypeTabs: [
+                {
+                    text:'Display Icon',
+                    icon_Image:'Image'
+                },
+                {
+                    text:'Functionality',
+                    icon_Image:'Edit-Note'
+                },
+                {
+                    text:'Other',
+                    icon_Image:'Remove_Select'
+                }
+            ]
         }
     },
     created(){
@@ -706,16 +746,11 @@ export default {
 
 .button-column{
     flex-direction: column;
-    width: 25%;
+    width: 20%;
 }
 
 .modification-button{
     height: fit-content;
-}
-
-.display-wrapper{
-    width: 85%;
-    margin: auto;
 }
     
 .icon-fit{
@@ -725,6 +760,8 @@ export default {
 
 .image-placeholder{
     border: 2px solid var(--Accent-background-colour);
+    border-top-right-radius: 2em;
+    border-bottom-right-radius: 2em;
     border-left: 0;
 
     width: auto;
@@ -739,7 +776,7 @@ export default {
 .icon-selection-menu{
     flex-wrap: wrap;
     overflow-y: scroll;
-    height: 300px;
+    height: 350px;
 }
 
 .icon-wrapper{
