@@ -5,7 +5,9 @@
         <div class="flex button-margins">
             <template v-for="(item, index) in tab_Buttons" :key="index">
                 <SingleButton
-                    @click="enabler(index)">
+                    @click="enabler(index)"
+                    :button_toggle="true"
+                    :enabled="enabled">
                 {{ item.text }}
                 </SingleButton>
             </template>
@@ -36,6 +38,10 @@ export default {
         tab_Buttons: {
             type: Array,
             required: true,
+        },
+        enabled:{
+            type: Boolean,
+            default: true,
         }
 
         /*
@@ -46,6 +52,7 @@ export default {
             }
         */
     },
+    emits: [ 'update' ],
     data() {
       return {
         selectedIndex: 0,
@@ -87,10 +94,18 @@ export default {
         enabler(index){
             this.resetAll();
             this.enableIndex(index);
+            this.$emit('update', this.tab_Buttons[index].text);
         },
 
         isIndexEnabled(index){
             return (this.states[index].render);
+        }
+    },
+    watch:{
+        // Change the tab
+        'default_Tab'(val){
+            if(val === -1){ this.resetAll(); return; }
+            this.enabler(val);
         }
     }
 }

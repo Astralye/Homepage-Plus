@@ -22,12 +22,14 @@
 					<TextInput
 						placeholder_text="Container Name"
 						max_length=30
+						:enabled="isSelected()"
 						v-model="containerString"
 					/>
 		
 					<Checkbox
 						@onChange="check => showName = check"
 						:checkValue="showName"
+						:enabled="isSelected()"
 						text="Display name"
 					/>
 		
@@ -50,65 +52,87 @@
 		</template>
 
 		<template #content>
-			<RadioButton
-				v-model="LayoutType"
-				:enable_Radio="(editVariables.containerSelected) ? true : false"
-				@clickEvent="id => changeSelectedValue(this.LayoutType, 'setLayout', id)"
-			/>
-
-			<!-- Content Align -->
-
-			<WindowContainerDivider>
-				<template #header>
-					<h3> Grid Content Align </h3> 
-				</template>
-
-				<template #tooltip>
-					<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
-				</template>
-
-				<template #content>
-					<RadioButton
-						v-model="ContentAlign"
-						:enable_Radio="(editVariables.containerSelected) ? true : false"
-						@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
-					/>
-				</template>
-			</WindowContainerDivider>
-			<!-- Dimensions -->
 			
-			<WindowContainerDivider>
-				<template #header>
-					<h3>Container Dimensions</h3>
-				</template>
-		
-				<template #tooltip>
-					<ToolTip> Content align direction of the y axis </ToolTip>
-				</template>
-		
-				<template #content>
-				<h4>
-					X Axis Direction
-				</h4>
-		
-				<RadioButton
-					v-model="OrientationLeftRight"
-					:enable_Radio="(editVariables.containerSelected) ? true : false"
-					@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
-				/>
-		
-				<h4>
-					Y Axis Direction
-				</h4>
-		
-				<RadioButton
-					v-model="OrientationTopBottom"
-					:enable_Radio="(editVariables.containerSelected) ? true : false"
-					@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
-				/>
-		
-				</template>
-			</WindowContainerDivider>
+		<!-- Tabs  -->
+			<TabWrapper
+				:default_Tab="tabIndex"
+				:tab_Buttons="tab_Data"
+				:enabled="isSelected()"
+				@update="val => changeSelectedValue(this.LayoutType, 'setLayout', val)"
+			>
+			<template #Tab-0>
+					<!-- Content Align -->
+					
+						<WindowContainerDivider>
+							<template #header>
+								<h3> Grid Content Align </h3> 
+							</template>
+			
+							<template #tooltip>
+								<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+							</template>
+							
+							<template #content>
+								<RadioButton
+								v-model="ContentAlign"
+								:enable_Radio="(editVariables.containerSelected) ? true : false"
+								@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
+								/>
+							</template>
+						</WindowContainerDivider>
+						<!-- Dimensions -->
+						
+						<WindowContainerDivider>
+							<template #header>
+								<h3>Container Dimensions</h3>
+							</template>
+							
+							<template #tooltip>
+								<ToolTip> Content align direction of the y axis </ToolTip>
+							</template>
+							
+							<template #content>
+								<h4>
+									X Axis Direction
+								</h4>
+								
+								<RadioButton
+								v-model="OrientationLeftRight"
+								:enable_Radio="(editVariables.containerSelected) ? true : false"
+								@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
+								/>
+					
+								<h4>
+									Y Axis Direction
+								</h4>
+								
+								<RadioButton
+								v-model="OrientationTopBottom"
+								:enable_Radio="(editVariables.containerSelected) ? true : false"
+								@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
+								/>
+								
+							</template>
+						</WindowContainerDivider>
+				
+					</template>
+
+					<template #Tab-1>
+						<WindowContainerDivider>
+							<template #header>
+								<h3> Temporary </h3> 
+							</template>
+			
+							<template #tooltip>
+								<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+							</template>
+							
+							<template #content>
+								Some content
+							</template>
+						</WindowContainerDivider>
+					</template>
+			</TabWrapper>
 		</template>
 	</WindowContainerDivider>
 
@@ -127,12 +151,14 @@ import ContainerSelection from '../Window Components/ContainerSelection.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
 
 import TextInput from '../Input Components/TextInput.vue';
+import TabWrapper from '../Window Components/TabWrapper.vue';
 
 export default {
     components: {
         WindowContainerDivider,
         ContainerSelection,
         RadioButton,
+		TabWrapper,
         TextInput,
 		Checkbox,
         ToolTip,
@@ -146,33 +172,38 @@ export default {
       editVariables.selectionContainerToggler();
     },
     data(){
-      return{
-        
-        containerData,
-        editVariables,
+      	return{
+			containerData,
+			editVariables,
 
-        LayoutType: [
-          { id: "Grid",    selected: false},
-          { id: "List",    selected: false},
-        ],
+			LayoutType: [
+				{ id: "Grid",    selected: false},
+				{ id: "List",    selected: false},
+			],
 
-        ContentAlign: [
-          { id: "Compact", selected: false},
-          { id: "Free",    selected: false},
-        ],
+			ContentAlign: [
+				{ id: "Compact", selected: false},
+				{ id: "Free",    selected: false},
+			],
 
-        OrientationTopBottom: [
-          { id: "Top",     selected: false},
-          { id: "Bottom",  selected: false},
-        ],
+			OrientationTopBottom: [
+				{ id: "Top",     selected: false},
+				{ id: "Bottom",  selected: false},
+			],
 
-        OrientationLeftRight: [
-          { id: "Left",    selected: false},
-          { id: "Right",   selected: false},
-        ],
+			OrientationLeftRight: [
+				{ id: "Left",    selected: false},
+				{ id: "Right",   selected: false},
+			],
 
-		containerString: "",
-		showName: false,
+			containerString: "",
+			showName: false,
+
+			tabIndex: -1,
+			tab_Data: [
+				{ text:'Grid', icon_Image:"Pencil"},
+				{ text:'List', icon_Image:"Pencil"},
+			],
 	    }
     },
 
@@ -186,6 +217,8 @@ export default {
 	
 		// Changes the property value of a given id to true and everything to false
 		changeSelectedValue(valueType, functionPrefix, idValue){
+
+			if(!editVariables.containerSelected) return;
 			valueType.forEach(element => {
 				element.selected = false;
 
@@ -217,13 +250,23 @@ export default {
 			this.containerString = containerData.getHeaderName(id);
 			this.showName = containerData.isHeaderToggled(id);
 
-			// Only gets past if selection
-			if(!id){ return; } 
+			if(!id){ this.tabIndex = -1; return; } // Resetted value
+
 			this.modifyValue(this.LayoutType,           containerData.getLayoutType(id));
 			this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
 			this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
 			this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
+			
+			this.tabIndex = this.setTabIndex();
 		},
+		
+		isSelected(){
+			return (this.containerString === ""); 
+		},
+
+		setTabIndex(){
+			return (this.LayoutType[0].selected) ? 0 : 1;
+		}
 
 // ------------------------------------------------------------------------------------------------------------------------------
 

@@ -179,7 +179,7 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Containers')"
                 title="Containers"
-                :width="400">
+                :width="450">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
