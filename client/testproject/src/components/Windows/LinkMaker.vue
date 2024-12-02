@@ -95,8 +95,11 @@
         </WindowContainerDivider>
     </div>
 
-    <!-- Possibly display a tree, or show the screen. -->
+    <!-- 
+        Possibly display a tree, or show the screen.
 
+        Non-functional
+    -->
     <WindowContainerDivider>
         <template #header>
             <h2>  Icon Location </h2>
@@ -116,7 +119,7 @@
         <TabWrapper
             :tab_Buttons="m_IconTypeTabs"
             :default_Tab="0"
-            >
+        >
 
 <!-- 
     Icon customization 
@@ -149,8 +152,9 @@
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Image"
-                                            @click="windowHandler.toggleWindow('icon menu')">
-            
+                                            @click="windowHandler.toggleWindow('icon menu')"
+                                            :enabled="!isCurrentlySelected()"
+                                        >
                                             Icon
                                         </SingleButton>
                                     </div>
@@ -159,7 +163,9 @@
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Aspect-Ratio"
-                                            @click="console.log('iconSize')">
+                                            @click="console.log('iconSize')"
+                                            :enabled="!isCurrentlySelected()"
+                                        >
                                             Icon Size
                                         </SingleButton>
                                     </div>
@@ -168,7 +174,9 @@
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Edit-Note"
-                                            @click="console.log('icon text')">
+                                            @click="console.log('icon text')"
+                                            :enabled="!isCurrentlySelected()"
+                                        >
                                             Icon Text
                                         </SingleButton>
                                     </div>
@@ -177,8 +185,9 @@
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Text-UL"
-                                            @click="console.log('text size')">
-            
+                                            @click="console.log('text size')"
+                                            :enabled="!isCurrentlySelected()"
+                                        >
                                             Text size
                                         </SingleButton>
                                     </div>
@@ -229,8 +238,114 @@
                 </WindowContainerDivider>
             
             </template>
+
+<!-- 
+    Icon Functionality
+    &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  
+-->
+
             <template #Tab-1>
-                Tab2
+
+                <!-- Non-functional -->
+                <RadioBtn
+                    v-model="m_FunctionalityType"
+                    :enable_Radio="!isCurrentlySelected()"
+                    @clickEvent="val => console.log(val)"
+                />
+                
+                <WindowContainerDivider
+                class="container-divider">
+                    <template #header> 
+                        <h2>
+                            URL Link
+                        </h2>
+                    </template>
+            
+                    <template #content>
+                        <TextInput
+                            v-model="m_DisplayLink"
+                            :enabled="!isCurrentlySelected()"
+                        />
+                    </template>
+            
+                    <template #tooltip>
+                        <ToolTip>
+                            Calculates the domain and directory automatically.
+                            'https://' is required otherwise it opens the relative to this site.
+                        </ToolTip>
+                    </template>
+                </WindowContainerDivider>
+            
+                <WindowContainerDivider>
+                    <template #content>
+                        <WindowContainerDivider
+                        class="container-divider">
+                            <template #header> 
+                                <h3>
+                                    Hostname
+                                </h3>
+                            </template>
+                
+                            <template #content>
+                                <OptionSelect
+                                    v-model="m_StoredDomains"
+                                    :enabled="!isCurrentlySelected()"
+                                    :Selected_Index="m_SelectedIndex"
+                                    @Selected-Value="value => m_LinkInfo.root = value"
+                                />
+                            </template>
+                
+                            <template #tooltip>
+                                <ToolTip>
+                                    Root name of a website. It contains something like [www.XYZ.jkl]
+                                </ToolTip>
+                            </template>
+                        </WindowContainerDivider>
+                
+                        <WindowContainerDivider
+                        class="container-divider">
+                            <template #header> 
+                                <h3 class="inline">
+                                    Subdirectory
+                                </h3>
+                            </template>
+                
+                            <template #content>
+                                <TextInput 
+                                    v-model="m_LinkInfo.subdirectory"
+                                    :enabled="!isCurrentlySelected()"
+                                />
+                            </template>
+                
+                            <template #tooltip>
+                                <ToolTip>
+                                    Directory after the domain name e.g youtube.com/{XYZ}
+                                    where XYZ is the input
+                                </ToolTip>
+                            </template>
+                        </WindowContainerDivider>
+                
+                        <WindowContainerDivider
+                        class="container-divider">
+                            <template #content>
+
+                                <!-- Non-Functional -->
+                                <input type="checkbox"/>
+                                Open on new window? 
+                    
+                                <div class="right-side">
+                                    <SingleButton
+                                        :m_iconString="Save"
+                                        @click="updateLink()"
+                                        :enabled="!isCurrentlySelected()"
+                                        >
+                                        Save
+                                    </SingleButton>
+                                </div>
+                            </template>
+                        </WindowContainerDivider>
+                    </template>
+                </WindowContainerDivider>
             </template>
             <template #Tab-2>
                 Tab-3
@@ -310,7 +425,9 @@ import IconHandler from '../Main/IconHandler.vue';
 import TabWrapper from '../Window Components/TabWrapper.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
+import OptionSelect from '../Input Components/OptionSelect.vue';
 
+import RadioBtn from '../Input Components/RadioBtn.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 import Window from '../Window Components/Window.vue';
 
@@ -328,11 +445,13 @@ export default {
         WindowContainerDivider,
         SingleButton,
         ColourPicker,
+        OptionSelect,
         RangeSlider,
         IconHandler,
         SVGHandler,
         TabWrapper,
         TextInput,
+        RadioBtn,
         ToolTip,
         Window,
     },
@@ -349,8 +468,10 @@ export default {
             m_Columns: 3,
 
             m_STORAGE: "Storage",
+            m_SelectedObject: {}, // Data for selected object.
             
             // Icon drag visual variables
+            
 
             m_DisplayIconData:{
                 iconColour: "#000000",
@@ -370,7 +491,6 @@ export default {
                 y: 0,
             },
 
-            m_SelectedObject: {},
             m_SelectedIconIndex: -1,
 
             // Tabs
@@ -387,11 +507,31 @@ export default {
                     text:'Other',
                     icon_Image:'Remove_Select'
                 }
+            ],
+
+            // Icon Functionality 
+            
+            m_LinkInfo: {
+                protocol: "https://",
+                root: "",
+                subdirectory: "",
+                search: ""
+            },
+
+            m_SelectedIndex: -1,
+
+            m_URLObject: null,
+            m_StoredDomains: [],
+
+            m_FunctionalityType:[
+                { id:"Link", selected: true},
+                { id:"Folder", selected: false},
             ]
         }
     },
     created(){
         editVariables.enableIsIconSelector();
+        this.displaySelectedData(iconSelect.dataValue);
     },
     unmounted(){
         editVariables.disableIsIconSelector();
@@ -445,6 +585,33 @@ export default {
         },
 
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+// Icon Functionality
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // Update link if there is data.
+        updateLink(){
+            if(Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object){ return; }
+        
+            // update link value
+            this.m_SelectedObject.link = this.m_URLObject.href;
+            
+        },
+
+        updateLinkValue(fullString){
+            this.m_URLObject = new URL(fullString); 
+        },
+
+        addDomain(name){
+            if(!this.m_StoredDomains.includes(name)) this.m_StoredDomains.push(name);
+
+            for(let i = 0; i < this.m_StoredDomains.length; i++){
+                if(this.m_StoredDomains[i] === name){
+                    this.m_SelectedIndex = i;
+                }
+            }
+        },
+
 
 // Icon functions
 // ------------------------------------------------------------------------------------------------------------
@@ -628,6 +795,32 @@ export default {
             handler(val){ this.displaySelectedData(val); },
             deep: true
         },
+    },
+    computed:{
+        m_DisplayLink:{
+            get(){
+                if(this.m_LinkInfo.root === ""){ return;}
+                if(this.m_LinkInfo.subdirectory[0] != "/"){ "/" + this.m_LinkInfo.subdirectory}
+
+                this.updateLinkValue(this.m_LinkInfo.protocol + this.m_LinkInfo.root + this.m_LinkInfo.subdirectory + this.m_LinkInfo.search); 
+                
+                return this.m_URLObject.href;
+            },
+            set(newValue){
+                let result = URL.parse(newValue);
+                if(!result){
+                    // If URL does not follow convention
+                    // IE. opening a local file
+                    return;
+                }
+                this.updateLinkValue(result);
+                this.addDomain(this.m_URLObject.host);
+
+                this.m_LinkInfo.root = this.m_URLObject.host;
+                this.m_LinkInfo.subdirectory = this.m_URLObject.pathname;
+                this.m_LinkInfo.search = this.m_URLObject.search;
+            }
+        }
     }
 }
 
@@ -782,6 +975,14 @@ export default {
 .icon-wrapper{
     height: 5em;
     width: 5em;
+}
+
+.right-side{
+    width: 100%;
+    height: auto;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
 }
 
 </style>
