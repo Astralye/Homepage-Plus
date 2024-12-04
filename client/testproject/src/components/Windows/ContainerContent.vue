@@ -204,6 +204,8 @@ export default {
 				{ text:'Grid', icon_Image: "Grid"},
 				{ text:'List', icon_Image: "List"},
 			],
+
+			isSelected: false,
 	    }
     },
 
@@ -249,6 +251,7 @@ export default {
 			this.m_CurrentID = id;
 			this.containerString = containerData.getHeaderName(id);
 			this.showName = containerData.isHeaderToggled(id);
+			this.isSelected = this.isCurrentlySelected();
 
 			if(!id){ this.tabIndex = -1; return; } // Resetted value
 
@@ -262,16 +265,13 @@ export default {
 
 		setTabIndex(){
 			return (this.LayoutType[0].selected) ? 0 : 1;
-		}
+		},
+
+		isCurrentlySelected(){ return (this.m_CurrentID); },
 
 // ------------------------------------------------------------------------------------------------------------------------------
 
     },
-	computed:{
-		isSelected(){
-			return (this.containerString === ""); 
-		}
-	},
 	watch:{
 		// Update the container data if containes data.
 		'containerString'(val){
