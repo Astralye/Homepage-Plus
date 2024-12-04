@@ -7,7 +7,8 @@
                 <SingleButton
                     @click="enabler(index)"
                     :button_toggle="true"
-                    :enabled="enabled">
+                    :enabled="enabled"
+                    :m_IconString="item.icon_Image">
                 {{ item.text }}
                 </SingleButton>
             </template>

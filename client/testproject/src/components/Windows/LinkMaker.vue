@@ -342,7 +342,7 @@
                                         :m_iconString="Save"
                                         @click="updateLink()"
                                         :enabled="isCurrentlySelected"
-                                        >
+                                    >
                                         Save
                                     </SingleButton>
                                 </div>
@@ -367,7 +367,7 @@
     <teleport to="body">
     <Transition name="fade">
         <Window
-            v-if="windowHandler.getEditValue('Icon Menu')"
+            v-if="isIconMenuOpen"
             title="Icon Menu"
             :width="500">
             <template #window-icon>
@@ -596,8 +596,7 @@ export default {
             if(Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object){ return; }
         
             // update link value
-            this.m_SelectedObject.link = this.m_URLObject.href;
-            
+            this.m_SelectedObject.link = this.m_URLObject.href;  
         },
 
         updateLinkValue(fullString){
@@ -799,6 +798,9 @@ export default {
         },
     },
     computed:{
+        isIconMenuOpen(){
+            return (this.isCurrentlySelected && windowHandler.getEditValue('Icon Menu'));
+        },
         isCurrentlySelected(){
             return !(Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object);
         },

@@ -201,8 +201,8 @@ export default {
 
 			tabIndex: -1,
 			tab_Data: [
-				{ text:'Grid', icon_Image:"Pencil"},
-				{ text:'List', icon_Image:"Pencil"},
+				{ text:'Grid', icon_Image: "Grid"},
+				{ text:'List', icon_Image: "List"},
 			],
 	    }
     },
