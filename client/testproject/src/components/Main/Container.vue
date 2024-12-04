@@ -60,10 +60,23 @@
             <div v-if="editVariables.isEnabled && displayDivider()"
             :class="{
                 'page-drag-Horizontal': ( !m_isVertical),
-                'page-drag-Vertical height-full': (m_isVertical)}"
+                'page-drag-Vertical height-full': (m_isVertical)
+            }"
             @mousedown="initDividerDrag"
             ref="divider">
             </div>
+
+            <Transition name="fade">
+                <!-- Temporary next position slider -->
+                <div v-if="editVariables.isEnabled && m_isMoveContainer && displayDivider()"
+                    class="next-pos"
+                    :class="{
+                        'next-pos-horizontal': ( !m_isVertical),
+                        'next-pos-vertical': (m_isVertical)
+                    }"
+                    ref="next-divider">
+                </div>
+            </Transition>
         </template>
     </div>
 </template>
@@ -148,11 +161,6 @@ export default {
                 y: 0,
                 width: 0,
                 height: 0,
-            },
-
-            m_MouseCoordinate:{
-                x: 0,
-                y: 0
             },
 
             // Conditional HTML 
@@ -302,6 +310,9 @@ export default {
                 this.$parent.$data.m_ComponentData
             );
             const data = ContainerDividerClass.movementData(parentObj, this.m_LayoutData.id, this.m_isVertical, this.m_pxThreshold, difference);
+
+            this.calculateDisplayDragLocation(difference);
+            
             // Run parent function
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
@@ -313,6 +324,49 @@ export default {
             this.m_isMoveContainer = false;
             this.m_cursor = "default";
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
+        },
+
+        calculateDisplayDragLocation(difference){
+            
+            let isPositive;
+            var translateXVal;
+            var translateYVal;
+            
+            // Within the drag size
+            let isInside = ( Math.abs(difference) < 5);
+
+            // If not inside drag, find the difference.
+            if(!isInside){ isPositive = (difference > 0); }
+
+            let parent = LayoutDataClass.getParentObj(this.m_LayoutData);
+
+            // value to nothing to reset it.
+            this.$refs["next-divider"].style.transform = null;
+            
+            // Y value changes
+            if(parent.divisionType === "Horizontal"){
+                translateXVal = 0;
+
+                if(isInside){
+                    translateYVal = "-100%";
+                }
+                else{
+                    translateYVal = -this.$refs["next-divider"].getBoundingClientRect().height;
+                    translateYVal += (isPositive) ? this.m_pxThreshold : -this.m_pxThreshold;
+                    translateYVal += "px";
+                }
+            }
+            // X Value changes
+            else{
+                translateYVal = "-200%";
+                
+                translateXVal = -15;
+                if(!isInside){
+                    translateXVal += (isPositive) ? this.m_pxThreshold : -this.m_pxThreshold;
+                }
+            }
+
+            this.$refs["next-divider"].style.transform = `translate(${translateXVal}px, ${translateYVal})`; 
         },
 
         // Only runs at the parent container to modify css variable
@@ -408,12 +462,6 @@ export default {
                         "\nFR data:",       this.m_LayoutData.unevenFRData,
             );
         },
-        printMouseCoordinate(){
-            console.log("Mouse Coordinate (Absolute)\n",
-                        "\nX:", this.m_MouseCoordinate.x,
-                        "\nY:", this.m_MouseCoordinate.y,
-            );
-        },
         printParentContainerInfo(){
             console.log("Parent information\n" ,
                         "\nx:",      this.$parent.$data.m_ComponentData.x,
@@ -487,6 +535,28 @@ export default {
 
 <style scoped>
 @import '../../assets/base.css';
+
+.next-pos{
+    pointer-events: none;
+}
+
+.next-pos-horizontal{
+    height: 10px;
+    width: 100%;
+    transform: translate(0, -100%);
+    background-color: rgba(0, 0, 0, 0.61);
+    border-radius: 10px;
+    transition: all 150ms ease-in-out;
+}
+
+.next-pos-vertical{
+    width: 20px;
+    height: 100%;
+    transform: translate(-15px, -200%);
+    background-color: rgba(0, 0, 0, 0.61);
+    border-radius: 10px;
+    transition: all 150ms ease-in-out;
+}
 
 hr{
     border: 1px solid white;
