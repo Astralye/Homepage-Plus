@@ -16,7 +16,7 @@
             'grid-template' : m_LayoutData.NoChildren > 0 }"
             @mouseover.self="m_isHover = editVariables.containerSelectionMode"
             @mouseout.self="m_isHover=false"
-            @click.self="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null">
+            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null">
 
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
@@ -32,25 +32,34 @@
 
                 <!-- If no children, display the grid layout -->
                 <div v-else-if="m_LayoutData.NoChildren === 0"
-                    class="container-wrapper">
+                    class="container-wrapper"
+                    @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null">
+
                     <!-- Container header -->
 
-                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle">
+                    <!--  Gets disabled after one type -->
+                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"> 
                         <div class="container-header">
                             {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
                         </div>
                         <hr>
                     </template>
 
+                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
+                        <Gridlayout
+                            @mouseover="m_isHover = editVariables.containerSelectionMode"
+                            @mouseout="m_isHover=false"
+                            
+                            :component_ID="m_LayoutData.id"
+                            :update_Grid_Flag="m_updateGrid"
+                        />
+                    </template>
                     <!-- Container Grid -->
-                    <Gridlayout
-                        @mouseover="m_isHover = editVariables.containerSelectionMode"
-                        @mouseout="m_isHover=false"
-                        @click="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null"
-                        
-                        :component_ID="m_LayoutData.id"
-                        :update_Grid_Flag="m_updateGrid"
-                    />
+                    <template v-else>
+                        <ListLayout
+                            :component_ID="m_LayoutData.id"/>
+                    </template>
+                     
                 </div>
             </div>
         </div>
@@ -88,13 +97,15 @@ import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
 import { editVariables } from '../../Data/SettingVariables.js';
+import ListLayout from './ListLayout.vue';
 
 import Gridlayout from './GridLayout.vue'
 
 export default {
     name: "recursive-container",
     components: {
-        Gridlayout
+        Gridlayout,
+        ListLayout,
     },
     props: {
         nest_level: {
@@ -262,6 +273,7 @@ export default {
 
         // Store container data on click to singleton
         storeClickedContainer(){
+            console.log("here");
             if(this.m_LayoutData.id === null) {return;}
             editVariables.setContainerSelected(this.m_LayoutData.id);
             editVariables.disableContainerSelection();
