@@ -4,7 +4,8 @@
     <SingleButton
         class="full-width"
         @click="windowHandler.toggleWindow('colour picker')"
-        m_IconString="Colour_Palette">
+        m_IconString="Colour_Palette"
+        :enabled="enabled">
         Colour
     </SingleButton>
     
@@ -13,7 +14,7 @@
         <Transition name="fade">
 
             <Window
-                v-if="windowHandler.getEditValue('colour picker')"
+                v-if="isWindowOpen"
                 title="Colour Picker"
                 :width="350">
                 <template #window-icon>
@@ -145,6 +146,10 @@ export default {
         loaded_Data: {
             type: String,
             default: null
+        },
+        enabled: {
+            type: Boolean,
+            default: true,
         }
     },
     emits: [ 'setColour'] ,
@@ -323,6 +328,11 @@ export default {
             this.m_HexValue = this.loaded_Data;
         }
 
+    },
+    computed:{
+        isWindowOpen(){
+            return (this.enabled && windowHandler.getEditValue('colour picker'));
+        }
     },
     created(){
         this.loadIconColourData();

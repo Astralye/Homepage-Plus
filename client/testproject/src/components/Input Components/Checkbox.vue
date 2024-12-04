@@ -1,12 +1,23 @@
 <template>
     <div>
-        <label class="cyberpunk-checkbox-label">
+        <label 
+            class="cyberpunk-checkbox-label"
+            :class="{ 
+                'disabled-button': !enabled,
+                'enabled-button' : enabled
+            }"
+        >
         <input 
             type="checkbox" 
             class="cyberpunk-checkbox"
+            :class="{ 
+                'disabled-button': !enabled,
+                'enabled-button' : enabled
+            }"
             v-model="check"
             @change="$emit('onChange', check)"
             :checked="checkValue"
+            :disabled="!enabled"
         >
         <p> {{ text }} </p>
         </label>
@@ -16,12 +27,27 @@
 <script>
 
 export default {
-    props: ['checkValue', 'text'],
+    props: {
+        checkValue:[ Boolean ],
+        text:[String],
+        enabled: {
+            type: Boolean,
+            default: true,
+        }
+    },
     emits: [ 'onChange'],
 }
 </script>
 
 <style scoped>
+
+.disabled-button{
+    cursor: not-allowed;
+}
+
+.enabled-button{
+    cursor: pointer;
+}
 /* 
     From Uiverse.io by adamgiebl
     https://uiverse.io/adamgiebl/curly-lizard-40
@@ -37,7 +63,6 @@ export default {
     display: inline-block;
     position: relative;
     margin-right: 10px;
-    cursor: pointer;
 }
 
 .cyberpunk-checkbox:before {
@@ -61,7 +86,6 @@ export default {
 .cyberpunk-checkbox-label {
     font-size: 16px;
     color: #fff;
-    cursor: pointer;
     user-select: none;
     display: flex;
     align-items: center;

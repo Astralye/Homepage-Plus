@@ -145,6 +145,7 @@
                                         <ColourPicker
                                             :loaded_Data="m_SelectedObject.iconColour"
                                             @setColour="(hex) => setColourData(hex)"
+                                            :enabled="isCurrentlySelected"
                                         />
                                     </div>
             
@@ -153,7 +154,7 @@
                                             class="width-full"
                                             m_IconString="Image"
                                             @click="windowHandler.toggleWindow('icon menu')"
-                                            :enabled="!isCurrentlySelected()"
+                                            :enabled="isCurrentlySelected"
                                         >
                                             Icon
                                         </SingleButton>
@@ -164,7 +165,7 @@
                                             class="width-full"
                                             m_IconString="Aspect-Ratio"
                                             @click="console.log('iconSize')"
-                                            :enabled="!isCurrentlySelected()"
+                                            :enabled="isCurrentlySelected"
                                         >
                                             Icon Size
                                         </SingleButton>
@@ -175,7 +176,7 @@
                                             class="width-full"
                                             m_IconString="Edit-Note"
                                             @click="console.log('icon text')"
-                                            :enabled="!isCurrentlySelected()"
+                                            :enabled="isCurrentlySelected"
                                         >
                                             Icon Text
                                         </SingleButton>
@@ -186,7 +187,7 @@
                                             class="width-full"
                                             m_IconString="Text-UL"
                                             @click="console.log('text size')"
-                                            :enabled="!isCurrentlySelected()"
+                                            :enabled="isCurrentlySelected"
                                         >
                                             Text size
                                         </SingleButton>
@@ -196,7 +197,7 @@
                                 <div class="image-placeholder flex">
             
                                     <!-- Empty selection. Display default -->
-                                    <template v-if="!isCurrentlySelected()">
+                                    <template v-if="isCurrentlySelected">
                                         <div class="icon-fit center fit-content">
                                             <SVGHandler
                                                 class="icon-center"
@@ -249,7 +250,7 @@
                 <!-- Non-functional -->
                 <RadioBtn
                     v-model="m_FunctionalityType"
-                    :enable_Radio="!isCurrentlySelected()"
+                    :enable_Radio="isCurrentlySelected"
                     @clickEvent="val => console.log(val)"
                 />
                 
@@ -264,7 +265,7 @@
                     <template #content>
                         <TextInput
                             v-model="m_DisplayLink"
-                            :enabled="!isCurrentlySelected()"
+                            :enabled="isCurrentlySelected"
                         />
                     </template>
             
@@ -289,7 +290,7 @@
                             <template #content>
                                 <OptionSelect
                                     v-model="m_StoredDomains"
-                                    :enabled="!isCurrentlySelected()"
+                                    :enabled="isCurrentlySelected"
                                     :Selected_Index="m_SelectedIndex"
                                     @Selected-Value="value => m_LinkInfo.root = value"
                                 />
@@ -313,7 +314,7 @@
                             <template #content>
                                 <TextInput 
                                     v-model="m_LinkInfo.subdirectory"
-                                    :enabled="!isCurrentlySelected()"
+                                    :enabled="isCurrentlySelected"
                                 />
                             </template>
                 
@@ -330,14 +331,17 @@
                             <template #content>
 
                                 <!-- Non-Functional -->
-                                <input type="checkbox"/>
-                                Open on new window? 
+                                <Checkbox
+                                    :checkValue="true"
+                                    :enabled="isCurrentlySelected"
+                                    text="Open on new window?"
+                                /> 
                     
                                 <div class="right-side">
                                     <SingleButton
                                         :m_iconString="Save"
                                         @click="updateLink()"
-                                        :enabled="!isCurrentlySelected()"
+                                        :enabled="isCurrentlySelected"
                                         >
                                         Save
                                     </SingleButton>
@@ -426,6 +430,7 @@ import TabWrapper from '../Window Components/TabWrapper.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
 import OptionSelect from '../Input Components/OptionSelect.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
 
 import RadioBtn from '../Input Components/RadioBtn.vue';
 import { iconImageStorage } from '../../Data/iconImages';
@@ -452,6 +457,7 @@ export default {
         TabWrapper,
         TextInput,
         RadioBtn,
+        Checkbox,
         ToolTip,
         Window,
     },
@@ -558,7 +564,7 @@ export default {
 
         // Changes the currently selected. Displays
         newSelect(index){
-            if(this.isCurrentlySelected()){ return; } // No selection
+            if(!this.isCurrentlySelected){ return; } // No selection
 
             let svg = iconImageStorage.getPathFromIndex(index);
             this.m_SelectedObject.iconImage = svg.name;
@@ -570,17 +576,13 @@ export default {
             return svg.pathData;
         },
 
-        isCurrentlySelected(){
-            return (Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object);
-        },
-
         setColourData(hex){
             this.m_SelectedObject.iconColour = hex;
         },
 
         // Check if current selected icon is the index.
         selectedIconMenu(index){
-            if(this.isCurrentlySelected()){ return; } // No selection
+            if(!this.isCurrentlySelected){ return; } // No selection
             return (this.m_SelectedIconIndex === index);
         },
 
@@ -797,6 +799,9 @@ export default {
         },
     },
     computed:{
+        isCurrentlySelected(){
+            return !(Object.keys(this.m_SelectedObject).length === 0 && this.m_SelectedObject.constructor === Object);
+        },
         m_DisplayLink:{
             get(){
                 if(this.m_LinkInfo.root === ""){ return;}

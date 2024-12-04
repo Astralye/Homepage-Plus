@@ -22,14 +22,14 @@
 					<TextInput
 						placeholder_text="Container Name"
 						max_length=30
-						:enabled="isSelected()"
+						:enabled="isSelected"
 						v-model="containerString"
 					/>
 		
 					<Checkbox
 						@onChange="check => showName = check"
 						:checkValue="showName"
-						:enabled="isSelected()"
+						:enabled="isSelected"
 						text="Display name"
 					/>
 		
@@ -57,7 +57,7 @@
 			<TabWrapper
 				:default_Tab="tabIndex"
 				:tab_Buttons="tab_Data"
-				:enabled="isSelected()"
+				:enabled="isSelected"
 				@update="val => changeSelectedValue(this.LayoutType, 'setLayout', val)"
 			>
 			<template #Tab-0>
@@ -196,7 +196,7 @@ export default {
 				{ id: "Right",   selected: false},
 			],
 
-			containerString: "",
+			containerString: null,
 			showName: false,
 
 			tabIndex: -1,
@@ -259,10 +259,6 @@ export default {
 			
 			this.tabIndex = this.setTabIndex();
 		},
-		
-		isSelected(){
-			return (this.containerString === ""); 
-		},
 
 		setTabIndex(){
 			return (this.LayoutType[0].selected) ? 0 : 1;
@@ -271,6 +267,11 @@ export default {
 // ------------------------------------------------------------------------------------------------------------------------------
 
     },
+	computed:{
+		isSelected(){
+			return (this.containerString === ""); 
+		}
+	},
 	watch:{
 		// Update the container data if containes data.
 		'containerString'(val){
@@ -284,7 +285,6 @@ export default {
 
 			(isShow) ? containerData.enableContainerText(this.m_CurrentID) : 
 				containerData.disableContainerText(this.m_CurrentID);
-			
 		}
 	}
 }
