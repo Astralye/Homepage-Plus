@@ -431,16 +431,14 @@ import RangeSlider from '../Input Components/RangeSlider.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
 import OptionSelect from '../Input Components/OptionSelect.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
-
 import RadioBtn from '../Input Components/RadioBtn.vue';
-import { iconImageStorage } from '../../Data/iconImages';
+
 import Window from '../Window Components/Window.vue';
 
+import { iconImageStorage } from '../../Data/iconImages';
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
-
 import { windowHandler } from '../../Data/userWindow';
-
 import { editVariables } from '../../Data/SettingVariables';
 
 import SVGHandler from '../Input Components/SVGHandler.vue';
@@ -517,6 +515,7 @@ export default {
 
             // Icon Functionality 
             
+            m_DisplayLink: "",
             m_LinkInfo: {
                 protocol: "https://",
                 root: "",
@@ -548,13 +547,21 @@ export default {
 // Icon Customize
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+        // When a new icon / none is selected, displays the link data.
         displaySelectedData(newIconData){
-            if(newIconData.iconID === "" || newIconData.groupID === ""){ this.m_SelectedObject = {}; return; }
+
+            // Reset everything first.
+
+            this.setLinkData("", "", "");
+            this.m_SelectedIndex = -1;
+
+            if(newIconData.iconID === "" || newIconData.groupID === ""){  this.m_SelectedObject = {};  return; }
 
             let group = iconData.getGroup(newIconData.groupID);
             this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
 
             this.setSVGIndex(this.m_SelectedObject.iconImage);
+            this.setDisplayLink(this.m_SelectedObject.link);
         },
 
         // // From the name of the icon, get the index at which it appears in iconImages
@@ -613,6 +620,23 @@ export default {
             }
         },
 
+        setDisplayLink(newValue){
+            let result = URL.parse(newValue);
+            if(!result){
+                // If URL does not follow convention
+                // IE. opening a local file
+                return;
+            }
+            this.updateLinkValue(result);
+            this.addDomain(this.m_URLObject.host);
+            this.setLinkData(this.m_URLObject.host, this.m_URLObject.pathname, this.m_URLObject.search);
+        },
+
+        setLinkData(root, path, search){
+            this.m_LinkInfo.root = root;
+            this.m_LinkInfo.subdirectory = path;
+            this.m_LinkInfo.search = search;
+        },
 
 // Icon functions
 // ------------------------------------------------------------------------------------------------------------
@@ -792,6 +816,8 @@ export default {
         },
     },
     watch: {
+
+        // Gets fired when selected icon changes
         'iconSelect.dataValue': {
             handler(val){ this.displaySelectedData(val); },
             deep: true
@@ -808,26 +834,15 @@ export default {
             get(){
                 if(this.m_LinkInfo.root === ""){ return;}
                 if(this.m_LinkInfo.subdirectory[0] != "/"){ "/" + this.m_LinkInfo.subdirectory}
-
+    
                 this.updateLinkValue(this.m_LinkInfo.protocol + this.m_LinkInfo.root + this.m_LinkInfo.subdirectory + this.m_LinkInfo.search); 
                 
                 return this.m_URLObject.href;
             },
             set(newValue){
-                let result = URL.parse(newValue);
-                if(!result){
-                    // If URL does not follow convention
-                    // IE. opening a local file
-                    return;
-                }
-                this.updateLinkValue(result);
-                this.addDomain(this.m_URLObject.host);
-
-                this.m_LinkInfo.root = this.m_URLObject.host;
-                this.m_LinkInfo.subdirectory = this.m_URLObject.pathname;
-                this.m_LinkInfo.search = this.m_URLObject.search;
+                this.setDisplayLink(newValue);
             }
-        }
+        },
     }
 }
 
