@@ -57,6 +57,9 @@
                     <!-- Container Grid -->
                     <template v-else>
                         <ListLayout
+                            @mouseover="m_isHover = editVariables.containerSelectionMode"
+                            @mouseout="m_isHover=false"
+                            
                             :component_ID="m_LayoutData.id"/>
                     </template>
                      
