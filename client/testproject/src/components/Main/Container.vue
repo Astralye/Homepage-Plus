@@ -36,14 +36,13 @@
                     @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null">
 
                     <!-- Container header -->
-
-                    <!--  Gets disabled after one type -->
-                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"> 
+                    <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
+                        ref="header"> 
                         <div class="container-header">
                             {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
                         </div>
                         <hr>
-                    </template>
+                    </div>
 
                     <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
                         <Gridlayout
@@ -56,11 +55,13 @@
                     </template>
                     <!-- Container Grid -->
                     <template v-else>
-                        <ListLayout
-                            @mouseover="m_isHover = editVariables.containerSelectionMode"
-                            @mouseout="m_isHover=false"
-                            
-                            :component_ID="m_LayoutData.id"/>
+                        <div class="wrapper-2">
+                            <ListLayout
+                                @mouseover="m_isHover = editVariables.containerSelectionMode"
+                                @mouseout="m_isHover=false"
+                                
+                                :component_ID="m_LayoutData.id"/>
+                        </div>
                     </template>
                      
                 </div>
@@ -198,6 +199,7 @@ export default {
             m_cursor: "default",
 
             m_updateGrid: false,
+            m_headerOffset: "0px",
         }
     },
 
@@ -210,6 +212,7 @@ export default {
     },
     mounted(){
         this.setComponentDOMValues();
+        this.getHeaderSize();
     },
     updated(){
         if(this.m_updateGrid){ this.m_updateGrid = false; }
@@ -266,6 +269,18 @@ export default {
             if( lastRenderContainer && editVariables.isRenderFinalNode) { editVariables.disableRenderFinalNode(); }
         },
 
+        // Provides offset in px when using lists, to correctly place scrollable div.
+        getHeaderSize(){
+            let headerRef = this.$refs["header"];
+            let isList = (containerData.getObjectFromID(this.m_LayoutData.id).layoutType == "List");
+
+            // No header or grid layout
+            if(!headerRef || !isList){ this.m_headerOffset = "0px"; return; }
+
+            // Set value to height of header
+            this.m_headerOffset = (Math.round(headerRef.getBoundingClientRect().height * 100) / 100) + "px";
+        },
+
 // Singleton Data Config
 // -------------------------------------------------------------------------------------------------------
 
@@ -276,7 +291,6 @@ export default {
 
         // Store container data on click to singleton
         storeClickedContainer(){
-            console.log("here");
             if(this.m_LayoutData.id === null) {return;}
             editVariables.setContainerSelected(this.m_LayoutData.id);
             editVariables.disableContainerSelection();
@@ -441,6 +455,7 @@ export default {
             // $ref returns null on tick, look at next tick to update values
             this.$nextTick(() => {
                 this.setComponentDOMValues();
+                this.getHeaderSize();
             });
         },
 
@@ -510,6 +525,7 @@ export default {
 
             this.setComponentDOMValues();
             this.recalculateThreshold();
+            this.getHeaderSize();
             
             if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
             editVariables.disableRecalculation();
@@ -537,6 +553,7 @@ export default {
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
                 this.setComponentDOMValues();
+                this.getHeaderSize();
             },
             deep: true,
         }
@@ -581,8 +598,15 @@ hr{
 .container-wrapper{
     display: flex;
     flex-flow: column;
-    height: 100%;
+
+    position: relative;
+    height: calc(100% - v-bind("m_headerOffset"));
 }
+/* 
+    The wrapper requires 100% height.
+
+    An offset is used if there is text, AND if it uses a list. 
+*/
 
 .container-header{
     height: min-content;
@@ -602,10 +626,13 @@ hr{
     display: grid;
     grid-template-columns: v-bind("m_columnData");
     grid-template-rows: v-bind("m_rowData");
-    grid-gap: 10px;
-    padding: 8px;
+    grid-gap: 0.5em;
+    padding: 1em;
     
+    max-width: 100%;
+    max-height: 100%;
     
+    overflow: hidden;
     /*
     Transitions change the position of the slider.
         Causes bugs with the math and calculations

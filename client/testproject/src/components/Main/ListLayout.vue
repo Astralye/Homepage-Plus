@@ -11,17 +11,20 @@
 
 <template>
     <!-- Container wrapper -->
-    <div class="height-full"
+    <div
+        class="list-container"
         @click.self="iconSelect.resetData()"
-        @mouseup="checkDropIcon(index)"
+        @mouseup="checkDrop()"
     >
-        <div v-for="(item, index) in m_GroupData" :key="index">
+        <div v-for="(item, index) in m_GroupData" :key="index"
+        >
             <div            
                 class="list-item-wrapper flex"
                 :class="{ 'icon-Selection' : isSelectedIcon(index),
                         'unselect-icon'  : !isSelectedIcon(index)
                 }"
                 @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+                @mouseup="checkDropIndex(index)"
                 >
                     <!-- Icon if any -->
                     <div v-if="hasIcon(item)"
@@ -173,13 +176,21 @@ export default {
     box-sizing: border-box;
 
     width: auto;
-    height: fit-content;
-
     padding: 0.5em;
 }
 
-.height-full{
+/*
+
+    Note,
+    Height 100% prevents overflow to work.
+    Height Npx prevents it to reach full height. 
+*/
+
+.list-container{
     height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    position: absolute;
 }
 
 </style>

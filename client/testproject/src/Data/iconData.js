@@ -107,7 +107,7 @@ class IconData{
     }
 
     //ID of Icon, old container and new container
-    moveIcon(iconID,oldContainerID, newContainerID, nColumns, isFree){
+    moveIcon(iconID,oldContainerID, newContainerID, nColumns, isFree=false){
         if(!this.checkContainerExist(newContainerID)){  this.createGroup(newContainerID); }
         
         let oldGroup  = this.getGroup(oldContainerID);
