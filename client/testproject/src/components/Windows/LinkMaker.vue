@@ -1,7 +1,7 @@
 <template>
 
     <!-- Container for Displaying icons and selection  -->
-    <div @mouseup="resetTimer">
+    <div @mouseup="dragAndDrop.resetTimer()">
         <WindowContainerDivider>
         <template #header>
             <h2> Icon selection </h2>
@@ -61,27 +61,26 @@
                                 :fill_Colour="getIconData(index).iconColour"
                                 :view_Box="iconImageStorage.getViewBoxName(getIconData(index).iconImage)"
                                 class="center icon-center"
-                                :class="{'opacity-none' : ( m_DraggingEvent && isStoredIndex(index)),
-                                         'opacity-full' : !m_DraggingEvent }"
+                                :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, m_STORAGE)),
+                                         'opacity-full' : !dragAndDrop.isDraggingEvent }"
 
-                                @mousedown="initDragDrop($event, index)"
+                                @mousedown="dragDropSetup($event, index)"
                                 />
                         </Transition>
-
                     </div>
 
                     <!-- Visible icon that follows mouse -->
                     <Teleport to="body">
-                        <Transition :name="m_TransitionName">
+                        <Transition :name="dragAndDrop.transitionName">
                             <SVGHandler
-                                v-show="m_DraggingEvent && isStoredIndex(index)"
+                                v-show="dragAndDrop.isSavedIcon(index, m_STORAGE)"
                                 ref="svgRef"
                                 class="icon-drag-effect"
                                 :ref_Value="'draggingIcon'"
 
-                                :path_Value="m_DisplayIconData.iconImage"
-                                :fill_Colour="m_DisplayIconData.iconColour"
-                                :view_Box="m_DisplayIconData.viewBox"
+                                :fill_Colour="dragAndDrop.iconColour"
+                                :path_Value="dragAndDrop.iconImage"
+                                :view_Box="dragAndDrop.viewBox"
                                                                 
                                 height="50px"
                                 width="50px"
@@ -442,6 +441,7 @@ import { windowHandler } from '../../Data/userWindow';
 import { editVariables } from '../../Data/SettingVariables';
 
 import SVGHandler from '../Input Components/SVGHandler.vue';
+import { dragAndDrop } from '../../Data/dragDrop';
 
 export default {
     components: {
@@ -464,6 +464,7 @@ export default {
             iconImageStorage,
             editVariables,
             windowHandler,
+            dragAndDrop,
             iconStorage,
             iconSelect,
             mouseData,
@@ -476,7 +477,6 @@ export default {
             
             // Icon drag visual variables
             
-
             m_DisplayIconData:{
                 iconColour: "#000000",
                 iconSize: "100",
@@ -704,110 +704,18 @@ export default {
 
 // Reused code from Gridlayout.vue
 
-        initDragDrop: function(event, index){
+        // pass data to dragdrop.js
+        dragDropSetup(event, index){
 
-            var runFnc = false;
-            this.m_draggableFnc = setTimeout(() => { 
+            // Ref of current grid position.
+            dragAndDrop.setLocationBounds(this.$refs['icon-Take'][index].$refs['icon-location'].getBoundingClientRect());
+            dragAndDrop.setContainerOrigin(this.m_STORAGE);
 
-                // Checks if the current mouse hover is over the same element
-                document.querySelectorAll( ":hover" ).forEach(el => {
-                    if(el == event.target){ runFnc = true; return;}
-                });
-                
-                if(!runFnc){ return; }
-
-                this.m_iconID = this.getIconData(index).iconID;
-                this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
-                this.m_DraggingEvent = true;
-                this.m_SavedIndex = index;
-                this.m_TransitionName = 'icon-success';
-
-                editVariables.setIconDragData({
-                    storedContainer:  this.m_STORAGE,
-                    storedID: this.m_iconID,
-                });
-
-                mouseData.movementFunctions ([ this.edit_Drag_Move ]);
-                mouseData.mouseUpFunctions  ([ this.disableDrag ]);
-                
-                mouseData.enableTracking();
-                mouseData.enableMouseUp();
-
-                this.setSVGDragData();
-                this.initIconDragPosition(event.clientX, event.clientY);
-
-            }, 125);
-
+            dragAndDrop.initDragDrop(event, 
+                index, this.$refs["svgRef"][index].$refs, 
+                this.getIconData(index).iconID, this.m_STORAGE
+            );
         },
-
-        edit_Drag_Move(){
-            this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y);
-        },
-
-        disableDrag(){
-            mouseData.disableTracking();
-            mouseData.disableMouseUp();
-
-            this.m_DraggingEvent = false;
-            this.m_iconID = null;
-            this.m_SavedIndex = 0;
-        },
-
-    // Taken from Gridlayout.vue
-        
-        // If user lifts mouse event before timer
-        resetTimer(){
-            clearTimeout(this.m_draggableFnc);
-        },
-
-        isStoredIndex(index){
-            return (index === this.m_SavedIndex);
-        },
-
-        setSVGDragData(){
-            let svgData = this.getStoredIconData();
-            this.m_DisplayIconData.iconImage  = iconImageStorage.getPathData(svgData.iconImage);
-            this.m_DisplayIconData.iconColour = svgData.iconColour;
-            this.m_DisplayIconData.iconSize   = svgData.iconSize;
-            this.m_DisplayIconData.viewBox    = iconImageStorage.getViewBoxName(svgData.iconImage);
-        },
-
-        getStoredIconData(){
-            if(!editVariables.iconDragData || !this.m_iconID){ return; } // Requires data
-
-            let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
-            return iconData.getIconDataFromID(group, this.m_iconID);
-        },
-
-        // Updates the css values to match the cursor
-        updateIconDragPosition(x, y){
-            this.m_IconDragRef['draggingIcon'].style.left = x - this.m_MouseOffset.x + 'px';
-            this.m_IconDragRef['draggingIcon'].style.top  = y - this.m_MouseOffset.y + 'px';
-        },
-
-        // This is the offset of the starting position that the mouse offsets by when moving
-        initIconDragPosition(initX, initY){
-
-            this.setMouseOffset(initX, initY);
-            this.updateIconDragPosition(initX, initY); // This value will always be constant at the start
-        },
-
-        setMouseOffset(x,y){
-
-            let iconRealLocation = this.$refs['icon-Take'][this.m_SavedIndex].$refs['icon-location'].getBoundingClientRect();
-
-            if(!iconRealLocation){ return; }
-
-            // grid item is the coordinates of the container, an offset is added to put it at the center
-            let gridXoffset = iconRealLocation.left + (iconRealLocation.width  / 5);
-            let gridYoffset = iconRealLocation.top  + (iconRealLocation.height / 5);
-
-            // mouseOffset is the difference in px from the mouse to the grid offset.
-            // Used to prevent snapping of top left corner to mouse.
-            this.m_MouseOffset.x = x - gridXoffset;
-            this.m_MouseOffset.y = y - gridYoffset;
-        },
-
 
 // ------------------------------------------------------------------------------------------------------------
 
