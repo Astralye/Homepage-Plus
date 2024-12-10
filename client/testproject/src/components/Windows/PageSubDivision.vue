@@ -323,6 +323,9 @@ export default {
     height: 100%;
     border-radius: 1em;
     pointer-events: none;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 
     background-color: rgba(97, 97, 97, 0);
     position: absolute;

@@ -787,6 +787,10 @@ export default {
 
 .icon-drag-effect{
     pointer-events: none;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+
     position: absolute;
     transform: scale(2.5);
     z-index: 20;
