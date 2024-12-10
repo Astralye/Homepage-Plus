@@ -12,44 +12,62 @@
 <template>
     <!-- Container wrapper -->
     <div
-        class="list-container"
+        class="list-container no-pointer-event"
         @click.self="iconSelect.resetData()"
-        @mouseup="checkDrop()"
+        @mouseup="checkDrop(); dragAndDrop.resetTimer();"
     >
         <div v-for="(item, index) in m_GroupData" :key="index"
         >
-            <div            
+            <div
+                ref="list-item"         
                 class="list-item-wrapper flex"
                 :class="{ 'icon-Selection' : isSelectedIcon(index),
-                        'unselect-icon'  : !isSelectedIcon(index)
+                          'unselect-icon'  : !isSelectedIcon(index)
                 }"
                 @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
                 @mouseup="checkDropIndex(index)"
-                >
-                    <!-- Icon if any -->
-                    <div v-if="hasIcon(item)"
-                        class="icon-spacing"
-                        >
-                        <SVGHandler
-                            class="icon-center"
-                            width="2em"
-                            height="2em"
-                            :path_Value="iconImageStorage.getPathData(item.iconImage)"
-                            :view_Box="iconImageStorage.getViewBoxName(item.iconImage)"
-                            :fill_Colour="item.iconColour"
-                        />
-                    </div>
-        
-                    <!-- Name -->
-                    <div
-                        class="center-text">
-                        {{ item.iconString }}
-                    </div>
-
+                @mousedown="(editVariables.isEnabled) ? dragDropSetup($event, index) : null"
+            >   
+                <!-- Icon if any -->
+                <div v-if="hasIcon(item)"
+                    class="icon-spacing"
+                    >
+                    <SVGHandler
+                        class="icon-center"
+                        width="2em"
+                        height="2em"
+                        :path_Value="iconImageStorage.getPathData(item.iconImage)"
+                        :view_Box="iconImageStorage.getViewBoxName(item.iconImage)"
+                        :fill_Colour="item.iconColour"
+                    />
                 </div>
+        
+                <!-- Name -->
+                <div
+                    class="center-text">
+                    {{ item.iconString }}
+                </div>
+
+            </div>
 
             <hr v-if="!isLastPosition(index)">
 
+            <Teleport to="body">
+                <Transition :name="dragAndDrop.transitionName">
+                    <SVGHandler
+                        v-show="dragAndDrop.isSavedIcon(index, component_ID)"
+                        ref="svgRef"
+                        class="icon-drag-effect no-pointer-event"
+                        :ref_Value="'draggingIcon'"
+
+                        :fill_Colour="dragAndDrop.iconColour"
+                        :path_Value="dragAndDrop.iconImage"
+                        height="2em"
+                        width="2em"
+                        :view_Box="dragAndDrop.viewBox"
+                    />
+                </Transition>
+            </Teleport>
         </div>
     </div>
 </template>
@@ -59,6 +77,8 @@
 import { containerData } from '../../Data/containerData';
 import { iconData, iconSelect } from '../../Data/iconData';
 import { editVariables } from '../../Data/SettingVariables';
+import { dragAndDrop } from '../../Data/dragDrop';
+import { iconStorage } from '../../Data/iconData';
 
 import SVGHandler from '../Input Components/SVGHandler.vue';
 
@@ -80,6 +100,8 @@ export default {
             iconImageStorage,
             containerData,
             editVariables,
+            iconStorage,
+            dragAndDrop,
             iconSelect,
             iconData,
 
@@ -104,13 +126,63 @@ export default {
             this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
-        // If iconID is empty
-        hasIcon(item){ return (item.iconID !== ""); },
-
-        // checks if index is last position of the indexing.
-        isLastPosition(index){ return (this.m_GroupData.length-1 === index); },
-
     // Taken from GridLayout.vue
+
+        // pass data to dragdrop.js
+        dragDropSetup(event, index){
+
+            // Ref of current grid position.
+            dragAndDrop.setLocationBounds(this.$refs['list-item'][index].getBoundingClientRect());
+            dragAndDrop.setContainerOrigin(this.component_ID);
+
+            dragAndDrop.initDragDrop(event, 
+                index, this.$refs["svgRef"][index].$refs, 
+                this.getIconData(index).iconID, this.component_ID
+            );
+        },
+
+        getIconData(index){ return this.m_GroupData[index]; },
+
+        // Conditions and values to check before drop functionality
+
+        // If dropped at any empty space
+        checkDrop(){
+            if(!editVariables.iconDragData){ return; } // Requires data
+            
+            // Assuming it is here, just push to end.
+            let oldGroupID = editVariables.iconDragData.storedContainer;
+            let iconID     = editVariables.iconDragData.storedID;
+
+            if(oldGroupID !== this.m_containerData.ID){
+                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false);
+            }
+
+            this.resetSelection();
+        },
+
+        // If dropped at a specific location
+        // Need to swap
+        checkDropIndex(index){
+            if(!editVariables.iconDragData){ return; } // Requires data
+
+            // let newGroupID = this.m_containerData.ID;
+            // let oldGroupID = editVariables.iconDragData.storedContainer;
+            // let iconID     = editVariables.iconDragData.storedID;
+
+            // let isFree     = (this.m_containerData.gridData.contentAlign === "Free");
+            // let dirIndex   = this.directionalIndexHandler(index);
+
+            // // Find group to move to.
+            // let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
+            // let isDifferentGroup = (oldGroupID !== newGroupID);
+
+            // if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ 
+            //     if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){this.m_TransitionName = 'icon-cancel' }; 
+            //     return;
+            // }
+
+            // this.dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, dirIndex);
+        },
 
         // Click selection for linkmaker
         isSelectedIcon(index){
@@ -120,22 +192,61 @@ export default {
             return (icon.iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
         },
 
-
         // Because they are rendered in indexes, they must have values.
         setSelectedIcon(index){
-
             let icon = this.m_GroupData[index];
             if(!icon) return; 
-            // no data, however, this should not occur because
-            // it indexes through each of the elements
+            // no data, however, this should not occur because it indexes through each of the elements
 
             iconSelect.setData(icon.iconID, this.m_containerData.ID);
         },
+
+    // Resetter
+
+        resetSelection(){
+            editVariables.resetIconDragData();
+        },
+
+        // Boolean
+
+        // If iconID is empty
+        hasIcon(item){ return (item.iconID !== ""); },
+
+        // checks if index is last position of the indexing.
+        isLastPosition(index){ return (this.m_GroupData.length-1 === index); },
     },
 }
 </script>
 
 <style scoped>
+
+.icon-success-enter-active {
+    animation: grow 200ms ease-out;
+    transition: opacity 50ms ease-in;
+}
+
+.icon-success-leave-active {
+    animation: grow 200ms reverse ease-out;
+    transition: opacity 50ms ease-in;
+}
+
+.icon-cancel-leave-active {
+    transition: opacity 50ms ease-in;
+}
+
+
+.icon-drag-effect{
+    position: absolute;
+    transform: scale(1.5);
+    z-index: 20;
+}
+
+.no-pointer-event{
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
 
 .icon-Selection{
     border: 3px solid rgba(255, 255, 255, 0.8);

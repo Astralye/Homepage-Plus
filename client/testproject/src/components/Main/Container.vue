@@ -55,7 +55,7 @@
                     </template>
                     <!-- Container Grid -->
                     <template v-else>
-                        <div class="wrapper-2">
+                        <div>
                             <ListLayout
                                 @mouseover="m_isHover = editVariables.containerSelectionMode"
                                 @mouseout="m_isHover=false"
