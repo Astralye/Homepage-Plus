@@ -19,21 +19,15 @@ class dragAndDropClass{
         originContainer: null,
         
         iconRef: null,
-        locationBoundingBox: null,
         
         isDraggingEvent: false,
-        transitionName: 'icon-success',
+        transitionName: '',
 
         displayIconData:{
             iconColour: "#000000",
             iconSize: "100",
             iconImage: "",
             viewBox: "", 
-        },
-
-        mouseOffset:{
-            x: 0,
-            y: 0,
         },
 
         mouseHoverContainerType: ""
@@ -60,8 +54,9 @@ class dragAndDropClass{
             this.data.displayIconID = iconID;
             this.data.isDraggingEvent = true;
             this.data.savedIndex = index;
-            this.data.mouseHoverContainerType = containerType;
-            this.setTransitionName('icon-success');
+
+            this.updateMouseDragType(containerType);
+            this.setIconCSSHandler(containerType,`success`);
 
             // // Stores the icon that is being dragged
             // // Used to transfer data between containers
@@ -80,32 +75,14 @@ class dragAndDropClass{
             
             // // Initalizers
             this.setSVGDragData();
-            this.initIconDragPosition(event.clientX, event.clientY);
+            this.updateIconDragPosition(event.clientX, event.clientY); 
         }, 125);
     }
-
-    // Initialize position of offset of mouse by top left corner of icon. 
-    initIconDragPosition(initX, initY){
-
-        this.setMouseOffset(initX, initY);
-        this.updateIconDragPosition(initX, initY); // This value will always be constant at the start
+    // The CSS this handles is found in IconDragHandler.vue
+    setIconCSSHandler(type, success){
+        console.log(`${type.toLowerCase()}-type-${success}`, "value");
+        this.setTransitionName(`${type.toLowerCase()}-type-${success}`);
     }
-
-    // Mouse offset for icon dragging to prevent snapping.
-    setMouseOffset(x,y){
-        
-        if(!this.locationBoundingBox) return; 
-
-        // // grid item is the coordinates of the container, an offset is added to put it at the center
-        let gridXoffset = this.locationBoundingBox.x  + (this.locationBoundingBox.width  / 5);
-        let gridYoffset = this.locationBoundingBox.y  + (this.locationBoundingBox.height / 5);
-
-        // // mouseOffset is the difference in px from the mouse to the grid offset.
-        // // Used to prevent snapping of top left corner to mouse.
-        this.data.mouseOffset.x = x - gridXoffset;
-        this.data.mouseOffset.y = y - gridYoffset;
-    }
-
 
 // Mouse Event
 
@@ -127,8 +104,9 @@ class dragAndDropClass{
 // Updaters
 
     updateIconDragPosition(x, y){
-        this.data.iconRef['draggingIcon'].style.left = x - this.data.mouseOffset.x + 'px';
-        this.data.iconRef['draggingIcon'].style.top  = y - this.data.mouseOffset.y + 'px';
+
+        this.data.iconRef.style.left = x - ( this.data.displayIconData.iconSize / 2 ) + 'px';
+        this.data.iconRef.style.top  = y - ( this.data.displayIconData.iconSize / 2 ) + 'px';
     }
 
     // Only updates when the value has changed
@@ -156,7 +134,6 @@ class dragAndDropClass{
 
     setContainerOrigin(str){ this.data.originContainer = str; }
     setTransitionName(name){ this.data.transitionName = name; }
-    setLocationBounds(inputRef){ this.locationBoundingBox = inputRef; }
     setIconRef(ref){ this.data.iconRef = ref; }
 
     setIconData(colour="#000000", size="100", image="", viewBox=""){
@@ -186,7 +163,6 @@ class dragAndDropClass{
     get storedIconData(){
         if(!editVariables.iconDragData || !this.data.displayIconID){ return null; } // Requires data
 
-        console.log(editVariables.iconDragData.storedContainer);
         let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
         return iconData.getIconDataFromID(group, this.data.displayIconID);
     }

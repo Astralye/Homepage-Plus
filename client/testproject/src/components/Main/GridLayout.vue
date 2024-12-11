@@ -26,9 +26,10 @@
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
-                        @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
+                        @mousedown="(editVariables.isEnabled) ?  $refs['icon-drag-handler'].dragDropSetup($event, index, getIconData(index), 'GRID'): null"
                     />
                 </Transition>
+
             </div>
         </div>
     </div>
@@ -36,7 +37,7 @@
     <IconDragHandler
         ref="icon-drag-handler"
         :component_ID="component_ID"
-    />            
+    />
 </template>
 <!-- 
     Ideas:
@@ -210,7 +211,8 @@ export default {
             let isDifferentGroup = (oldGroupID !== newGroupID);
 
             if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ 
-                if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){ dragAndDrop.setTransitionName('icon-cancel'); }; 
+                if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){ 
+                    dragAndDrop.setTransitionName('icon-cancel'); }; 
                 return;
             }
 
@@ -257,14 +259,6 @@ export default {
         setFreeData(groupID, iconID, newIndex){
             let coord = iconData.indexToCoord(newIndex, this.m_GridDimensions.Rows);
             iconData.setCoordinate(groupID, iconID, coord.x, coord.y);
-        },
-
-        // pass data to dragdrop.js
-        iconHandlerDataMove(event, index){
-
-            // Ref of current grid position.
-            dragAndDrop.setLocationBounds(this.$refs['gridPosition'][index].getBoundingClientRect());
-            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, "GRID");
         },
 
 // Icon Functions

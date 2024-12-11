@@ -66,7 +66,7 @@
                                 :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, m_STORAGE)),
                                          'opacity-full' : !dragAndDrop.isDraggingEvent }"
 
-                                @mousedown="dragDropSetup($event, index)"
+                                @mousedown="$refs['icon-drag-handler'].dragDropSetup($event, index, this.getIconData(index), this.m_STORAGE)"
                                 />
                         </Transition>
                     </div>
@@ -687,19 +687,6 @@ export default {
 
             iconData.deleteIcon(iconSelect.dataValue.groupID, iconSelect.dataValue.iconID);
             iconSelect.resetData();
-        },
-
-// Mouse functions
-// ------------------------------------------------------------------------------------------------------------
-
-// Reused code from Gridlayout.vue
-
-        // pass data to dragdrop.js
-        dragDropSetup(event, index){
-
-            // Ref of current grid position.
-            dragAndDrop.setLocationBounds(this.$refs['icon-Take'][index].$refs['icon-location'].getBoundingClientRect());
-            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, this.m_STORAGE);
         },
 
 // ------------------------------------------------------------------------------------------------------------

@@ -27,7 +27,7 @@
                 }"
                 @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
                 @mouseup="checkDropIndex(index)"
-                @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
+                @mousedown="(editVariables.isEnabled) ? $refs['icon-drag-handler'].dragDropSetup($event, index, this.getIconData(index), 'LIST') : null"
             >   
                 <!-- Icon if any -->
                 <div v-if="hasIcon(item)"
@@ -123,7 +123,6 @@ export default {
         iconHandlerDataMove(event, index){
 
             // Ref of current grid position.
-            dragAndDrop.setLocationBounds(this.$refs['list-item'][index].getBoundingClientRect());
             this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, "LIST");
         },
 
