@@ -15,6 +15,7 @@
         class="list-container no-pointer-event"
         @click.self="iconSelect.resetData()"
         @mouseup="checkDrop(); dragAndDrop.resetTimer();"
+        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateMouseDragType('LIST') : null"
     >
         <div v-for="(item, index) in m_GroupData" :key="index"
         >
@@ -26,7 +27,7 @@
                 }"
                 @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
                 @mouseup="checkDropIndex(index)"
-                @mousedown="(editVariables.isEnabled) ? dragDropSetup($event, index) : null"
+                @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
             >   
                 <!-- Icon if any -->
                 <div v-if="hasIcon(item)"
@@ -51,25 +52,13 @@
             </div>
 
             <hr v-if="!isLastPosition(index)">
-
-            <Teleport to="body">
-                <Transition :name="dragAndDrop.transitionName">
-                    <SVGHandler
-                        v-show="dragAndDrop.isSavedIcon(index, component_ID)"
-                        ref="svgRef"
-                        class="icon-drag-effect no-pointer-event"
-                        :ref_Value="'draggingIcon'"
-
-                        :fill_Colour="dragAndDrop.iconColour"
-                        :path_Value="dragAndDrop.iconImage"
-                        height="2em"
-                        width="2em"
-                        :view_Box="dragAndDrop.viewBox"
-                    />
-                </Transition>
-            </Teleport>
         </div>
     </div>
+
+    <IconDragHandler
+        ref="icon-drag-handler"
+        :component_ID="component_ID"
+    />    
 </template>
 
 <script>
@@ -80,9 +69,10 @@ import { editVariables } from '../../Data/SettingVariables';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
 
-import SVGHandler from '../Input Components/SVGHandler.vue';
-
 import { iconImageStorage } from '../../Data/iconImages';
+
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import IconDragHandler from './IconDragHandler.vue';
 
 export default {
     props:{
@@ -93,7 +83,8 @@ export default {
         },
     },
     components:{
-        SVGHandler, 
+        IconDragHandler,
+        SVGHandler,
     },
     data(){
         return{
@@ -129,16 +120,11 @@ export default {
     // Taken from GridLayout.vue
 
         // pass data to dragdrop.js
-        dragDropSetup(event, index){
+        iconHandlerDataMove(event, index){
 
             // Ref of current grid position.
             dragAndDrop.setLocationBounds(this.$refs['list-item'][index].getBoundingClientRect());
-            dragAndDrop.setContainerOrigin(this.component_ID);
-
-            dragAndDrop.initDragDrop(event, 
-                index, this.$refs["svgRef"][index].$refs, 
-                this.getIconData(index).iconID, this.component_ID
-            );
+            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, "LIST");
         },
 
         getIconData(index){ return this.m_GroupData[index]; },
@@ -303,5 +289,20 @@ export default {
     overflow-y: auto;
     position: absolute;
 }
+
+/*
+
+    Variable CSS for dragging elements
+
+*/
+
+.classA{
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.classB{
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
 
 </style>

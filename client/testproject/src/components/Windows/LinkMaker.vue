@@ -32,7 +32,9 @@
         <br>
 
         <h3> Saved Icons </h3>
-            <div class="saved-grid width-full">
+            <div class="saved-grid width-full"
+                @mousemove="dragAndDrop.enabled ? dragAndDrop.updateMouseDragType('GRID') : null"
+            >
 
                 <!-- Grid pattern -->
                 <div v-for="(item, index) in m_Rows * m_Columns" :key="index"
@@ -68,25 +70,6 @@
                                 />
                         </Transition>
                     </div>
-
-                    <!-- Visible icon that follows mouse -->
-                    <Teleport to="body">
-                        <Transition :name="dragAndDrop.transitionName">
-                            <SVGHandler
-                                v-show="dragAndDrop.isSavedIcon(index, m_STORAGE)"
-                                ref="svgRef"
-                                class="icon-drag-effect"
-                                :ref_Value="'draggingIcon'"
-
-                                :fill_Colour="dragAndDrop.iconColour"
-                                :path_Value="dragAndDrop.iconImage"
-                                :view_Box="dragAndDrop.viewBox"
-                                                                
-                                height="50px"
-                                width="50px"
-                            />
-                        </Transition>
-                    </Teleport>
                 </div>
             </div>
 
@@ -94,6 +77,10 @@
         </WindowContainerDivider>
     </div>
 
+    <IconDragHandler
+        ref="icon-drag-handler"
+        :component_ID="m_STORAGE"
+    />    
     <!-- 
         Possibly display a tree, or show the screen.
 
@@ -440,12 +427,15 @@ import { mouseData } from '../../Data/mouseData';
 import { windowHandler } from '../../Data/userWindow';
 import { editVariables } from '../../Data/SettingVariables';
 
+import IconDragHandler from '../Main/IconDragHandler.vue';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { dragAndDrop } from '../../Data/dragDrop';
+
 
 export default {
     components: {
         WindowContainerDivider,
+        IconDragHandler,
         SingleButton,
         ColourPicker,
         OptionSelect,
@@ -709,12 +699,7 @@ export default {
 
             // Ref of current grid position.
             dragAndDrop.setLocationBounds(this.$refs['icon-Take'][index].$refs['icon-location'].getBoundingClientRect());
-            dragAndDrop.setContainerOrigin(this.m_STORAGE);
-
-            dragAndDrop.initDragDrop(event, 
-                index, this.$refs["svgRef"][index].$refs, 
-                this.getIconData(index).iconID, this.m_STORAGE
-            );
+            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, this.m_STORAGE);
         },
 
 // ------------------------------------------------------------------------------------------------------------

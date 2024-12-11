@@ -1,8 +1,8 @@
 <template>
     <div class="grid-wrapper border-box"
-        id="gridTop"
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
+        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateMouseDragType('GRID') : null"
         >
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
@@ -26,30 +26,17 @@
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
-                        @mousedown="(editVariables.isEnabled) ? dragDropSetup($event, index) : null"
+                        @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
                     />
                 </Transition>
             </div>
-
-            <!-- Visible icon that follows mouse -->
-            <Teleport to="body">
-                <Transition :name="dragAndDrop.transitionName">
-                    <SVGHandler
-                        v-show="dragAndDrop.isSavedIcon(index, component_ID)"
-                        ref="svgRef"
-                        class="icon-drag-effect"
-                        :ref_Value="'draggingIcon'"
-
-                        :fill_Colour="dragAndDrop.iconColour"
-                        :path_Value="dragAndDrop.iconImage"
-                        :height="dragAndDrop.iconSize"
-                        :width="dragAndDrop.iconSize"
-                        :view_Box="dragAndDrop.viewBox"
-                    />
-                </Transition>
-            </Teleport>
         </div>
     </div>
+
+    <IconDragHandler
+        ref="icon-drag-handler"
+        :component_ID="component_ID"
+    />            
 </template>
 <!-- 
     Ideas:
@@ -93,10 +80,13 @@ import { iconImageStorage } from '../../Data/iconImages';
 import { editVariables } from '../../Data/SettingVariables';
 import { dragAndDrop } from '../../Data/dragDrop';
 
+import IconDragHandler from './IconDragHandler.vue';
+
 export default {
     components:{
         IconHandler,
-        SVGHandler
+        SVGHandler,
+        IconDragHandler,
     },
     props:{
         component_ID: {
@@ -120,7 +110,6 @@ export default {
             mouseData,
             iconData,
             
-            
             // Main Grid values
 
             m_GridDimensions: {
@@ -131,25 +120,8 @@ export default {
             m_containerData: null,
             m_GroupData: null,  // Group data to check and move data between groups 
             m_iconID: null,     // ID of currently selected icon
-            m_Observer: null,   
+            m_Observer: null,
 
-            // Icon drag visual variables
-
-            m_draggableFnc: null,   // Timer to cancel drag function if not valid
-            m_TransitionName: 'icon-success',
-            m_SavedIndex: 0,
-            m_IconDragRef: null,    // Reference of the icon.
-            m_DraggingEvent: false, // Triggers transition and vbind classes
-
-            m_DisplayIconData:{
-                iconColour: "#000000",
-                iconSize: "100",
-                iconImage: "",
-            },
-            m_MouseOffset:{
-                x: 0,
-                y: 0,
-            }
         }
     },
     created(){
@@ -287,35 +259,16 @@ export default {
             iconData.setCoordinate(groupID, iconID, coord.x, coord.y);
         },
 
-// Mouse Function
-// ----------------------------------------------------------------------------------------------------------------------------
-
-        /*
-            Initializer for drag and drop event
-            Timeout makes the user wait a certain time before dragging.
-            Also defines what makes a drag and a click
-        */
-
         // pass data to dragdrop.js
-        dragDropSetup(event, index){
+        iconHandlerDataMove(event, index){
 
             // Ref of current grid position.
             dragAndDrop.setLocationBounds(this.$refs['gridPosition'][index].getBoundingClientRect());
-            dragAndDrop.setContainerOrigin(this.component_ID);
-
-            dragAndDrop.initDragDrop(event, 
-                index, this.$refs["svgRef"][index].$refs, 
-                this.getIconData(index).iconID, this.component_ID
-            );
+            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, "GRID");
         },
 
 // Icon Functions
 // ------------------------------------------------------------------------------------------
-
-        // Checks if the current index is the index the user had dragged
-        isStoredIndex(index){
-            return (index === this.m_SavedIndex);
-        },
 
         // Click selection for linkmaker
         isSelectedIcon(index){
@@ -436,60 +389,13 @@ export default {
 
 <style scoped>
 
-.icon-success-enter-active {
-    animation: grow 200ms ease-out;
-    transition: opacity 50ms ease-in;
-}
-
-.icon-success-leave-active {
-    animation: grow 200ms reverse ease-out;
-    transition: opacity 50ms ease-in;
-}
-
-.icon-cancel-leave-active {
-    transition: opacity 50ms ease-in;
-}
-
-
-
-@keyframes grow {
-    0% {
-      transform: scale(1);
-    }
-    100% {
-      transform: scale(1.5);
-    }
-  }
-
-.icon-drag-effect{
-    pointer-events: none;
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none; /* IE 10 and IE 11 */
-    user-select: none; /* Standard syntax */
-
-    position: absolute;
-    transform: scale(1.5);
-    z-index: 20;
-}
-
 .opacity-none{
     opacity: 0;
 }
 
-
 .opacity-full{
     transition: all 125ms ease-in-out;
     transition-delay: 125ms;
-}
-
-.icon-wrapper{
-    width: 100px;
-}
-
-.flex-center{
-    display: flex;
-    justify-content: center;
-    align-content: center;
 }
 
 .unselect-icon{
@@ -556,6 +462,5 @@ export default {
 
     background-color: white;
 }
-
 
 </style>

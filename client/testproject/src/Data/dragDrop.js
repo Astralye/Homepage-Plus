@@ -11,6 +11,9 @@ import { mouseData } from './mouseData';
 
 class dragAndDropClass{
     constructor(){ this.data = {
+
+        enabled: false,
+
         displayIconID: null,
         savedIndex: -1,
         originContainer: null,
@@ -32,13 +35,15 @@ class dragAndDropClass{
             x: 0,
             y: 0,
         },
+
+        mouseHoverContainerType: ""
     }}
 
     get allData(){ return this.data; };
 
 // Initializer on click
 
-    initDragDrop(event, index, iconRef, iconID, containerID){
+    initDragDrop(event, index, iconID, containerID, containerType){
 
         var runFnc = false;
         this.m_draggableFnc = setTimeout(() => { 
@@ -51,10 +56,11 @@ class dragAndDropClass{
 
             // Dragging event to for the icon to follow the mouse.
 
+            this.data.enabled = true;
             this.data.displayIconID = iconID;
-            this.data.iconRef = iconRef;
             this.data.isDraggingEvent = true;
             this.data.savedIndex = index;
+            this.data.mouseHoverContainerType = containerType;
             this.setTransitionName('icon-success');
 
             // // Stores the icon that is being dragged
@@ -105,10 +111,11 @@ class dragAndDropClass{
 
     // Updates position of dragged icon.
     drag_Move(){ 
-        this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y); 
+        this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y);
     }
 
     drag_End(){
+        this.data.enabled = false;
         this.data.isDraggingEvent = false;
         this.data.displayIconID  = null;
         this.data.savedIndex = -1;
@@ -122,6 +129,14 @@ class dragAndDropClass{
     updateIconDragPosition(x, y){
         this.data.iconRef['draggingIcon'].style.left = x - this.data.mouseOffset.x + 'px';
         this.data.iconRef['draggingIcon'].style.top  = y - this.data.mouseOffset.y + 'px';
+    }
+
+    // Only updates when the value has changed
+    updateMouseDragType(type){
+        if(this.data.mouseHoverContainerType != type){
+            if(type == "Storage") { this.data.mouseHoverContainerType = "GRID"};
+            this.data.mouseHoverContainerType = type;
+        }
     }
 
     resetTimer(){
@@ -142,6 +157,7 @@ class dragAndDropClass{
     setContainerOrigin(str){ this.data.originContainer = str; }
     setTransitionName(name){ this.data.transitionName = name; }
     setLocationBounds(inputRef){ this.locationBoundingBox = inputRef; }
+    setIconRef(ref){ this.data.iconRef = ref; }
 
     setIconData(colour="#000000", size="100", image="", viewBox=""){
         this.data.displayIconData = {
@@ -170,16 +186,21 @@ class dragAndDropClass{
     get storedIconData(){
         if(!editVariables.iconDragData || !this.data.displayIconID){ return null; } // Requires data
 
+        console.log(editVariables.iconDragData.storedContainer);
         let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
         return iconData.getIconDataFromID(group, this.data.displayIconID);
     }
 
+    get enabled()    { return this.data.enabled; }
     get isDraggingEvent(){ return this.data.isDraggingEvent; }
     get iconColour() { return this.data.displayIconData.iconColour; }
     get iconImage()  { return this.data.displayIconData.iconImage; }
     get iconSize()   { return this.data.displayIconData.iconSize; }
     get viewBox()    { return this.data.displayIconData.viewBox; }
     get transitionName() { return this.data.transitionName; }
+    get mouseHoverContainerType(){ return this.data.mouseHoverContainerType; }
+    get isHoverGrid() { return (this.data.mouseHoverContainerType === "GRID"); }
+    get isHoverList() { return (this.data.mouseHoverContainerType === "LIST"); }
 }
 
 const dragAndDropInstance = new dragAndDropClass;
