@@ -7,6 +7,7 @@
 
 <template>
 <div
+    class="flex"
     :ref="ref_Value" >
     <svg
     
@@ -57,6 +58,8 @@
     }
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+.flex{
+    display: flex;
+}
 </style>

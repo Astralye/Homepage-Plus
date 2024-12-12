@@ -6,18 +6,17 @@
 
 <template>
     <!-- Visible icon that follows mouse -->
-
-
     <Teleport to="body">
-        <Transition name="icon-success">
+        <Transition :name="dragAndDrop.transitionName">
 
             <!-- Wrapper for both icon and list -->
             <!-- This is used the main render -->
             <div class="drag-container-wrapper"
                 ref="drag-wrapper"
-                v-show="dragAndDrop.isSavedIcon(m_iconIndex, component_ID)"
-                
-                :class="{ 'grid-transform' : dragAndDrop.isHoverGrid, }"
+                v-show="show || isDisplay"
+
+                :class="{ 'grid-transform' : dragAndDrop.isHoverGrid,   
+                }"
             >
 
                 <div class="drag-container"
@@ -25,6 +24,7 @@
                         'grid-display' : dragAndDrop.isHoverGrid,
                         'list-display' : !dragAndDrop.isHoverGrid,
                 }">
+
                     <SVGHandler
                         :fill_Colour="dragAndDrop.iconColour"
                         :path_Value="dragAndDrop.iconImage"
@@ -33,11 +33,10 @@
                         :view_Box="dragAndDrop.viewBox"
                     />
                         
-                    <div v-if="!dragAndDrop.isHoverGrid"
-                        class="text">
+                    <div v-if="dragAndDrop.isHoverList"
+                        class="text prevent-overflow">
                         {{ m_stringText }}
                     </div>
-
                 </div>
             </div>
         </Transition>
@@ -64,29 +63,47 @@ export default {
             dragAndDrop,
 
             m_iconIndex: -1,
-            m_isHoverGrid: false,
             m_stringText: "",
+            show: false,
         }
     },
     methods:{
-        /*
-            Initializer for drag and drop event
-            Timeout makes the user wait a certain time before dragging.
-            Also defines what makes a drag and a click
-        */
-
+        
         // Setup for the components
         // This is done here because it uses the ref of the SVG which is not available
         // in the parent that it is used in. 
-        dragDropSetup(event, index, iconData, contType, text){
+        dragDropSetup(event, index, iconData, contType){
+
+            // Initialize variables for drag and drop start
+            dragAndDrop.initVariables(iconData.iconID, this.component_ID, contType);
+            
             this.m_iconIndex = index; 
             this.m_stringText = iconData.iconString;
+            
+            // Displays the icon for a frame, but it is invisible, 
+            // Required to find bounding box.
+            this.show = true; 
+            
+            // When bounding boxes has been initialized
+            this.$nextTick( () => {
+                this.show = false;
 
-            dragAndDrop.setContainerOrigin(this.component_ID);
-            dragAndDrop.setIconRef(this.$refs["drag-wrapper"]);
-            dragAndDrop.initDragDrop(event, index, iconData.iconID, this.component_ID, contType);
+                // Set the new ref value
+                dragAndDrop.setDragWrapperRef(this.$refs["drag-wrapper"]);
+
+                // Prevents the old transition from rendering. 
+                dragAndDrop.setVisibility("hidden"); 
+
+                // Start the drag and drop functionality
+                dragAndDrop.initDragDrop(event, index, contType);
+            });
         },
     },
+    computed:{
+        isDisplay(){
+            return dragAndDrop.isSavedIcon(this.m_iconIndex, this.component_ID)
+        }
+    }
 }
 </script>
 
@@ -102,22 +119,24 @@ export default {
     Grids
 */
 
+
 .grid-type-success-enter-active{
-    animation: grow 1000ms ease-out;
-    transition: opacity 50ms ease-in;
-}
-
-.grid-type-success-leave-active{ 
-    animation: grow 1000ms reverse ease-out;
-    transition: opacity 50ms ease-in;
-}
-
-.icon-success-enter-active {
     animation: grow 200ms ease-out;
 }
 
-.icon-success-leave-active {
+.grid-type-success-leave-active{ 
     animation: grow 200ms reverse ease-out;
+}
+
+
+.list-type-success-enter-active,
+.list-type-success-leave-active {
+  transition: opacity 50ms ease-out;
+}
+
+.list-type-success-enter-from,
+.list-type-success-leave-to {
+  opacity: 0;
 }
 
 /*
@@ -151,6 +170,7 @@ export default {
 .drag-container{
     position: relative;
     display: flex;
+
     flex-direction: row;
 }
 
@@ -166,13 +186,12 @@ export default {
 
 .grid-display{
     background-color: rgba(0, 0, 0, 0.26);
-    transition: background-color ease-out 200ms;
-
+    transition: width ease-out 500ms;
 }
 
 .list-display{
     background-color: rgba(255, 255, 255, 0.5);
-    transition: background-color ease-out 200ms;
+    transition: width ease-out 500ms;
 }
 
 .text{

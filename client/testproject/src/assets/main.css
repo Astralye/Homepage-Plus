@@ -5,6 +5,10 @@
   base.css was for variable initalization.
 */
 
+.prevent-overflow{
+  overflow: hidden;
+}
+
 .icon-center{
   display: flex;
   flex-direction: column;
