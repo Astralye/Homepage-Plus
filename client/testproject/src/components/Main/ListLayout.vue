@@ -26,6 +26,7 @@
                           'unselect-icon'  : !isSelectedIcon(index)
                 }"
                 @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+                @dblclick="(editVariables.isEnabled) ? null : openLink(item)"
                 @mouseup="checkDropIndex(index)"
                 @mousedown="(editVariables.isEnabled) ? $refs['icon-drag-handler'].dragDropSetup($event, index, this.getIconData(index), 'LIST') : null"
             >   
@@ -115,6 +116,10 @@ export default {
             } // group data does not exist
 
             this.m_GroupData = iconData.getGroup(this.component_ID);
+        },
+
+        openLink(item){
+            window.open(item.link, '_blank');
         },
 
     // Taken from GridLayout.vue
