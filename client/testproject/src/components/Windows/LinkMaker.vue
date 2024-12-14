@@ -33,7 +33,7 @@
 
         <h3> Saved Icons </h3>
             <div class="saved-grid width-full"
-                @mousemove="dragAndDrop.enabled ? dragAndDrop.updateMouseDragType('GRID') : null"
+                @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
             >
 
                 <!-- Grid pattern -->

@@ -2,7 +2,7 @@
     <div class="grid-wrapper border-box"
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
-        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateMouseDragType('GRID') : null"
+        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
         >
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"

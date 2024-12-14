@@ -15,7 +15,7 @@
         class="list-container no-pointer-event"
         @click.self="iconSelect.resetData()"
         @mouseup="checkDrop(); dragAndDrop.resetTimer();"
-        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateMouseDragType('LIST') : null"
+        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('LIST') : null"
     >
         <div v-for="(item, index) in m_GroupData" :key="index"
         >
@@ -35,7 +35,6 @@
                     class="icon-spacing"
                     >
                     <SVGHandler
-                        class="icon-center"
                         width="2em"
                         height="2em"
                         :path_Value="iconImageStorage.getPathData(item.iconImage)"
@@ -280,33 +279,11 @@ export default {
     padding: 0.5em;
 }
 
-/*
-
-    Note,
-    Height 100% prevents overflow to work.
-    Height Npx prevents it to reach full height. 
-*/
-
 .list-container{
     height: 100%;
     width: 100%;
     overflow-y: auto;
     position: absolute;
 }
-
-/*
-
-    Variable CSS for dragging elements
-
-*/
-
-.classA{
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.classB{
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
 
 </style>

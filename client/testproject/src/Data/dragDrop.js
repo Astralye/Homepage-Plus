@@ -10,30 +10,38 @@ import { mouseData } from './mouseData';
 */
 
 class dragAndDropClass{
-    constructor(){ this.data = {
+    constructor(){ this.init(); }
+    
+    init(){
+        this.data = {
 
-        enabled: false,
-
-        displayIconID: null,
-        savedIndex: -1,
-        originContainer: null,
-        
-        dragWrapRef: null,
-        
-        isDraggingEvent: false,
-        transitionName: '',
-
-        displayIconData:{
-            iconColour: "#000000",
-            iconSize: "0",
-            iconImage: "",
-            viewBox: "", 
-        },
-
-        iconBounds: null,
-
-        mouseHoverContainerType: "",
-    }}
+            enabled: false,
+    
+            displayIconID: null,
+            savedIndex: -1,
+            originContainer: null,
+            
+            dragWrapRef: null,
+            textRef: null,
+            
+            isDraggingEvent: false,
+            transitionName: '',
+    
+            listIconSize: "2em",
+            
+            displayIconData:{
+                iconColour: "#000000",
+                iconSize: "0",
+                iconImage: "",
+                viewBox: "", 
+            },
+    
+            iconBounds: null,
+            textWidth: null,
+    
+            mouseHoverContainerType: "",
+        } 
+    }
 
     get allData(){ return this.data; };
 
@@ -48,8 +56,8 @@ class dragAndDropClass{
         this.setTransitionName("");
         this.setDisplayIcon(iconID);
         this.setContainerOrigin(containerID);
-        this.updateContainerType(type);
         this.setSVGDragData();
+        this.updateContainerType(type);
     }
     
     /*
@@ -60,12 +68,15 @@ class dragAndDropClass{
         Initializer that requires bounding box and has to be run later.
     */
 
-    initDragDrop(event, index, containerType, test){
+    initDragDrop(event, index, containerType){
 
         // Save the icon bounds. When the timer has gone, the bounding box has been changed
         // Requires a copy to be used.
         this.data.iconBounds = structuredClone(this.data.dragWrapRef.getBoundingClientRect());
-
+        
+        this.data.textWidth = Math.floor(this.data.textRef.getBoundingClientRect().width) + "px";
+        var localTextWidth = Math.floor(this.data.textRef.getBoundingClientRect().width);
+    
         // Dragging functionality only works after a period of time holding the icon.
         this.m_draggableFnc = setTimeout(() => {
 
@@ -92,7 +103,7 @@ class dragAndDropClass{
             this.setVisibility("visible");
 
             // Update the coordinates.
-            this.updateIconDragPosition(event.clientX, event.clientY);
+            this.updateIconDragPosition(event.clientX, event.clientY, localTextWidth)
         }, 125);
     }
 
@@ -106,15 +117,18 @@ class dragAndDropClass{
 
     // Updates position of dragged icon.
     drag_Move(){ 
-        this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y);
+        this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y,0);
     }
 
     // Resets the variables on end.
     drag_End(){
-        this.data.enabled = false;
         this.data.isDraggingEvent = false;
-        this.setDisplayIcon(null);
+        this.data.textDimensions = null;
         this.data.iconBounds = null;
+        this.data.textWidth = null;
+        this.data.enabled = false;
+        this.setDisplayIcon(null);
+        this.setDragWrapperRef(null);
         this.data.savedIndex = -1;
 
         mouseData.disableTracking();
@@ -123,40 +137,52 @@ class dragAndDropClass{
 
 // Updaters
 
-    updateIconDragPosition(x, y){
+    updateIconDragPosition(x, y, startOffset=0){
 
-        if(this.isHoverGrid){
-            let initial = this.data.iconBounds.width / 1.5;
-            let difference = this.data.iconBounds.width - initial;
-    
-            this.data.dragWrapRef.style.left = x - difference + "px";
-            this.data.dragWrapRef.style.top  = y - difference + "px";
-        }
-        else{
-            this.data.dragWrapRef.style.left = x - ( this.data.iconBounds.width  / 2) + 'px';
-            this.data.dragWrapRef.style.top  = y - ( this.data.iconBounds.height / 2) + 'px';
+        let boundsWidth  = this.data.iconBounds.width;
+        let boundsHeight = this.data.iconBounds.height;
+        
+        // Start offset is used because the text ref changes the width,
+        if(startOffset != 0 && this.data.mouseHoverContainerType === "GRID"){
+            boundsWidth -= startOffset;
         }
 
+        console.log(this.data.iconBounds.width);
 
+        // Transform scaling does not change the top X position
+        // Recalculate by finding difference.
+        let initialX = boundsWidth  / 1.5;
+        let initialY = boundsHeight / 1.5;
+
+        let differenceX = boundsWidth  - initialX;
+        let differenceY = boundsHeight - initialY;
+
+        this.data.dragWrapRef.style.left = x - differenceX + "px";
+        this.data.dragWrapRef.style.top  = y - differenceY + "px";
     }
 
     // Only updates when the value has changed
-    updateMouseDragType(type){
-
-        this.updateContainerType(type);
-        
-        // Only update CSS if moved to a different type
-        if(this.data.mouseHoverContainerType != type){
-            this.setIconCSSHandler(type, 'success');
-        }
-    }
-
     updateContainerType(type){
-        this.data.mouseHoverContainerType = (type == "Storage") ? "GRID" : type;
 
         // Uses the icon ref to recalculate the bounding box
         if(this.data.dragWrapRef != null){
             this.data.iconBounds = structuredClone(this.data.dragWrapRef.getBoundingClientRect());
+
+            if(this.data.mouseHoverContainerType != type){
+                this.setIconCSSHandler(type, 'success');
+            }
+        }
+        
+        this.data.mouseHoverContainerType = (type == "Storage") ? "GRID" : type;
+
+        // Change size of icon
+        
+        if(type === "LIST"){ 
+            this.data.displayIconData.iconSize = this.data.listIconSize;
+            
+        }
+        else{
+            this.setSVGDragData();
         }
     }
 
@@ -176,10 +202,12 @@ class dragAndDropClass{
 
     setVisibility(val){
         this.data.dragWrapRef.style.visibility = val;
+        this.data.textRef.style.visibility = val;
     }
     setContainerOrigin(str){ this.data.originContainer = str; }
     setTransitionName(name){ this.data.transitionName = name; }
     setDragWrapperRef(ref){ this.data.dragWrapRef = ref; }
+    setTextRef(ref){ this.data.textRef = ref; }
     setDisplayIcon(iconID){
         this.data.displayIconID = iconID; 
     }
@@ -226,6 +254,7 @@ class dragAndDropClass{
     get mouseHoverContainerType(){ return this.data.mouseHoverContainerType; }
     get isHoverGrid() { return (this.data.mouseHoverContainerType === "GRID"); }
     get isHoverList() { return (this.data.mouseHoverContainerType === "LIST"); }
+    get textWidth()   { return this.data.textWidth; }
 }
 
 const dragAndDropInstance = new dragAndDropClass;
