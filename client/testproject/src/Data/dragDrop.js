@@ -147,8 +147,6 @@ class dragAndDropClass{
             boundsWidth -= startOffset;
         }
 
-        console.log(this.data.iconBounds.width);
-
         // Transform scaling does not change the top X position
         // Recalculate by finding difference.
         let initialX = boundsWidth  / 1.5;
@@ -163,17 +161,16 @@ class dragAndDropClass{
 
     // Only updates when the value has changed
     updateContainerType(type){
-
+        
         // Uses the icon ref to recalculate the bounding box
         if(this.data.dragWrapRef != null){
             this.data.iconBounds = structuredClone(this.data.dragWrapRef.getBoundingClientRect());
-
-            if(this.data.mouseHoverContainerType != type){
-                this.setIconCSSHandler(type, 'success');
-            }
         }
         
-        this.data.mouseHoverContainerType = (type == "Storage") ? "GRID" : type;
+        if(this.data.mouseHoverContainerType != type){
+            this.setIconCSSHandler(type, 'success');
+            this.data.mouseHoverContainerType = (type == "Storage") ? "GRID" : type;
+        }
 
         // Change size of icon
         
@@ -250,6 +247,7 @@ class dragAndDropClass{
     get iconImage()  { return this.data.displayIconData.iconImage; }
     get iconSize()   { return this.data.displayIconData.iconSize; }
     get viewBox()    { return this.data.displayIconData.viewBox; }
+    
     get transitionName() { return this.data.transitionName; }
     get mouseHoverContainerType(){ return this.data.mouseHoverContainerType; }
     get isHoverGrid() { return (this.data.mouseHoverContainerType === "GRID"); }

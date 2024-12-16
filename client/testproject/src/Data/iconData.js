@@ -107,7 +107,7 @@ class IconData{
     }
 
     //ID of Icon, old container and new container
-    moveIcon(iconID,oldContainerID, newContainerID, nColumns, isFree=false){
+    moveIcon(iconID,oldContainerID, newContainerID, nColumns, isFree=false, insertIndex=-1){
         if(!this.checkContainerExist(newContainerID)){  this.createGroup(newContainerID); }
         
         let oldGroup  = this.getGroup(oldContainerID);
@@ -127,7 +127,9 @@ class IconData{
             newGroup.splice(groupArrIndex, 0, iconData); // Insert new data at the new index
         }
         else{
-            newGroup.push(iconData); // Push to end
+            // Move to index, if has value
+            console.log(insertIndex);
+            (insertIndex != -1) ?  this.moveItemToIndex(newGroup, insertIndex, iconData) : newGroup.push(iconData);
         }
 
         oldGroup.splice(iconIndex, 1);
@@ -147,9 +149,26 @@ class IconData{
     swapIndices(group, index_A, index_B){
         [group[index_A], group[index_B]] = [group[index_B], group[index_A]];
     }
-
+    
     moveItemToEnd(group, index){
         group.push(group.splice(index, 1)[0]);
+    }
+
+    moveItemToIndex(group, index, data){
+        group.splice(index, 0, data);
+    }
+
+    isIconIDInGroup(group, iconID){
+        var doesExist = false;
+        group.forEach(element => {
+            if(element.iconID === iconID) doesExist = true;
+        });
+        return doesExist;
+    }
+
+    deleteIndex(group, index){
+        if(index < 0) return;
+        group.splice(index, 1);
     }
 
     createGroup(containerIDString){

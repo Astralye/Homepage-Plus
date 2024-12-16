@@ -7,7 +7,7 @@ export class EditVariables{
 
         dragStepSize: 0.25,
         resetSelect: false,
-        iconDragData: null, // Object, store containerID + IconID
+        iconDragData: null, // Object, storedContainer + storedID
 
         isIconSelector: null,
 

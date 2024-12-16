@@ -15,20 +15,21 @@
         class="list-container no-pointer-event"
         @click.self="iconSelect.resetData()"
         @mouseup="checkDrop(); dragAndDrop.resetTimer();"
-        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('LIST') : null"
+        @mouseenter="dragAndDrop.enabled ? mouseEnterList() : null"
+        @mouseleave="mouseLeaveList()"
     >
         <div v-for="(item, index) in m_GroupData" :key="index"
+            @mousemove="dragAndDrop.enabled ? hoveringIndex(index) : null"
         >
             <div
                 ref="list-item"         
                 class="list-item-wrapper flex"
                 :class="{ 'icon-Selection' : isSelectedIcon(index),
-                          'unselect-icon'  : !isSelectedIcon(index)
+                        'unselect-icon'  : !isSelectedIcon(index)
                 }"
                 @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
                 @dblclick="(editVariables.isEnabled) ? null : openLink(item)"
-                @mouseup="checkDropIndex(index)"
-                @mousedown="(editVariables.isEnabled) ? $refs['icon-drag-handler'].dragDropSetup($event, index, this.getIconData(index), 'LIST') : null"
+                @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
             >   
                 <!-- Icon if any -->
                 <div v-if="hasIcon(item)"
@@ -69,6 +70,8 @@ import { editVariables } from '../../Data/SettingVariables';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
 
+import { toRaw } from 'vue';
+
 import { iconImageStorage } from '../../Data/iconImages';
 
 import SVGHandler from '../Input Components/SVGHandler.vue';
@@ -98,6 +101,10 @@ export default {
 
             m_GroupData: null,
             m_containerData: null,
+            m_OriginalDrag: false,
+
+            m_tmpIndex: -1,
+            m_startIndex: -1,
         }
     },
     created(){
@@ -112,6 +119,7 @@ export default {
             if(this.m_GroupData === null){ 
                 iconData.createGroup(this.m_containerData.ID);
                 this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+                return
             } // group data does not exist
 
             this.m_GroupData = iconData.getGroup(this.component_ID);
@@ -121,18 +129,94 @@ export default {
             window.open(item.link, '_blank');
         },
 
-    // Taken from GridLayout.vue
+    // Drag drop temporary data
+        
+        // Swaps the temporary list
+        hoveringIndex(index){
+        
+            // If data does not exist within list, insert
+            let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
+            let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
 
-        // pass data to dragdrop.js
-        iconHandlerDataMove(event, index){
+            this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
 
-            // Ref of current grid position.
-            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index).iconID, "LIST");
+            if(!iconData.isIconIDInGroup(this.m_GroupData, editVariables.iconDragData.storedID)) return;
+
+            let iconIndex = iconData.getIconIndexOfGroup(this.m_GroupData, tmpIcon.iconID);
+            iconData.deleteIndex(this.m_GroupData, iconIndex);
+            iconData.moveItemToIndex(this.m_GroupData, this.m_tmpIndex, tmpIcon);
+
+            this.m_tmpIndex = index;
         },
+
+        resetData(){
+            this.resetSelection();
+            this.m_tmpIndex     = -1;
+            this.m_startIndex   = -1;
+            this.m_OriginalDrag = false;
+            this.initData();
+        },
+
+    // Taken from GridLayout.vue
 
         getIconData(index){ return this.m_GroupData[index]; },
 
-        // Conditions and values to check before drop functionality
+        // Start drag handler
+        iconHandlerDataMove(event, index){
+
+            this.m_OriginalDrag = true;
+            this.m_tmpIndex     = index;
+            this.m_startIndex   = index;
+
+            // Ref of current grid position.
+            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index), 'LIST');
+        },
+
+    // Conditions and values to check before drop functionality
+
+        mouseEnterList(){
+            dragAndDrop.updateContainerType('LIST'); 
+            this.createTempGroupData();
+        },
+
+        // Resets the data.
+        mouseLeaveList(){
+
+            // Resets the data back to the original 
+            this.initData();
+
+            // This is for removing the displayed original location 
+            if(!this.m_OriginalDrag && !editVariables.iconDragData) return;
+
+            // Prevent other icons from triggering this.
+            if(editVariables.iconDragData.storedContainer !== this.component_ID) return;
+            
+            this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
+
+            let groupData = iconData.getGroup(editVariables.iconDragData.storedContainer);
+            let tmpIcon = iconData.getIconDataFromID(groupData, editVariables.iconDragData.storedID);
+            
+            let index = iconData.getIconIndexOfGroup(groupData, tmpIcon.iconID);
+
+            this.m_GroupData.splice(index, 1);
+        },
+
+        
+        createTempGroupData(){
+
+            // Do no add if this was the original location
+            this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
+
+            if(!editVariables.iconDragData) return;
+
+            // Check the origin of the data
+            let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
+
+            let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
+
+            this.m_GroupData.push(tmpIcon);
+            this.m_tmpIndex = this.m_GroupData.length -1;
+        },
 
         // If dropped at any empty space
         checkDrop(){
@@ -142,35 +226,25 @@ export default {
             let oldGroupID = editVariables.iconDragData.storedContainer;
             let iconID     = editVariables.iconDragData.storedID;
 
+            // Different group
             if(oldGroupID !== this.m_containerData.ID){
-                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false);
+                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false, this.m_tmpIndex);
+            }
+            else{
+                // Swap within group.
+                this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+
+                let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
+                let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
+
+                if(!iconData.isIconIDInGroup(this.m_GroupData, editVariables.iconDragData.storedID)) return;
+
+                let iconIndex = iconData.getIconIndexOfGroup(this.m_GroupData, tmpIcon.iconID);
+                iconData.deleteIndex(this.m_GroupData, iconIndex);
+                iconData.moveItemToIndex(this.m_GroupData, this.m_tmpIndex, tmpIcon);
             }
 
-            this.resetSelection();
-        },
-
-        // If dropped at a specific location
-        // Need to swap
-        checkDropIndex(index){
-            if(!editVariables.iconDragData){ return; } // Requires data
-
-            // let newGroupID = this.m_containerData.ID;
-            // let oldGroupID = editVariables.iconDragData.storedContainer;
-            // let iconID     = editVariables.iconDragData.storedID;
-
-            // let isFree     = (this.m_containerData.gridData.contentAlign === "Free");
-            // let dirIndex   = this.directionalIndexHandler(index);
-
-            // // Find group to move to.
-            // let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
-            // let isDifferentGroup = (oldGroupID !== newGroupID);
-
-            // if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ 
-            //     if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){this.m_TransitionName = 'icon-cancel' }; 
-            //     return;
-            // }
-
-            // this.dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, dirIndex);
+            this.resetData();
         },
 
         // Click selection for linkmaker
@@ -204,6 +278,14 @@ export default {
         // checks if index is last position of the indexing.
         isLastPosition(index){ return (this.m_GroupData.length-1 === index); },
     },
+    watch:{
+        'editVariables.iconDragData.storedContainer'(val,oldVal){
+            // null value, was reset
+            if(!val){
+                this.m_OriginalDrag = false;
+            } 
+        }
+    }
 }
 </script>
 
