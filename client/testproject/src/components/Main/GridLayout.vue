@@ -21,7 +21,8 @@
 
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
-                    <IconHandler v-if="renderIcon(index)"
+                    <IconHandler v-show="renderIcon(index)"
+                        :key="getIconData(index)"
                         class="icon"
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
