@@ -18,42 +18,46 @@
         @mouseenter="dragAndDrop.enabled ? mouseEnterList() : null"
         @mouseleave="mouseLeaveList()"
     >
-        <div v-for="(item, index) in m_GroupData" :key="index"
-            @mousemove="dragAndDrop.enabled ? hoveringIndex(index) : null"
-        >
-            <div
-                ref="list-item"         
-                class="list-item-wrapper flex"
-                :class="{ 'icon-Selection' : isSelectedIcon(index),
-                        'unselect-icon'  : !isSelectedIcon(index)
-                }"
-                @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
-                @dblclick="(editVariables.isEnabled) ? null : openLink(item)"
-                @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
-            >   
-                <!-- Icon if any -->
-                <div v-if="hasIcon(item)"
-                    class="icon-spacing"
-                    >
-                    <SVGHandler
-                        width="2em"
-                        height="2em"
-                        :path_Value="iconImageStorage.getPathData(item.iconImage)"
-                        :view_Box="iconImageStorage.getViewBoxName(item.iconImage)"
-                        :fill_Colour="item.iconColour"
-                    />
-                </div>
         
-                <!-- Name -->
+        <TransitionGroup name="list">
+            <div v-for="(item, index) in m_GroupData"
+            :key="item.iconID"
+            @mousemove="dragAndDrop.enabled ? hoveringIndex(index) : null"
+            >
                 <div
-                    class="center-text">
-                    {{ item.iconString }}
+                    ref="list-item"         
+                    class="list-item-wrapper flex"
+                    :class="{ 'icon-Selection' : isSelectedIcon(index),
+                              'unselect-icon'  : !isSelectedIcon(index)
+                    }"
+                    @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+                    @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
+                    @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
+                >   
+                    <!-- Icon if any -->
+                    <div v-if="hasIcon(item)"
+                        class="icon-spacing"
+                        >
+                        <SVGHandler
+                            width="2em"
+                            height="2em"
+                            :path_Value="iconImageStorage.getPathData(item.iconImage)"
+                            :view_Box="iconImageStorage.getViewBoxName(item.iconImage)"
+                            :fill_Colour="item.iconColour"
+                        />
+                    </div>
+            
+                    <!-- Name -->
+                    <div
+                        class="center-text">
+                        {{ item.iconString }}
+                    </div>
+
                 </div>
 
+                <hr v-if="!isLastPosition(index)">
             </div>
-
-            <hr v-if="!isLastPosition(index)">
-        </div>
+        </TransitionGroup>
     </div>
 
     <IconDragHandler
@@ -103,7 +107,7 @@ export default {
             m_containerData: null,
             m_OriginalDrag: false,
 
-            m_tmpIndex: -1,
+            m_placementIndex: -1,
             m_startIndex: -1,
         }
     },
@@ -134,24 +138,18 @@ export default {
         // Swaps the temporary list
         hoveringIndex(index){
         
-            // If data does not exist within list, insert
-            let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
-            let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
-
-            this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
-
+            // If not found in group, skip
             if(!iconData.isIconIDInGroup(this.m_GroupData, editVariables.iconDragData.storedID)) return;
-
-            let iconIndex = iconData.getIconIndexOfGroup(this.m_GroupData, tmpIcon.iconID);
-            iconData.deleteIndex(this.m_GroupData, iconIndex);
-            iconData.moveItemToIndex(this.m_GroupData, this.m_tmpIndex, tmpIcon);
-
-            this.m_tmpIndex = index;
+            
+            // Same position do nothing
+            if(this.m_placementIndex == index) return; 
+        
+            this.m_placementIndex = index;
         },
 
         resetData(){
             this.resetSelection();
-            this.m_tmpIndex     = -1;
+            this.m_placementIndex = -1;
             this.m_startIndex   = -1;
             this.m_OriginalDrag = false;
             this.initData();
@@ -164,9 +162,9 @@ export default {
         // Start drag handler
         iconHandlerDataMove(event, index){
 
-            this.m_OriginalDrag = true;
-            this.m_tmpIndex     = index;
-            this.m_startIndex   = index;
+            this.m_OriginalDrag   = true;
+            this.m_placementIndex = index;
+            this.m_startIndex     = index;
 
             // Ref of current grid position.
             this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index), 'LIST');
@@ -215,7 +213,7 @@ export default {
             let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
 
             this.m_GroupData.push(tmpIcon);
-            this.m_tmpIndex = this.m_GroupData.length -1;
+            this.m_placementIndex = this.m_GroupData.length -1;
         },
 
         // If dropped at any empty space
@@ -228,7 +226,7 @@ export default {
 
             // Different group
             if(oldGroupID !== this.m_containerData.ID){
-                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false, this.m_tmpIndex);
+                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false, this.m_placementIndex);
             }
             else{
                 // Swap within group.
@@ -241,7 +239,7 @@ export default {
 
                 let iconIndex = iconData.getIconIndexOfGroup(this.m_GroupData, tmpIcon.iconID);
                 iconData.deleteIndex(this.m_GroupData, iconIndex);
-                iconData.moveItemToIndex(this.m_GroupData, this.m_tmpIndex, tmpIcon);
+                iconData.moveItemToIndex(this.m_GroupData, this.m_placementIndex, tmpIcon);
             }
 
             this.resetData();
@@ -291,6 +289,20 @@ export default {
 
 <style scoped>
 
+.list-move, /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+
+
 .icon-success-enter-active {
     animation: grow 200ms ease-out;
     transition: opacity 50ms ease-in;
@@ -304,6 +316,9 @@ export default {
 .icon-cancel-leave-active {
     transition: opacity 50ms ease-in;
 }
+
+
+
 
 
 .icon-drag-effect{
@@ -365,6 +380,7 @@ export default {
     height: 100%;
     width: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     position: absolute;
 }
 

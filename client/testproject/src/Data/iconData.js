@@ -128,7 +128,6 @@ class IconData{
         }
         else{
             // Move to index, if has value
-            console.log(insertIndex);
             (insertIndex != -1) ?  this.moveItemToIndex(newGroup, insertIndex, iconData) : newGroup.push(iconData);
         }
 
@@ -161,7 +160,7 @@ class IconData{
     isIconIDInGroup(group, iconID){
         var doesExist = false;
         group.forEach(element => {
-            if(element.iconID === iconID) doesExist = true;
+            if(element.iconID === iconID) { doesExist = true;  }
         });
         return doesExist;
     }
