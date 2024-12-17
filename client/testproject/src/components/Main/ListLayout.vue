@@ -49,7 +49,10 @@
             
                     <!-- Name -->
                     <div
-                        class="center-text">
+                        class="center-text"
+                        :style="{
+                            'font-size' : item.iconStringSize
+                        }">
                         {{ item.iconString }}
                     </div>
 
@@ -362,6 +365,10 @@ export default {
     text-align: center;   
     margin-top: auto;
     margin-bottom: auto; 
+
+    overflow: hidden;
+
+    transition: font-size ease 200ms;
 }
 
 .flex{

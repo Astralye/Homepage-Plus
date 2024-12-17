@@ -41,7 +41,10 @@ class IconData{
             iconColour: "#000000",
             iconSize: "75",
             iconImage: image,
+            
             iconString: string,
+            iconStringSize: "16px",
+            
             link: "",
             displayText: true,
         }

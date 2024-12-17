@@ -126,7 +126,7 @@
             
                                 <!-- Modification buttons -->
                                 <div class="flex button-column"> 
-                                <!-- Colour -->
+                                    <!-- Colour -->
                                     <div class="modification-button">
                                         <ColourPicker
                                             :loaded_Data="m_SelectedObject.iconColour"
@@ -135,6 +135,7 @@
                                         />
                                     </div>
             
+                                    <!-- Icon image -->
                                     <div class="modification-button">
                                         <SingleButton
                                             class="width-full"
@@ -146,36 +147,29 @@
                                         </SingleButton>
                                     </div>
             
+                                    <!-- Icon size -->
                                     <div class="modification-button">
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Aspect-Ratio"
-                                            @click="console.log('iconSize')"
+                                            @click="setCurrentTab('Icon Size')"
+                                            :button_toggle="true"
                                             :enabled="isCurrentlySelected"
                                         >
                                             Icon Size
                                         </SingleButton>
                                     </div>
             
+                                    <!-- Icon Text -->
                                     <div class="modification-button">
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Edit-Note"
-                                            @click="console.log('icon text')"
+                                            @click="setCurrentTab('Icon Text')"
+                                            :button_toggle="true"
                                             :enabled="isCurrentlySelected"
                                         >
                                             Icon Text
-                                        </SingleButton>
-                                    </div>
-            
-                                    <div class="modification-button">
-                                        <SingleButton
-                                            class="width-full"
-                                            m_IconString="Text-UL"
-                                            @click="console.log('text size')"
-                                            :enabled="isCurrentlySelected"
-                                        >
-                                            Text size
                                         </SingleButton>
                                     </div>
                                 </div>
@@ -187,8 +181,8 @@
                                         <div class="icon-fit center fit-content">
                                             <SVGHandler
                                                 class="icon-center"
-                                                height="90%"
-                                                width="90%"
+                                                height="80%"
+                                                width="80%"
                                                 :fill_Colour="m_SelectedObject.iconColour"
                                                 :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
                                                 :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
@@ -201,8 +195,8 @@
                                         <div class="icon-fit center fit-content">
                                             <SVGHandler
                                                 class="icon-center"
-                                                height="90%"
-                                                width="90%"
+                                                height="80%"
+                                                width="80%"
                                                 :path_Value="iconImageStorage.getPathData('Cross')"
                                                 :view_Box="iconImageStorage.getViewBoxName('Cross')"
                                             />
@@ -214,13 +208,52 @@
                     </WindowContainerDivider>
                 </div>
             
+            <!-- 
+                Icon size,
+                Icon text, 
+                Text size menu 
+            -->
+                    
                 <WindowContainerDivider>
                     <template #header>
-                        <h3> Setting that changes</h3>
+                        <h3> {{ m_IconTabOpen }} </h3>
                     </template>
             
                     <template #content>
-                        Display Content
+                        <!-- Template for Icon size -->
+                        <template v-if="isIconMenuSelected('Icon Size')">
+                            <RangeSlider
+                                :no_Items="m_iconSizes.length"
+                                :enabled="isCurrentlySelected"
+                                :caption_Data="m_iconSizes"
+                                v-model="m_SelectedObject.iconSize"
+                            />
+                        </template>
+                        <template v-else-if="isIconMenuSelected('Icon Text')">
+                            <Checkbox
+                                @onChange="check => m_SelectedObject.displayText = check"
+                                :checkValue="m_SelectedObject.displayText"
+                                :enabled="isCurrentlySelected"
+                                text="Toggle display Text"
+                            />
+
+                            <br>
+
+                            <h4> Display Text </h4>
+                            <TextInput
+                                :placeholder_text="'Icon name'"
+                                :enabled="isCurrentlySelected"
+                                v-model="m_SelectedObject.iconString"
+                            />
+
+                            <h4> Text Size</h4>
+                            <RangeSlider
+                                :no_Items="m_textSizes.length"
+                                :enabled="isCurrentlySelected"
+                                :caption_Data="m_textSizes"
+                                v-model="m_SelectedObject.iconStringSize"
+                            />
+                        </template>
                     </template>
                 </WindowContainerDivider>
             
@@ -464,26 +497,6 @@ export default {
 
             m_STORAGE: "Storage",
             m_SelectedObject: {}, // Data for selected object.
-            
-            // Icon drag visual variables
-            
-            m_DisplayIconData:{
-                iconColour: "#000000",
-                iconSize: "100",
-                iconImage: "",
-                viewBox: "",
-            },
-
-            m_TransitionName: 'icon-success',
-
-            m_iconID: null,
-            m_DraggingEvent: false,
-            m_IconDragRef: null,
-            m_SavedIndex: 0,
-            m_MouseOffset:{
-                x: 0,
-                y: 0,
-            },
 
             m_SelectedIconIndex: -1,
 
@@ -503,6 +516,9 @@ export default {
                 }
             ],
 
+            m_iconSizes: [ "40", "50", "75", "100", "120"],
+            m_textSizes: [ "10px", "12px", "14px", "16px"],
+
             // Icon Functionality 
             
             m_DisplayLink: "",
@@ -521,7 +537,9 @@ export default {
             m_FunctionalityType:[
                 { id:"Link", selected: true},
                 { id:"Folder", selected: false},
-            ]
+            ],
+
+            m_IconTabOpen: null,
         }
     },
     created(){
@@ -554,11 +572,6 @@ export default {
             this.setDisplayLink(this.m_SelectedObject.link);
         },
 
-        // // From the name of the icon, get the index at which it appears in iconImages
-        setSVGIndex(svgName){
-            this.m_SelectedIconIndex = iconImageStorage.getIndexFromName(svgName);
-        },
-
         // Changes the currently selected. Displays
         newSelect(index){
             if(!this.isCurrentlySelected){ return; } // No selection
@@ -568,19 +581,35 @@ export default {
             this.setSVGIndex(svg.name);
         },
 
+        // Check if current selected icon is the index.
+        selectedIconMenu(index){
+            if(!this.isCurrentlySelected){ return; } // No selection
+            return (this.m_SelectedIconIndex === index);
+        },
+
+        isIconMenuSelected(type){ return (this.m_IconTabOpen === type); },
+
+    // Getter
+
         getSVG(index){
             let svg = iconImageStorage.getPathFromIndex(index);
             return svg.pathData;
         },
 
-        setColourData(hex){
-            this.m_SelectedObject.iconColour = hex;
+    // Setter
+
+        setCurrentTab(type){
+            this.m_IconTabOpen = type;
+            console.log("set:",  this.m_IconTabOpen);
         },
 
-        // Check if current selected icon is the index.
-        selectedIconMenu(index){
-            if(!this.isCurrentlySelected){ return; } // No selection
-            return (this.m_SelectedIconIndex === index);
+        // From the name of the icon, get the index at which it appears in iconImages
+        setSVGIndex(svgName){
+            this.m_SelectedIconIndex = iconImageStorage.getIndexFromName(svgName);
+        },
+
+        setColourData(hex){
+            this.m_SelectedObject.iconColour = hex;
         },
 
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -848,22 +877,12 @@ export default {
     width: 20%;
 }
 
-.modification-button{
-    height: fit-content;
-}
-    
-.icon-fit{
-    max-width: fit-content;
-    height: auto;
-}
-
 .image-placeholder{
     border: 2px solid var(--Accent-background-colour);
     border-top-right-radius: 2em;
     border-bottom-right-radius: 2em;
     border-left: 0;
 
-    width: auto;
     position: relative;
     transition: all 0.15s ease-in-out;
 }
