@@ -19,7 +19,14 @@ export class EditVariables{
 
         isRenderFinalNode: false, // Renders the final node due to tree structure
         containerSelectionMode: false,
-        parentIDGridUpdate: ""
+        parentIDGridUpdate: "",
+
+        // Variables that can be modified within the settings.
+
+        modalToggle:{
+            delete: true,
+            cancel: true,
+        }
     }}
 
     enableEdit() { this.values.enabled = true; }
@@ -50,7 +57,8 @@ export class EditVariables{
         this.activeContainerSelection = (this.values.activeLayoutWindow || this.values.activeContainerWindow);
     }
 
-    // Setters
+// Setters
+
     setEdit(val){ this.values.enabled = val } // Only boolean values
     setContainerSelected(cont){ this.values.containerSelected = cont; }
     setDragStepSize(val) { this.values.dragStepSize = val; }
@@ -59,7 +67,13 @@ export class EditVariables{
     resetParentID()      { this.setParentID(null); }
     resetIconDragData()  { this.setIconDragData(null); }
 
-    // Getters
+    // User modifiers
+
+    resetModal(){ this.setDeleteModal(true); this.setCancelModal(true); }
+    setDeleteModal(val){ this.values.modalToggle.delete = val; }
+    setCancelModal(val){ this.values.modalToggle.cancel = val; }
+
+// Getters
     get isEnabled() { return this.values.enabled; }
     get containerSelected(){ return this.values.containerSelected; }
     get windowSize() { return this.values.windowSize; }
@@ -71,6 +85,11 @@ export class EditVariables{
     get isRenderFinalNode(){ return this.values.isRenderFinalNode; }
     get containerSelectionMode() { return this.values.containerSelectionMode; }
     get parentID() { return this.values.parentIDGridUpdate; }
+
+    // User modifiers
+
+    get isShowDeleteModal(){ return this.values.modalToggle.delete; }
+    get isShowCancelModal(){ return this.values.modalToggle.cancel; }
 
 }
 

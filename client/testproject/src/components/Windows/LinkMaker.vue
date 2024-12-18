@@ -140,7 +140,7 @@
                                         <SingleButton
                                             class="width-full"
                                             m_IconString="Image"
-                                            @click="windowHandler.toggleWindow('icon menu')"
+                                            @click="setCurrentTab('Icon Type')"
                                             :enabled="isCurrentlySelected"
                                         >
                                             Icon
@@ -253,6 +253,27 @@
                                 :caption_Data="m_textSizes"
                                 v-model="m_SelectedObject.iconStringSize"
                             />
+                        </template>
+                        <template v-else-if="isIconMenuSelected('Icon Type')">
+                            <div class="icon-selection-menu width-full flex">
+                                <template v-for="(item, index) in 50" :key="index">
+                                    
+                                    <div class="saved-icons icon-wrapper"
+                                        :class="{ 'icon-Selection' : selectedIconMenu(index), 'grid-item' : !selectedIconMenu(index) }"
+                                        >
+                                        <SVGHandler v-if="iconImageStorage.isValidIndex(index)"
+                                            width="100%"
+                                            height="100%"
+                                            :fill_Colour="m_localIconColourHex"
+                                            :path_Value="getSVG(index)"
+                                            :view_Box="iconImageStorage.getViewBoxIndex(index)"
+                                            @click="newSelect(index)"
+                                        />
+                                        <!-- It needs to load the correct icon -->
+                                    </div>
+                                </template>
+                            </div>
+
                         </template>
                     </template>
                 </WindowContainerDivider>
@@ -378,60 +399,6 @@
         
     </template>
     </WindowContainerDivider>
-
-<!-- 
-    Icon menu Window 
-    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
--->
-    <teleport to="body">
-    <Transition name="fade">
-        <Window
-            v-if="isIconMenuOpen"
-            title="Icon Menu"
-            :width="500">
-            <template #window-icon>
-                <SVGHandler
-                    class="icon-center"
-                    height="2em"
-                    width="2em"
-                    view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
-                    :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
-                />
-            </template>
-
-            <template #window-content>
-            <!-- Window content -->
-
-            <WindowContainerDivider>
-                <template #content>
-                    <div class="icon-selection-menu width-full flex">
-                        <template v-for="(item, index) in 50" :key="index">
-                            
-                            <div class="saved-icons icon-wrapper"
-                                :class="{ 'icon-Selection' : selectedIconMenu(index), 'grid-item' : !selectedIconMenu(index) }"
-                                >
-                                <SVGHandler v-if="iconImageStorage.isValidIndex(index)"
-                                    width="100%"
-                                    height="100%"
-                                    :fill_Colour="m_localIconColourHex"
-                                    :path_Value="getSVG(index)"
-                                    :view_Box="iconImageStorage.getViewBoxIndex(index)"
-                                    @click="newSelect(index)"
-                                />
-                                <!-- It needs to load the correct icon -->
-                            </div>
-                        </template>
-                    </div>
-                </template>
-            </WindowContainerDivider>
-
-            </template>
-        </Window>
-    </Transition>
-    </teleport>
-
-
 
 <!-- 
     Icon Function
@@ -894,12 +861,12 @@ export default {
 .icon-selection-menu{
     flex-wrap: wrap;
     overflow-y: scroll;
-    height: 350px;
+    height: 300px;
 }
 
 .icon-wrapper{
-    height: 5em;
-    width: 5em;
+    height: 4em;
+    width: 4em;
 }
 
 .right-side{

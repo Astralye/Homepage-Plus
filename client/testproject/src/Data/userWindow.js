@@ -13,7 +13,6 @@ class WindowHandler{
             { name: "containers", toggle: false },
             { name: "widgets",    toggle: false },
             { name: "link maker", toggle: false },
-            { name: "icon menu",  toggle: false },
             { name: "colour picker", toggle: false },
         ],
 
