@@ -7,10 +7,16 @@ export class Mouse {
         mouseMoveFunctions: [],
         mouseUpFunctions: [],
         mouseDownFunctions: [],
+
+        usedObject: null,
     }}
     
     get Coordinates(){ return this.data; }
     updateCoordinate(x, y){ this.data.x = x; this.data.y = y;}
+
+// If passed in an object to act upon it.
+
+    useObject(object){ this.data.usedObject = object; }
 
 // onmouseMove
 
@@ -24,7 +30,9 @@ export class Mouse {
     enableTracking(){ 
         document.onmousemove = (event) =>{ 
             this.updateCoordinate(event.pageX, event.pageY); 
-            this.data.mouseMoveFunctions.forEach(element => { element(); });
+            this.data.mouseMoveFunctions.forEach(element => {
+                (this.data.usedObject) ? this.data.usedObject[`${element}`]() : element();
+            });
     }}
 
     enableTouchMove(){
@@ -58,6 +66,7 @@ export class Mouse {
             document.removeEventListener("touchend", fnc)
         })
         this.data.mouseUpFunctions = [];
+        this.useObject(null);
     }
 
     // Mouse
@@ -65,10 +74,19 @@ export class Mouse {
     mouseUpFunctions(functionArray){ this.data.mouseUpFunctions = functionArray; }
     enableMouseUp(){ 
         document.onmouseup = (event) => { 
-            this.data.mouseUpFunctions.forEach(element => element())
-        }}
+            this.data.mouseUpFunctions.forEach(element => {
 
-    disableMouseUp(){ document.onmouseup = null;  this.data.mouseUpFunctions = []; }
+                // If there was an object passed to use for the value
+                (this.data.usedObject) ? this.data.usedObject[`${element}`]() : element();
+            });
+        }
+    }
+
+    disableMouseUp(){
+        document.onmouseup = null;  
+        this.data.mouseUpFunctions = []; 
+        this.useObject(null);
+    }
 
 // onmouseDown
 

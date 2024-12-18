@@ -7,8 +7,10 @@
 
 <template>
 <div
+    class="flex"
     :ref="ref_Value" >
     <svg
+    class="change-size"
     
     xmlns="http://www.w3.org/2000/svg"
     :viewBox="view_Box"
@@ -57,6 +59,11 @@
     }
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+.flex{
+    display: flex;
+}
+.change-size{
+    transition: width 300ms ease-out, height 300ms ease-out;
+}
 </style>

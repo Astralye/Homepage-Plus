@@ -6,67 +6,58 @@
             </template>
             
             <template #content>
-                <WindowContainerDivider>
-                    <template #header> 
-                        <p>
-                            Edit display type
-                        </p>
-                    </template>
 
+                <WindowContainerDivider>
                     <template #content>
+                        <h3> Edit display type </h3>
+
+                        *Nonfunctional
                         <RadioBtn
                             v-model="vmodelValues"
                             :enable_Radio="true"
                             @clickEvent=""
                         />
-                    </template>
-
-                    <template #tooltip>
-                        <!-- Tooltips cause size problems within a scrollable window -->
-                        <!-- <ToolTip>
-                            Determines how the content of the menus are to be displayed.
-
-                            Smaller displays will automatically use the sidebar.
-                        </ToolTip> -->
-                    </template>
-
-                </WindowContainerDivider>
-
-
-                <WindowContainerDivider>
-                    <template #header> 
-                        <p> Data </p>
-                    </template>
-
-                    <template #content>
+        
+                        <br>
+        
+                        <h3> Data </h3>
+        
+                        *Nonfunctional
                         <div class="button-row-align">
-                            <SingleButton>
-                                <!-- :m_IconString="" -->
+                            <SingleButton
+                                m_IconString="Download">
                                 Import Data
                             </SingleButton>
                             
-                            <SingleButton>
-                                <!-- :m_IconString="" -->
+                            <SingleButton
+                                m_IconString="Upload">
                                 Export Data
                             </SingleButton>
                         </div>
-                    </template>
-
-                </WindowContainerDivider>
-
-                <WindowContainerDivider>
-                    <template #header> 
-                        <p> Tutorial </p>
-                    </template>
-
-                    <template #content>
-                        <SingleButton>
+        
+                        <br>
+        
+                        <h3> Tutorial </h3>
+        
+                        *Nonfunctional
+                        <SingleButton
+                            m_IconString="Restart-alt"
+                            @click="console.log('restart tutorial')">
                             Restart Tutorial
                         </SingleButton>
-                    </template>
 
+                        <br>
+                        <p> Layout Modifier Reminder Window</p>
+                        <SingleButton
+                            m_IconString="Restart-alt"
+                            @click="editVariables.resetModal()">
+                            Reset 'Cancel' and 'Delete'
+                        </SingleButton>
+
+
+                        <!-- Language, mention it only supports english. -->
+                    </template>
                 </WindowContainerDivider>
-                Language, mention it only supports english.
             </template>
         </WindowContainerDivider>
 
@@ -250,6 +241,8 @@ import Checkbox from '../Input Components/Checkbox.vue';
 import RadioBtn from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 
+import { editVariables } from '../../Data/SettingVariables';
+
 export default {
     components:{
         WindowContainerDivider,
@@ -262,6 +255,7 @@ export default {
     data(){
         return{
             iconImageStorage,
+            editVariables,
 
             vmodelValues: [
                 { id: "Windows" , selected: false },

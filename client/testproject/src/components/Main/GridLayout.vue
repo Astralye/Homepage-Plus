@@ -1,10 +1,9 @@
 <template>
     <div class="grid-wrapper border-box"
-        id="gridTop"
         ref="container"
-        @mouseup="resetSelection(); (editVariables.isEnabled) ? resetTimer() : null"
+        @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
+        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
         >
-
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
@@ -17,39 +16,28 @@
                 ref="gridPosition"
                 :class="{ 'icon' : renderIcon(index),
                 'icon-Selection' : isSelectedIcon(index),
-                'unselect-icon'  : !isSelectedIcon(index)}">
-                
-                    <!-- Loads icon data to be rendered -->
-                    <Transition name="fade">
-                        <IconHandler v-if="renderIcon(index)"
-                            class="icon"
-                            :class="{'opacity-none' : ( m_DraggingEvent && isStoredIndex(index)) ,
-                                     'opacity-full' : !m_DraggingEvent }"
-                            :icon_data="getIconData(index)"
-                            @mousedown="(editVariables.isEnabled) ? initDragDrop($event, index) : null"
-                        />
-                    </Transition>
-            </div>
-            
-            <!-- Visible icon that follows mouse -->
-            <Teleport to="body">
-                <Transition :name="m_TransitionName">
-                    <SVGHandler
-                        v-show="m_DraggingEvent && isStoredIndex(index)"
-                        ref="svgRef"
-                        class="icon-drag-effect"
-                        :ref_Value="'draggingIcon'"
-
-                        :fill_Colour="m_DisplayIconData.iconColour"
-                        :path_Value="m_DisplayIconData.iconImage"
-                        :height="m_DisplayIconData.iconSize"
-                        :width="'auto'"
-                        :view_Box="m_DisplayIconData.viewBox"
+                'unselect-icon'  : !isSelectedIcon(index)}"
+            >
+                <!-- Loads icon data to be rendered -->
+                <Transition name="fade">
+                    <IconHandler v-show="renderIcon(index)"
+                        :key="getIconData(index)"
+                        class="icon"
+                        :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
+                                 'opacity-full' : !dragAndDrop.isDraggingEvent }"
+                        :icon_data="getIconData(index)"
+                        @mousedown="(editVariables.isEnabled) ?  $refs['icon-drag-handler'].dragDropSetup($event, index, getIconData(index), 'GRID'): null"
                     />
                 </Transition>
-            </Teleport>
+
+            </div>
         </div>
     </div>
+
+    <IconDragHandler
+        ref="icon-drag-handler"
+        :component_ID="component_ID"
+    />
 </template>
 <!-- 
     Ideas:
@@ -91,11 +79,15 @@ import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 
 import { editVariables } from '../../Data/SettingVariables';
+import { dragAndDrop } from '../../Data/dragDrop';
+
+import IconDragHandler from './IconDragHandler.vue';
 
 export default {
     components:{
         IconHandler,
-        SVGHandler
+        SVGHandler,
+        IconDragHandler,
     },
     props:{
         component_ID: {
@@ -111,14 +103,13 @@ export default {
     data(){
         return{
             // Imported Data
-            
             GridModificationClass,
             iconImageStorage,
-            iconData,
-            mouseData,
-            iconSelect,
             editVariables,
-            
+            dragAndDrop,
+            iconSelect,
+            mouseData,
+            iconData,
             
             // Main Grid values
 
@@ -130,25 +121,8 @@ export default {
             m_containerData: null,
             m_GroupData: null,  // Group data to check and move data between groups 
             m_iconID: null,     // ID of currently selected icon
-            m_Observer: null,   
+            m_Observer: null,
 
-            // Icon drag visual variables
-
-            m_draggableFnc: null,   // Timer to cancel drag function if not valid
-            m_TransitionName: 'icon-success',
-            m_SavedIndex: 0,
-            m_IconDragRef: null,    // Reference of the icon.
-            m_DraggingEvent: false, // Triggers transition and vbind classes
-
-            m_DisplayIconData:{
-                iconColour: "#000000",
-                iconSize: "100",
-                iconImage: "",
-            },
-            m_MouseOffset:{
-                x: 0,
-                y: 0,
-            }
         }
     },
     created(){
@@ -181,12 +155,6 @@ export default {
         resetSelection(){
             editVariables.resetIconDragData();
         },
-
-        // If user lifts mouse event before timer
-        resetTimer(){
-            clearTimeout(this.m_draggableFnc);
-        },
-
 
 // Coordinate Index
 // -------------------------------------------------------------------------------------------
@@ -243,7 +211,8 @@ export default {
             let isDifferentGroup = (oldGroupID !== newGroupID);
 
             if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ 
-                if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){this.m_TransitionName = 'icon-cancel' }; 
+                if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){ 
+                    dragAndDrop.setTransitionName('icon-cancel'); }; 
                 return;
             }
 
@@ -292,116 +261,8 @@ export default {
             iconData.setCoordinate(groupID, iconID, coord.x, coord.y);
         },
 
-// Mouse Function
-// ----------------------------------------------------------------------------------------------------------------------------
-
-        /*
-            Initializer for drag and drop event
-            Timeout makes the user wait a certain time before dragging.
-            Also defines what makes a drag and a click
-        */
-        initDragDrop: function(event, index){
-
-            var runFnc = false;
-            this.m_draggableFnc = setTimeout(() => { 
-
-                // Checks if the current mouse hover is over the same element
-                document.querySelectorAll( ":hover" ).forEach(el => {
-                    if(el == event.target){ runFnc = true; return;}
-                });
-                
-                if(!runFnc){ return; }
-
-                // Dragging event to for the icon to follow the mouse.
-                this.m_iconID = this.getIconData(index).iconID;
-                this.m_IconDragRef = this.$refs["svgRef"][index].$refs;
-                this.m_DraggingEvent = true;
-                this.m_SavedIndex = index;
-                this.m_TransitionName = 'icon-success';
-
-                // Stores the icon that is being dragged
-                // Used to transfer data between containers
-                editVariables.setIconDragData({
-                    storedContainer:  this.m_containerData.ID,
-                    storedID: this.m_iconID,
-                });
-
-                // Set mouse functions
-                mouseData.movementFunctions ([ this.edit_dragMove ]);
-                mouseData.mouseUpFunctions  ([ this.edit_disableDrag ]);
-                
-                mouseData.enableTracking();
-                mouseData.enableMouseUp();
-                
-                // Initalizers
-                this.setSVGDragData();
-                this.initIconDragPosition(event.clientX, event.clientY);
-
-            }, 125);
-
-        },
-
-    // Icon follow on mouse position functions
-
-        // Updates position of dragged icon.
-        edit_dragMove(){ this.updateIconDragPosition(mouseData.Coordinates.x, mouseData.Coordinates.y); },
-
-        // Resets values when finish the drag event
-        edit_disableDrag(){
-
-            mouseData.disableTracking();
-            mouseData.disableMouseUp();
-
-            this.m_DraggingEvent = false;
-            this.m_iconID = null;
-            this.m_SavedIndex = 0;
-        },
-
-
-        // This is the offset of the starting position that the mouse offsets by when moving
-        initIconDragPosition(initX, initY){
-            let gridItem = this.$refs['gridPosition'][this.m_SavedIndex].getBoundingClientRect();
-
-            this.setMouseOffset(initX, initY, gridItem);
-            this.updateIconDragPosition(initX, initY); // This value will always be constant at the start
-        },
-
-        // Updates the css values to match the cursor
-        updateIconDragPosition(x, y){
-            this.m_IconDragRef['draggingIcon'].style.left = x - this.m_MouseOffset.x + 'px';
-            this.m_IconDragRef['draggingIcon'].style.top  = y - this.m_MouseOffset.y + 'px';
-        },
-
-    // Setters
-
-        setSVGDragData(){
-            let svgData = this.getStoredIconData();
-            this.m_DisplayIconData.iconImage  = iconImageStorage.getPathData(svgData.iconImage);
-            this.m_DisplayIconData.iconColour = svgData.iconColour;
-            this.m_DisplayIconData.iconSize   = svgData.iconSize;
-            this.m_DisplayIconData.viewBox    = iconImageStorage.getViewBoxName(svgData.iconImage);
-        },
-
-        // this.m_MouseOffset indicates the absolute mouse position, after taking into account the grid position
-        setMouseOffset(x,y,container){
-
-            // grid item is the coordinates of the container, an offset is added to put it at the center
-            let gridXoffset = container.x + (container.width   / 10);
-            let gridYoffset = container.y + (container.height  / 10);
-
-            // mouseOffset is the difference in px from the mouse to the grid offset.
-            // Used to prevent snapping of top left corner to mouse.
-            this.m_MouseOffset.x = x - gridXoffset;
-            this.m_MouseOffset.y = y - gridYoffset;
-        },
-
 // Icon Functions
 // ------------------------------------------------------------------------------------------
-
-        // Checks if the current index is the index the user had dragged
-        isStoredIndex(index){
-            return (index === this.m_SavedIndex);
-        },
 
         // Click selection for linkmaker
         isSelectedIcon(index){
@@ -516,71 +377,26 @@ export default {
             this.m_GridDimensions.Rows    = rows
             this.m_GridDimensions.Columns = columns
         },
+    },
+    watch:{
+        'editVariables.resetFlag'(val, oldVal){
+            if(val){
+                this.initGrid();
+            }
+        }
     }
 }
 </script>
 
 <style scoped>
 
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 200ms ease-in-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.icon-success-enter-active {
-    animation: grow 200ms ease-out;
-    transition: opacity 50ms ease-in;
-}
-
-.icon-cancel-leave-active {
-    transition: opacity 50ms ease-in;
-}
-
-.icon-success-leave-active {
-    animation: grow 200ms reverse ease-out;
-    transition: opacity 50ms ease-in;
-}
-
-
-@keyframes grow {
-    0% {
-      transform: scale(1);
-    }
-    100% {
-      transform: scale(1.5);
-    }
-  }
-
-.icon-drag-effect{
-    pointer-events: none;
-    position: absolute;
-    transform: scale(1.5);
-    z-index: 20;
-}
-
 .opacity-none{
     opacity: 0;
 }
 
-
 .opacity-full{
     transition: all 125ms ease-in-out;
     transition-delay: 125ms;
-}
-
-.icon-wrapper{
-    width: 100px;
-}
-
-.flex-center{
-    display: flex;
-    justify-content: center;
-    align-content: center;
 }
 
 .unselect-icon{
@@ -631,10 +447,6 @@ export default {
     position: relative;
 }
 
-.auto-width{
-    width: auto;
-}
-
 .grid-wrapper{
     width:  100%;
     height: 100%;
@@ -651,6 +463,5 @@ export default {
 
     background-color: white;
 }
-
 
 </style>

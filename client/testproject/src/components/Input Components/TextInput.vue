@@ -7,7 +7,9 @@
             :maxlength="max_length"
 
             :value="modelValue" 
-            @input="$emit('update:modelValue', $event.target.value)">
+            @input="$emit('update:modelValue', $event.target.value)"
+            :disabled="!enabled"
+            >
     </div>
 </template>
 
@@ -17,6 +19,10 @@
             placeholder_text: String,
             modelValue: String,
             max_length: [ String, Number],
+            enabled: {
+                type: Boolean,
+                default: true,
+            },
         },
 
         emits: [ 'update:modelValue' ],

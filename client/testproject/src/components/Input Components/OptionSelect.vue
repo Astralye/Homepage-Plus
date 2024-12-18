@@ -9,6 +9,7 @@
             @input="enableDropDown"
             @click="enableDropDown"
             @keydown.enter="addValueToArray(searchQuery)"
+            :disabled="!enabled"
         >
 
         <!-- Dropdown input -->
@@ -80,6 +81,10 @@ export default {
             default: -1,
         },
 
+        enabled:{
+            type: Boolean,
+            default: true,
+        }
     },
     emits: [ 'update:modelValue', 'Selected-Value' ],
     unmounted() {

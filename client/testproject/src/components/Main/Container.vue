@@ -11,12 +11,13 @@
             <!-- Edit based container functions -->
             <div 
             :class="{'edit-mode': editVariables.isEnabled, 
+                     'normal-mode' : !editVariables.isEnabled,
                     'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
             'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
             @mouseover.self="m_isHover = editVariables.containerSelectionMode"
             @mouseout.self="m_isHover=false"
-            @click.self="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null">
+            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null">
 
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
@@ -32,25 +33,36 @@
 
                 <!-- If no children, display the grid layout -->
                 <div v-else-if="m_LayoutData.NoChildren === 0"
-                    class="container-wrapper">
-                    <!-- Container header -->
+                    class="container-wrapper"
+                    @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null"
+                    @mouseover="m_isHover = editVariables.containerSelectionMode"
+                    @mouseout="m_isHover=false"
+                    >
 
-                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle">
+                    <!-- Container header -->
+                    <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
+                        ref="header"> 
                         <div class="container-header">
                             {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
                         </div>
                         <hr>
-                    </template>
+                    </div>
 
+                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
+                        <Gridlayout
+                            :component_ID="m_LayoutData.id"
+                            :update_Grid_Flag="m_updateGrid"
+                        />
+                    </template>
                     <!-- Container Grid -->
-                    <Gridlayout
-                        @mouseover="m_isHover = editVariables.containerSelectionMode"
-                        @mouseout="m_isHover=false"
-                        @click="editVariables.containerSelectionMode ? ( editVariables.isEnabled ? storeClickedContainer() : null ) : null"
-                        
-                        :component_ID="m_LayoutData.id"
-                        :update_Grid_Flag="m_updateGrid"
-                    />
+                    <template v-else>
+                        <div>
+                            <ListLayout
+                                
+                                :component_ID="m_LayoutData.id"/>
+                        </div>
+                    </template>
+                     
                 </div>
             </div>
         </div>
@@ -60,10 +72,23 @@
             <div v-if="editVariables.isEnabled && displayDivider()"
             :class="{
                 'page-drag-Horizontal': ( !m_isVertical),
-                'page-drag-Vertical height-full': (m_isVertical)}"
+                'page-drag-Vertical height-full': (m_isVertical)
+            }"
             @mousedown="initDividerDrag"
             ref="divider">
             </div>
+
+            <Transition name="fade">
+                <!-- Temporary next position slider -->
+                <div v-if="editVariables.isEnabled && m_isMoveContainer && displayDivider()"
+                    class="next-pos"
+                    :class="{
+                        'next-pos-horizontal': ( !m_isVertical),
+                        'next-pos-vertical': (m_isVertical)
+                    }"
+                    ref="next-divider">
+                </div>
+            </Transition>
         </template>
     </div>
 </template>
@@ -75,13 +100,15 @@ import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
 import { editVariables } from '../../Data/SettingVariables.js';
+import ListLayout from './ListLayout.vue';
 
 import Gridlayout from './GridLayout.vue'
 
 export default {
     name: "recursive-container",
     components: {
-        Gridlayout
+        Gridlayout,
+        ListLayout,
     },
     props: {
         nest_level: {
@@ -150,11 +177,6 @@ export default {
                 height: 0,
             },
 
-            m_MouseCoordinate:{
-                x: 0,
-                y: 0
-            },
-
             // Conditional HTML 
             m_edit: true,
             m_isHover: false,
@@ -176,6 +198,7 @@ export default {
             m_cursor: "default",
 
             m_updateGrid: false,
+            m_headerOffset: "0px",
         }
     },
 
@@ -188,6 +211,7 @@ export default {
     },
     mounted(){
         this.setComponentDOMValues();
+        this.getHeaderSize();
     },
     updated(){
         if(this.m_updateGrid){ this.m_updateGrid = false; }
@@ -242,6 +266,18 @@ export default {
         renderLastContainer(){
             let lastRenderContainer = LayoutDataClass.isFinalNode(LayoutDataClass.getLevelData(layout.allData, 0, "0A"), this.m_LayoutData. id);
             if( lastRenderContainer && editVariables.isRenderFinalNode) { editVariables.disableRenderFinalNode(); }
+        },
+
+        // Provides offset in px when using lists, to correctly place scrollable div.
+        getHeaderSize(){
+            let headerRef = this.$refs["header"];
+            let isList = (containerData.getObjectFromID(this.m_LayoutData.id).layoutType == "List");
+
+            // No header or grid layout
+            if(!headerRef || !isList){ this.m_headerOffset = "0px"; return; }
+
+            // Set value to height of header
+            this.m_headerOffset = (Math.round(headerRef.getBoundingClientRect().height * 100) / 100) + "px";
         },
 
 // Singleton Data Config
@@ -302,6 +338,9 @@ export default {
                 this.$parent.$data.m_ComponentData
             );
             const data = ContainerDividerClass.movementData(parentObj, this.m_LayoutData.id, this.m_isVertical, this.m_pxThreshold, difference);
+
+            this.calculateDisplayDragLocation(difference);
+            
             // Run parent function
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
@@ -313,6 +352,49 @@ export default {
             this.m_isMoveContainer = false;
             this.m_cursor = "default";
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
+        },
+
+        calculateDisplayDragLocation(difference){
+            
+            let isPositive;
+            var translateXVal;
+            var translateYVal;
+            
+            // Within the drag size
+            let isInside = ( Math.abs(difference) < 5);
+
+            // If not inside drag, find the difference.
+            if(!isInside){ isPositive = (difference > 0); }
+
+            let parent = LayoutDataClass.getParentObj(this.m_LayoutData);
+
+            // value to nothing to reset it.
+            this.$refs["next-divider"].style.transform = null;
+            
+            // Y value changes
+            if(parent.divisionType === "Horizontal"){
+                translateXVal = 0;
+
+                if(isInside){
+                    translateYVal = "-100%";
+                }
+                else{
+                    translateYVal = -this.$refs["next-divider"].getBoundingClientRect().height;
+                    translateYVal += (isPositive) ? this.m_pxThreshold : -this.m_pxThreshold;
+                    translateYVal += "px";
+                }
+            }
+            // X Value changes
+            else{
+                translateYVal = "-200%";
+                
+                translateXVal = -15;
+                if(!isInside){
+                    translateXVal += (isPositive) ? this.m_pxThreshold : -this.m_pxThreshold;
+                }
+            }
+
+            this.$refs["next-divider"].style.transform = `translate(${translateXVal}px, ${translateYVal})`; 
         },
 
         // Only runs at the parent container to modify css variable
@@ -372,6 +454,7 @@ export default {
             // $ref returns null on tick, look at next tick to update values
             this.$nextTick(() => {
                 this.setComponentDOMValues();
+                this.getHeaderSize();
             });
         },
 
@@ -408,12 +491,6 @@ export default {
                         "\nFR data:",       this.m_LayoutData.unevenFRData,
             );
         },
-        printMouseCoordinate(){
-            console.log("Mouse Coordinate (Absolute)\n",
-                        "\nX:", this.m_MouseCoordinate.x,
-                        "\nY:", this.m_MouseCoordinate.y,
-            );
-        },
         printParentContainerInfo(){
             console.log("Parent information\n" ,
                         "\nx:",      this.$parent.$data.m_ComponentData.x,
@@ -447,6 +524,7 @@ export default {
 
             this.setComponentDOMValues();
             this.recalculateThreshold();
+            this.getHeaderSize();
             
             if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
             editVariables.disableRecalculation();
@@ -474,6 +552,7 @@ export default {
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
                 this.setComponentDOMValues();
+                this.getHeaderSize();
             },
             deep: true,
         }
@@ -488,6 +567,28 @@ export default {
 <style scoped>
 @import '../../assets/base.css';
 
+.next-pos{
+    pointer-events: none;
+}
+
+.next-pos-horizontal{
+    height: 10px;
+    width: 100%;
+    transform: translate(0, -100%);
+    background-color: rgba(0, 0, 0, 0.61);
+    border-radius: 10px;
+    transition: all 150ms ease-in-out;
+}
+
+.next-pos-vertical{
+    width: 20px;
+    height: 100%;
+    transform: translate(-15px, -200%);
+    background-color: rgba(0, 0, 0, 0.61);
+    border-radius: 10px;
+    transition: all 150ms ease-in-out;
+}
+
 hr{
     border: 1px solid white;
     margin: 0em 2em;
@@ -496,8 +597,15 @@ hr{
 .container-wrapper{
     display: flex;
     flex-flow: column;
-    height: 100%;
+
+    position: relative;
+    height: calc(100% - v-bind("m_headerOffset"));
 }
+/* 
+    The wrapper requires 100% height.
+
+    An offset is used if there is text, AND if it uses a list. 
+*/
 
 .container-header{
     height: min-content;
@@ -517,32 +625,42 @@ hr{
     display: grid;
     grid-template-columns: v-bind("m_columnData");
     grid-template-rows: v-bind("m_rowData");
-    grid-gap: 10px;
-    padding: 8px;
+    grid-gap: 0.5em;
+    padding: 1em;
     
+    max-width: 100%;
+    max-height: 100%;
     
+    overflow: hidden;
     /*
     Transitions change the position of the slider.
         Causes bugs with the math and calculations
         Maybe in future implement
         transition: grid 0.2s linear;
     */
-
     border-radius: 10px;
 }
 
 .selected-container{
     background-color: var(--Select-colour);
+    transition: background-color 200ms ease;
+}
+
+.normal-mode{
+    border-radius: 10px;
+    outline: rgba(192, 192, 192, 0) dashed 2px;
+    transition: outline 100ms ease;
 }
 
 .edit-mode{
-    border-color: black;
     border-radius: 10px;
-    outline: silver dashed 2px;
+    outline: rgba(192, 192, 192, 1) dashed 2px;
+    transition: outline 100ms ease;
 }
 
 .edit-hover{
     background-color: var(--Hover-colour) !important;
+    transition: background-color 200ms ease;
 }
 
 .page-drag-Horizontal{

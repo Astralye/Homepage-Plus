@@ -41,7 +41,7 @@ export default {
 
             // Css values
             m_zIndex: 0,
-            m_left: 0,
+            m_left: -1,
             m_top: 0,
 
             m_WindowEventListener: null,
@@ -146,7 +146,7 @@ export default {
         @touchstart="(isInsideThreshold) ? windowHandler.moveToTopStack(windowObj) : null"
 
         ref="draggableContainer" 
-        :class="(isInsideThreshold) ? 'window' : 'side-bar'"
+        class="window"
 
         :style="(isInsideThreshold) ? { 'z-index' : m_zIndex,
                   'top' : m_top,
@@ -181,14 +181,28 @@ export default {
                     @mouseenter.self="windowHover = false"
                     >
 
-                    <SVGHandler 
-                        class="align-center flex"
-                        height="3em"
-                        width="3em"
-                        :path_Value="iconImageStorage.getPathData('Cross')"
-                        view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
-                    />
+                    <template v-if="isInsideThreshold">
+                        <SVGHandler 
+                            class="align-center flex"
+                            height="3em"
+                            width="3em"
+                            :path_Value="iconImageStorage.getPathData('Cross')"
+                            view_Box="0 -960 960 960"
+                            fill_Colour="#CCCCCC"
+                        />
+                    </template>
+
+                    <template v-else>
+                        <SVGHandler 
+                            class="align-center flex"
+                            height="3em"
+                            width="3em"
+                            :path_Value="iconImageStorage.getPathData('Arrow-Left')"
+                            view_Box="0 -960 960 960"
+                            fill_Colour="#CCCCCC"
+                        />
+                    </template>
+
                 </button>
         </div>
 
@@ -215,15 +229,15 @@ export default {
     margin-right: auto;
 }
 
+hr{
+    border: solid var(--Accent-background-colour) 1px;
+    margin: 0 0.5em 0.25em 0.5em;
+}
 </style>
 
 <style scoped>
 @import '../../assets/base.css';
 
-hr{
-    border: solid #C9CBA3 1px;
-    margin: 0 0.5em 0.25em 0.5em;
-}
 
 .header-title{
     position: relative;
@@ -272,36 +286,47 @@ hr{
 }
 
 .window{
-    width: v-bind("windowWidth");
     background-color: var(--Secondary-background-colour);
 
     position: absolute;
     top: 0;
-    left: 0;
-    z-index: 30;
     
     border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
-    border-radius: var(--WindowBorder-Radius);
-    box-shadow: var(--box-shadow);
 }
 
-.side-bar{
-    background-color: var(--Secondary-background-colour);
-    position: absolute;
-    width: 70%;
-    height: 100vh;
-
-    box-shadow: var(--box-shadow);
-    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
-
-    top: 0;
-    right: 0;
-}
-
-@media screen and (max-width: 500px){
+@media (max-width:500px){
     .wind-container {
-        max-height: 80vh;
+        max-height: 75%;
     }
+
+    .window{
+        width: 100%;
+        height: 100%;
+
+        box-shadow: var(--box-shadow);
+    }
+}
+
+@media (min-width: 501px) and (max-width: 750px){
+    
+    .window{
+        position: absolute;
+        width: 65%;
+        height: 100%;
+        right: 0;
+
+        box-shadow: var(--box-shadow);
+        border-top-right-radius: var(--WindowBorder-Radius);
+        border-bottom-right-radius: var(--WindowBorder-Radius);
+    }
+}
+
+@media (min-width: 751px){
+    .window{
+        width: v-bind("windowWidth");
+        border-radius: var(--WindowBorder-Radius);
+        box-shadow: var(--box-shadow);
+    }   
 }
 
 </style>

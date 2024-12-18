@@ -18,15 +18,18 @@
             />
         </div>
 
-        <template v-if="iconData.isDisplayText">
-            <div class="fit-content text-padding">
-                <p class="text"
-                    :class="{'small-text' : textShrink,
-                             'normal-text-size' : !textShrink}">
-                    {{ iconData.text }}
-                </p>
-            </div>
-        </template>
+        <transition name="fade">
+            <template v-if="iconData.isDisplayText">
+                <div class="fit-content text-padding">
+                    <p class="text"
+                        :style="{
+                            'font-size' : iconData.text_Size
+                        }">
+                        {{ iconData.text }}
+                    </p>
+                </div>
+            </template>
+        </transition>
     </div>
 </template>
 
@@ -59,6 +62,7 @@ export default {
                 viewBox: "10 10 10 10",
                 link: "",
                 text: "",
+                text_Size: "12px",
                 isDisplayText : false,
             },
 
@@ -76,6 +80,7 @@ export default {
             this.iconData.size    = this.icon_data.iconSize;
             this.iconData.image   = iconImageStorage.getPathData(this.icon_data.iconImage);
             this.iconData.colour  = this.icon_data.iconColour;
+            this.iconData.text_Size = this.icon_data.iconStringSize;
             this.iconData.viewBox = iconImageStorage.getViewBoxName(this.icon_data.iconImage);
             this.iconData.link    = this.icon_data.link;
             this.iconData.isDisplayText = this.icon_data.displayText; 
@@ -136,6 +141,8 @@ export default {
 
     width: 100px;
     text-align : center;
+
+    transition: font-size ease 150ms;
 }
 
 .fit-content{

@@ -1,30 +1,26 @@
 <template>
 
     <!-- Button to open window -->
-    <div class="palette-button palette-padding palette-margin"
-        @click="windowHandler.toggleWindow('colour picker')">
-        <SVGHandler
-            view_Box="0 -960 960 960"
-            height="100%"
-            width="100%"
-            fill_Colour="#E8EAED"
-            :path_Value="iconImageStorage.getPathData('Colour_Palette')"
-            >
-            
-        </SVGHandler>
-    </div>
+    <SingleButton
+        class="full-width"
+        @click="windowHandler.toggleWindow('colour picker')"
+        m_IconString="Colour_Palette"
+        :enabled="enabled">
+        Colour
+    </SingleButton>
     
     <!-- Colour picker window -->
     <teleport to="body">
         <Transition name="fade">
+
             <Window
-                v-if="windowHandler.getEditValue('colour picker')"
+                v-if="isWindowOpen"
                 title="Colour Picker"
                 :width="350">
                 <template #window-icon>
                     <SVGHandler
-                        height="35px"
-                        width="auto"
+                        height="2em"
+                        width="2em"
                         view_Box="0 -960 960 960"
                         fill_Colour="#CCCCCC"
                         :path_Value="iconImageStorage.getPathData('Colour_Palette')"
@@ -150,6 +146,10 @@ export default {
         loaded_Data: {
             type: String,
             default: null
+        },
+        enabled: {
+            type: Boolean,
+            default: true,
         }
     },
     emits: [ 'setColour'] ,
@@ -222,6 +222,7 @@ export default {
 
         // update HSL slider values
         updateHSLSlider(val){
+            if(!val) return;
             let values = val.replace(/[^\d,]/g, '').split(',');
 
             this.setHSL(this.clamp(values[0], 0, 300),
@@ -276,6 +277,8 @@ export default {
         hexToHSL(hex) {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 
+            if(!result) return;
+
             let r = parseInt(result[1], 16);
             let g = parseInt(result[2], 16);
             let b = parseInt(result[3], 16);
@@ -326,6 +329,11 @@ export default {
         }
 
     },
+    computed:{
+        isWindowOpen(){
+            return (this.enabled && windowHandler.getEditValue('colour picker'));
+        }
+    },
     created(){
         this.loadIconColourData();
         this.updateHSLCSSValues();
@@ -346,15 +354,14 @@ export default {
             },
             deep: true,
         },
-        'm_HexValue'(val){
-            if(!this.isUpdateString){ return; } // Only the user input string hex should be watched. 
+        'm_HexValue'(val){ 
+            if(!val || !this.isUpdateString) return; // Only the user input string hex should be watched.
             if(val.length != 7)   { return; } // Requires length of 7, # and 3x 2 hex values per channnel
 
             this.userHexParser(val);
         },
         'm_HSLString'(val){
-            if(!this.isUpdateString){ return; } // Only the user input string hex should be watched. 
-            if(!val){ return; }
+            if(!this.isUpdateString || !val) return;  // Only the user input string hex should be watched. 
             this.updateHSLSlider(val);
         }
     }
@@ -363,6 +370,10 @@ export default {
 <!-- width: v-bind("windowWidth"); -->
 
 <style scoped>
+
+.full-width{
+    width: 100%;
+}
 
 .flex-space{
     justify-content: space-between;
@@ -406,18 +417,5 @@ export default {
     border: 3px solid black;
     border-radius: 10px;
     aspect-ratio: 1;
-}
-
-.palette-padding{
-    padding: 0.1em;
-}
-
-.palette-button{
-    background-color: brown;
-    width: 50px;
-    height: 50px;
-
-    border: 3px solid black;
-    border-radius: 10px;
 }
 </style>
