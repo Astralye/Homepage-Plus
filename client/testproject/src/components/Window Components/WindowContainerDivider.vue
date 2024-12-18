@@ -13,10 +13,13 @@
 
 <style>
 .window-content-divider{
-    margin-left: 0.5em;
-    margin-right: 0.5em;
+    margin-left: 1em;
+    margin-right: 1em;
     margin-top: 0.5em;
-    margin-bottom: 1em;
+    margin-bottom: 1.5em;
+}
+.window-content-divider:last-child{
+    margin-bottom: 0.5em;
 }
 </style>
 
@@ -29,7 +32,7 @@
 }
 
 .header-margin{
-    margin-bottom: 0.25em;
+    margin-bottom: 4px;
 }
 
 </style>

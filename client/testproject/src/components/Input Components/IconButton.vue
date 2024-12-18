@@ -10,16 +10,20 @@ export default{
     <div class="container left-margin">
         <button class="center">
             <slot> </slot>
-            <p> {{ message }} </p>
+            <p class="text"> {{ message }} </p>
         </button>
     </div>
 </template>
 
-<style>
+<style scoped>
 
-/* Invisible background
-    On hover darken.
-*/
+.text{
+    color: var(--vt-c-white-soft);
+}
+
+</style>
+
+<style>
 button{
     border-width: 0;
     background-color: transparent;
@@ -52,8 +56,5 @@ button:hover{
     margin: auto;
 }
 
-p {
-    font-size: 12px;
-}
     
 </style>

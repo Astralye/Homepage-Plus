@@ -9,6 +9,7 @@
             @input="enableDropDown"
             @click="enableDropDown"
             @keydown.enter="addValueToArray(searchQuery)"
+            :disabled="!enabled"
         >
 
         <!-- Dropdown input -->
@@ -80,6 +81,10 @@ export default {
             default: -1,
         },
 
+        enabled:{
+            type: Boolean,
+            default: true,
+        }
     },
     emits: [ 'update:modelValue', 'Selected-Value' ],
     unmounted() {
@@ -267,7 +272,7 @@ export default {
 }
 
 .delete-button:hover{
-    background-color: var(--Tertiary-background-colour);
+    background-color: var(--Secondary-background-colour);
 }
 
 .full-width{
@@ -311,7 +316,7 @@ export default {
 }
 
 .text:hover{
-    background-color: var(--Tertiary-background-colour);
+    background-color: var(--Secondary-background-colour);
     cursor: pointer;
 }
 

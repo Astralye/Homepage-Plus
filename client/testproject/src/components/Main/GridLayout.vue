@@ -1,71 +1,93 @@
 <template>
-    <div class="fill grid base-margin border-box"
+    <div class="grid-wrapper border-box"
         ref="container"
-        @mouseup="resetSelection"
+        @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
+        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
         >
-        <template v-for="(item, index) in m_Rows * m_Columns" :key="index">
-            <div class="flex-center"
-                :class="{ 'icon-Selection' : isSelectedIcon(index),
-                          'unselect-icon'  : !isSelectedIcon(index), 
-                          'icon' : renderIcon(index)}"
-                @mouseup="checkDropIcon(index)"
-                @click="(this.$GlobalStates.value.edit.isIconSelector) ? setSelectedIcon(index) : null">
-                
-                <IconHandler v-if="renderIcon(index)"
-                    class="icon"
-                    :icon_data="getIconData(index)"
-                    @mousedown="(this.$GlobalStates.value.edit.enabled) ? dragAndDrop(index) : null"
-                />
-                    
-                    <!-- @mouseup="  (this.$GlobalStates.value.edit.enabled) ? null : console.log('Close')"  -->
+        <!-- Draws all grids -->
+        <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
+            class="grid-proper"
+            @mouseup="checkDropIcon(index);"
+            @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+            >
 
-                        <!-- 
-                            mousedown would have many functions, but for this instance, just a single
-                            mouse click will store the data
-                          -->
-        
-                    <!-- 
-                    
-                    the icon should have different functionalities
+            <!-- Generalized grid item -->
+            <div class="grid-item"
+                ref="gridPosition"
+                :class="{ 'icon' : renderIcon(index),
+                'icon-Selection' : isSelectedIcon(index),
+                'unselect-icon'  : !isSelectedIcon(index)}"
+            >
+                <!-- Loads icon data to be rendered -->
+                <Transition name="fade">
+                    <IconHandler v-show="renderIcon(index)"
+                        :key="getIconData(index)"
+                        class="icon"
+                        :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
+                                 'opacity-full' : !dragAndDrop.isDraggingEvent }"
+                        :icon_data="getIconData(index)"
+                        @mousedown="(editVariables.isEnabled) ?  $refs['icon-drag-handler'].dragDropSetup($event, index, getIconData(index), 'GRID'): null"
+                    />
+                </Transition>
 
-                    In edit mode:
-                        Single click on icon -> Select
-                        Single click on non icon, selection box
-
-                        Right click -> custom context menu.
-                        Double click -> Rename
-
-                        Left click hold -> Drag
-                        Left click hold up -> Drop
-                    
-                    Normal:
-                        Single click
-                        Double click
-
-                        Right Click 
-                        
-                    Misc, Other notes:
-
-                    CTRL + C, CTRL + V
-                    -> copy paste icon. 
-
-                    Mass drag + drop.
-
-                    -->
             </div>
-        </template>
+        </div>
     </div>
+
+    <IconDragHandler
+        ref="icon-drag-handler"
+        :component_ID="component_ID"
+    />
 </template>
+<!-- 
+    Ideas:
+
+    the icon should have different functionalities
+
+    In edit mode:
+        Single click on icon -> Select
+        Single click on non icon, selection box
+
+        Right click -> custom context menu.
+        Double click -> Rename
+
+        Left click hold -> Drag
+        Left click hold up -> Drop
+    
+    Normal:
+        Single click
+        Double click
+
+        Right Click 
+        
+    Misc, Other notes:
+
+    CTRL + C, CTRL + V
+    -> copy paste icon. 
+
+    Mass drag + drop.
+
+-->
 
 <script>
 import { containerData } from '../../Data/containerData';
 import IconHandler from './IconHandler.vue';
 import { iconData, iconSelect } from '../../Data/iconData.js';
 import { mouseData } from '../../Data/mouseData.js';
+import { GridModificationClass } from '../Functions/gridModification.js';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import { iconImageStorage } from '../../Data/iconImages';
+
+import { editVariables } from '../../Data/SettingVariables';
+import { dragAndDrop } from '../../Data/dragDrop';
+
+import IconDragHandler from './IconDragHandler.vue';
 
 export default {
     components:{
         IconHandler,
+        SVGHandler,
+        IconDragHandler,
     },
     props:{
         component_ID: {
@@ -80,90 +102,106 @@ export default {
     },
     data(){
         return{
-            iconData,
-            mouseData,
+            // Imported Data
+            GridModificationClass,
+            iconImageStorage,
+            editVariables,
+            dragAndDrop,
             iconSelect,
+            mouseData,
+            iconData,
             
+            // Main Grid values
+
+            m_GridDimensions: {
+                Rows: 0,
+                Columns: 0,
+            },
+
             m_containerData: null,
-            
-            m_Column_Data: "",
-            m_Column_Gap: "",
+            m_GroupData: null,  // Group data to check and move data between groups 
+            m_iconID: null,     // ID of currently selected icon
+            m_Observer: null,
 
-            m_Rows_Data: "",
-            m_Row_Gap: "",
-
-            m_Rows: 0,
-            m_Columns: 0, 
-
-            m_iconSize: 0,
-
-            m_GroupData: null,
-
-            m_iconID: null
         }
     },
     created(){
         this.initGrid();
     },
+    mounted(){
+        this.gridResizer();
+    },
+    unmounted(){
+        this.m_Observer.disconnect();
+    },
     methods: {
-
+        
         initGrid(){
 
-            this.m_containerData = this.getContainerData();
+            this.m_containerData = containerData.getObjectFromID(this.component_ID);
             this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
 
             if(this.m_GroupData === null){ 
                 iconData.createGroup(this.m_containerData.ID);
                 this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
             } // group data does not exist
-            this.setDimension();
-            this.m_iconSize = containerData.getIconSize(this.component_ID);
-            this.setContainerIconData();
-            
+
+            this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
+
+    // Resetters
+    
+        resetSelection(){
+            editVariables.resetIconDragData();
+        },
 
 // Coordinate Index
 // -------------------------------------------------------------------------------------------
 
         // Find next available position, Starts from the beginning
         generateNextCoordinate(groupID){
-            for(let i = 0; i < this.m_Columns * this.m_Rows; i++){
-                let tmpCoord = iconData.indexToCoord(i, this.m_Rows);
+            for(let i = 0; i < this.m_GridDimensions.Columns * this.m_GridDimensions.Rows; i++){
+                let tmpCoord = iconData.indexToCoord(i, this.m_GridDimensions.Rows);
                 
                 // If null (no item in location,) set new coordinate.
                 if(!iconData.getIconDataFromCoordinate(iconData.getGroup(groupID), tmpCoord.x, tmpCoord.y)){ return { x: tmpCoord.x, y: tmpCoord.y }; } 
             }
 
-            // No spaces available
-            // This should not occur in any case, Dragging to new location requires an empty space
-            // If no empty space, this function should not be run.
+            /*
+                No spaces available
+                This should not occur in any case, Dragging to new location requires an empty space
+                If no empty space, this function should not be run.
+            */
             console.error("Error: No spaces available");
             return null;
         },
 
-// Icon Movement
+// Icon Displacement
 // ------------------------------------------------------------------------------------------
-
-        resetSelection(){
-            this.$GlobalStates.value.edit.iconDragData = null;
-        },
 
         // Look at the current group. Functions return null if free space.
         // Compact can swap between values,
         isPositionAvailable(group, index, isFree){
-            let newCoord = iconData.indexToCoord(index, this.m_Rows);
+            let newCoord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             
             return (isFree) ? (!iconData.getIconDataFromCoordinate(group, newCoord.x, newCoord.y)) : true;
         },
 
+        // Checks if same icon
+        isSameIcon(group, index, iconID){
+            let newCoord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
+            
+            return (iconData.getIconDataFromCoordinate(group, newCoord.x, newCoord.y).iconID === iconID);
+        },
+
         // Conditions and values to check before drop functionality
         checkDropIcon(index){
-            if(!this.$GlobalStates.value.edit.iconDragData){ return; } // Requires data
+            if(!editVariables.iconDragData){ return; } // Requires data
 
             let newGroupID = this.m_containerData.ID;
-            let oldGroupID = this.$GlobalStates.value.edit.iconDragData.storedContainer;
-            let iconID     = this.$GlobalStates.value.edit.iconDragData.storedID;
+            let oldGroupID = editVariables.iconDragData.storedContainer;
+            let iconID     = editVariables.iconDragData.storedID;
 
             let isFree     = (this.m_containerData.gridData.contentAlign === "Free");
             let dirIndex   = this.directionalIndexHandler(index);
@@ -172,33 +210,43 @@ export default {
             let moveToGroup      = (oldGroupID !== newGroupID) ? iconData.getGroup(newGroupID): this.m_GroupData ;
             let isDifferentGroup = (oldGroupID !== newGroupID);
 
-            if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ return; }
+            if(!this.isPositionAvailable(moveToGroup, dirIndex, isFree)){ 
+                if(!this.isSameIcon(moveToGroup, dirIndex, iconID)){ 
+                    dragAndDrop.setTransitionName('icon-cancel'); }; 
+                return;
+            }
+
             this.dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, dirIndex);
         },
 
+        // Before dropping, run the respective container drop functions
         dropIcon(oldGroupID, newGroupID, iconID, isDifferentGroup, isFree, newIndex){
-            
+
             // Changes the coordinate values FIRST
             (isFree) ? this.setFreeData(oldGroupID, iconID, newIndex) : this.setCompactData(oldGroupID, iconID, newGroupID, isDifferentGroup);
 
             // Move data across group. Otherwise, re-arrange group.
-            (isDifferentGroup) ? iconData.moveIcon(iconID, oldGroupID, newGroupID, this.m_Columns, isFree) :
+            (isDifferentGroup) ? iconData.moveIcon(iconID, oldGroupID, newGroupID, this.m_GridDimensions.Columns, isFree) :
                 this.checkRearrange(iconID, oldGroupID, newIndex, isFree);
 
             this.resetSelection();
         },
 
+        // Checks if the icon can be swapped, only works if compact
         checkRearrange(iconID, groupID, index_A, isFree){
             let data    = iconData.getIconDataFromIndex(this.m_GroupData, index_A);
             let group   = iconData.getGroup(groupID);
             let index_B = iconData.getIconIndexOfGroup(group, iconID);
 
-            // Free mode, sort group based on coordinate.
-            if(!data && isFree){ iconData.sortGroup(groupID, this.m_Columns); return; }
+            // Free mode, sort group based on coordinate, early return
+            if(!data && isFree){ iconData.sortGroup(groupID, this.m_GridDimensions.Columns); return; }
 
             // If end location contains data, swap. If not, move to end
             (data) ? iconData.swapIndices(group, index_A, index_B) : iconData.moveItemToEnd(group, index_B);
         },
+
+
+    // Setters
 
         setCompactData(groupID, iconID, newGroupID, isDifferentGroup){
             if(!isDifferentGroup){ return; }
@@ -209,53 +257,17 @@ export default {
         },
 
         setFreeData(groupID, iconID, newIndex){
-            let coord = iconData.indexToCoord(newIndex, this.m_Rows);
+            let coord = iconData.indexToCoord(newIndex, this.m_GridDimensions.Rows);
             iconData.setCoordinate(groupID, iconID, coord.x, coord.y);
-        },
-
-    // Mouse Function
-    
-        dragAndDrop(index){
-            mouseData.mouseDownFunctions([ this.edit_Drag_MouseDown ]);
-            mouseData.movementFunctions ([ this.edit_Drag_Move ]);
-            mouseData.mouseUpFunctions  ([ this.disableDrag ]);
-            
-            mouseData.enableMouseDown();
-            mouseData.enableTracking();
-            mouseData.enableMouseUp();
-
-            this.m_iconID = this.getIconData(index).iconID;
-        },
-
-        edit_Drag_MouseDown(){
-            // Find what it is holding and store it.s
-            this.$GlobalStates.value.edit.iconDragData = {
-                storedContainer:  this.m_containerData.ID,
-                storedID: this.m_iconID,
-            };
-        },
-
-        edit_Drag_Move(){
-
-        },
-
-        disableDrag(){
-            mouseData.disableMouseDown();
-            mouseData.disableTracking();
-            mouseData.disableMouseUp();
         },
 
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+        // Click selection for linkmaker
         isSelectedIcon(index){
             if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
             return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
-        },
-
-        setSelectedIcon(index){
-            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
-            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
     // Grid Direction
@@ -269,20 +281,20 @@ export default {
         // Left to right is default index
         // Rendering from Right to Left
         rightLeft(index){
-            let n_Columns = (~~(index / this.m_Rows) + 1); // Y coordinate
-            let clampedIndex = (index % this.m_Rows);      // tmp index between 0 - N rows
+            let n_Columns = (~~(index / this.m_GridDimensions.Rows) + 1); // Y coordinate
+            let clampedIndex = (index % this.m_GridDimensions.Rows);      // tmp index between 0 - N rows
             
-            let startValue = (this.m_Rows) * n_Columns;    // Start value
+            let startValue = (this.m_GridDimensions.Rows) * n_Columns;    // Start value
             return (startValue - (clampedIndex + 1));      // Start value - tmp index;
         },
 
         // Top to bottom is default index
         // Renders from Bottom to top
         bottomTop(index){
-            let n_Columns = (~~(index / this.m_Rows) + 1); // Y coordinate
-            let clampedIndex = (index % this.m_Rows);      // tmp index between 0 - N rows
+            let n_Columns = (~~(index / this.m_GridDimensions.Rows) + 1); // Y coordinate
+            let clampedIndex = (index % this.m_GridDimensions.Rows);      // tmp index between 0 - N rows
 
-            let startValue = (this.m_Columns - n_Columns) * this.m_Rows;
+            let startValue = (this.m_GridDimensions.Columns - n_Columns) * this.m_GridDimensions.Rows;
             return (startValue + clampedIndex);
         },
 
@@ -300,11 +312,19 @@ export default {
         },
         
         renderFree(index){
-            let coord = iconData.indexToCoord(index, this.m_Rows);
+            let coord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             // Contains no value
             if(!iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y)){ return false; }
             return true;
         },
+
+    // Setters
+
+        setSelectedIcon(index){
+            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
+            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
+        },
+
 
     // Getters
 
@@ -317,85 +337,70 @@ export default {
         },
 
         getFreeIconData(index){
-            let coord = iconData.indexToCoord(index, this.m_Rows);
+            let coord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
             return iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
         },
 
-    // Setters
+        getStoredIconData(){
+            if(!editVariables.iconDragData || !this.m_iconID){ return; } // Requires data
 
-        setContainerIconData(){ this.m_GroupData = iconData.getGroup(this.component_ID); },
+            let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
+            return iconData.getIconDataFromID(group, this.m_iconID);
+        },
 
 // ------------------------------------------------------------------------------------------
 // Grid Functions
 
-        getContainerData(){ return containerData.getObjectFromID(this.component_ID); },
-
-        // Dimension is stored as 'C,R'
-        setRowColData(dimString){
-            dimString = dimString.split(',');
-            this.m_Rows    = Number(dimString[0]);
-            this.m_Columns = Number(dimString[1]);
-
-            this.m_Column_Data = "1fr ".repeat(dimString[0]);
-            this.m_Rows_Data   = "1fr ".repeat(dimString[1]);
-        },
-
-        setDimension(){
-            let dim = containerData.getGridDimension(this.component_ID);
-            this.setRowColData(dim);
-            this.calculateGridGap();
-        },
-
         /*
-            This calcualtes grid gap
-
-            There are bugs when there is only 1 row/ column as there is no grid gap.
-            Will need to take into consideration.
+            Vue3 does not watch the DOM elements
+            JS contains an observer for DOM elements
+            
+            Watches for changes in element sizes to automatically recalculate the dimensions of the grids.
         */
+        gridResizer(){
+            let containerRef = this.$refs["container"];
+            if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
 
-        calculateGridGap(){
-            this.$nextTick( () => {
-                let data = this.$refs["container"].getBoundingClientRect();
+            this.m_Observer = new ResizeObserver((dimensions) => {
+                let width  = dimensions[0].contentRect.width;
+                let height = dimensions[0].contentRect.height;
 
-                let columnGap = (data.width  - (this.m_iconSize * this.m_Rows))    / ( this.m_Rows - 1 );
-                let rowGap    = (data.height - (this.m_iconSize * this.m_Columns)) / ( this.m_Columns - 1 );
+                let dimension = GridModificationClass.calculateGridDimension(width, height, containerData.getIconSize(this.component_ID));
+                this.setRowColData(dimension.rows, dimension.columns);
+            });
 
-                this.m_Column_Gap = `${columnGap}px`;
-                this.m_Row_Gap    = `${rowGap}px`;
-            })
+            this.m_Observer.observe(containerRef);
+        },
+
+        // Dimension is stored as 'R , C'
+        setRowColData(rows, columns){
+            this.m_GridDimensions.Rows    = rows
+            this.m_GridDimensions.Columns = columns
         },
     },
-    watch: {
-        'm_containerData.gridData.gridDimensions'(){ this.setDimension(); },
-        '$GlobalStates.value.edit.windowSize':{
-            handler(val,oldval){ this.calculateGridGap(); },
-            deep: true
-        },
-        'update_Grid_Flag'(){
-            this.calculateGridGap();
-        },
+    watch:{
+        'editVariables.resetFlag'(val, oldVal){
+            if(val){
+                this.initGrid();
+            }
+        }
     }
 }
 </script>
 
 <style scoped>
 
-.icon-wrapper{
-    width: 75px;
+.opacity-none{
+    opacity: 0;
 }
 
-.border-box{
-    box-sizing: border-box;
-}
-
-.flex-center{
-    display: flex;
-    justify-content: center;
-    align-content: center;
+.opacity-full{
+    transition: all 125ms ease-in-out;
+    transition-delay: 125ms;
 }
 
 .unselect-icon{
-    border: 3px solid rgba(255, 255, 255, 0);
+    border: 3px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
@@ -405,7 +410,13 @@ export default {
 }
 
 .icon{
-    cursor: pointer
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    
+    justify-content: center;
+    align-items: center;
 }
 
 .icon-Selection{
@@ -419,31 +430,38 @@ export default {
 }
 
 .grid-item{
-    border: solid rgba(255, 255, 255, 0.4) 0.5px;
+    margin: auto;
+    box-sizing: border-box;
+    align-self: center;
+    position: absolute;
+    
+    top: 50%;
+    right: 50%;
+    transform: translate(50%,-50%);
+
+    width: 125px;
+    aspect-ratio: 1;
 }
 
-.fill{
+.grid-proper{
+    position: relative;
+}
+
+.grid-wrapper{
     width:  100%;
     height: 100%;
-}
-
-.grid{
+    
     display: grid;
-    grid-template-columns: v-bind("m_Column_Data");
-    grid-template-rows:    v-bind("m_Rows_Data");
-
-    grid-row-gap:    v-bind("m_Row_Gap");
-    grid-column-gap: v-bind("m_Column_Gap");
-
-    /* 
-    
-    grid-row-gap + grid-column-gap has to be calculated manually.
-
-    Static widths for the box causes the program to go all buggy.
-    Instead, change the sizes of the row + column gaps via calculation to ensure the values are static.
-    
-    */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-rows:    repeat(auto-fit, minmax(150px, 1fr));
 }
 
+.box{
+    width: 100px;
+    height: auto;
+    aspect-ratio: 1;
+
+    background-color: white;
+}
 
 </style>

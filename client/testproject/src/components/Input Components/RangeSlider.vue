@@ -7,6 +7,7 @@
             
             :value="modelToScale(modelValue)" 
             @input="computeNewValue($event.target.value)"
+            :disabled="!enabled"
             />
         <!--
             list="my-datalist"
@@ -47,6 +48,11 @@
                 type: [Number, String],
                 default: null
             },
+
+            enabled:{
+                type: Boolean,
+                default: true,
+            }
         },
         emits: [ 'update:modelValue'],
         data(){

@@ -1,11 +1,24 @@
 <template>
+
     <Transition name="fade">
-        <div class="action-container" v-if="this.$GlobalStates.value.edit.enabled">
+        <div class="action-container" v-if="editVariables.isEnabled">
+            
+            <!-- Popup -->
+            <Transition name="fade">
+                <div v-if="isDisplayPopup"
+                    class="popup"
+                    >
+                    {{ popuptext }}
+                </div>
+            </Transition>
+
+
             <!-- Save button -->
-            <button @click="saveLayout">
+            <button @click="saveLayout"
+                ref="save">
                 <SVGHandler
-                    :height="iconSize"
-                    width="auto"
+                    height="4em"
+                    width="4em"
                     view_Box="0 -960 960 960"
                     fill_Colour="#CCCCCC"
                     :path_Value="iconImageStorage.getPathData('Save')"
@@ -13,42 +26,100 @@
             </button>
 
             <!-- Delete button -->
-            <button @click="deleteLayout">
+            <button @click="openModal('Delete')"
+                ref="delete">
                 <SVGHandler
-                :height="iconSize"
-                width="auto"
-                view_Box="0 -960 960 960"
-                fill_Colour="#CCCCCC"
-                :path_Value="iconImageStorage.getPathData('Delete')"
+                    height="4em"
+                    width="4em"
+                    view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
+                    :path_Value="iconImageStorage.getPathData('Delete')"
             />
             </button>
 
             <!-- Cancel Button -->
-            <button @click="cancelEdit">
+            <button @click="openModal('Cancel')"
+                ref="cancel">
                 <SVGHandler
-                :height="iconSize"
-                width="auto"
-                view_Box="0 -960 960 960"
-                fill_Colour="#CCCCCC"
-                :path_Value="iconImageStorage.getPathData('Cross')"
+                    height="4em"
+                    width="4em"
+                    view_Box="0 -960 960 960"
+                    fill_Colour="#CCCCCC"
+                    :path_Value="iconImageStorage.getPathData('Cross')"
             />
             </button>
+
         </div>
     </Transition>
 
-    <Transition name="modal">
+    <Transition name="fade">
         <Modal 
-            v-if="modal.show"
-            @close="modal.show = false"
-            @accept="modal.show = false; modal.confirmed = true">
-            <template v-slot:header>
-                {{ modal.header }}
+            v-if="isModalDisplay"
+            @close="disableModal()">
+        
+            <template v-if="ifSelectedModal('Delete')">
+                <WindowContainerDivider>
+                    <template #header>
+                        <h1>
+                            Delete Layout
+                        </h1>
+                    </template>
+
+                    <template #content>
+                        <p>
+                        Are you sure you want to delete this layout?
+                        
+                        <br>
+                        All icons within containers and in the saved icons list will be deleted.
+                        <br>
+                        This cannot be undone.
+                        </p>
+
+                        <br>
+                        <Checkbox
+                            text="Do not remind me again"
+                            @onChange="val => toggleOffModal = val">
+                        </Checkbox>
+
+                        <br>
+                        <SingleButton
+                            m_IconString="Tick"
+                            @click="deleteLayout() ">
+                            Confirm
+                        </SingleButton>
+                    </template>
+                </WindowContainerDivider>
             </template>
-            <template v-slot:body>
-                {{ modal.body }}
-            </template>
-            <template v-slot:footer>
-                {{ modal.footer }}
+        
+            <template v-else-if="ifSelectedModal('Cancel')">
+                <WindowContainerDivider>
+                    <template #header>
+                        <h1>
+                            Cancel Layout
+                        </h1>
+                    </template>
+
+                    <template #content>
+                        <p>
+                        Are you sure you want to cancel?
+                        <br>
+                        Any unsaved changes will be undone. This includes any new or deleted icons.
+                        </p>
+
+                        <br>
+                        <Checkbox
+                            text="Do not remind me again"
+                            @onChange="val => toggleOffModal = val">
+                        </Checkbox>
+
+                        <br>
+                        <SingleButton
+                            m_IconString="Tick"
+                            @click="cancelEdit()">
+                            Confirm
+                        </SingleButton>
+                    </template>
+                </WindowContainerDivider>
             </template>
         </Modal>
     </Transition>
@@ -63,33 +134,47 @@ import { iconData, iconStorage } from '../../Data/iconData.js';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 
+import { editVariables } from '../../Data/SettingVariables';
+
+import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
+import SingleButton from '../Input Components/SingleButton.vue';
+
 export default {
     components:{
+        WindowContainerDivider,
+        SingleButton,
+        SVGHandler,
+        Checkbox,
         Modal,
-        SVGHandler
     },
     data(){
         return {
-            containerData,
-            layout,
-            iconData,
-            iconStorage,
             iconImageStorage,
+            containerData,
+            editVariables,
+            iconStorage,
+            iconData,
+            layout,
 
             iconSize: "5em",
-            modal:{
-                show: false,
-                header: "",
-                body: "",
-                footer: "",
-                confirmed: false
-            },
             localStorageVarNames: {
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
                 iconData: "iconData",
                 iconStorage: "iconStorage"
-            }
+            },
+
+            // Confirmation.
+            modalType: null,
+            isModalDisplay: false,
+
+            isDisplayPopup: false,
+            popuptext: "",
+
+            popupTimer: 2600, // The timer must be slighly lower than the actual animation timer to make sure it doesn't cause any visual bugs
+
+            toggleOffModal: false, 
         }
     },
     created(){
@@ -97,66 +182,97 @@ export default {
     },
     methods: {
 
-        openModal(header, body, footer){
-            this.modal.header = header;
-            this.modal.body   = body;
-            this.modal.footer = footer;
-            this.modal.show   = true; 
+        setModalType(type){ this.modalType = type; },
+        ifSelectedModal(type){ return ( this.modalType === type); },
+
+        enableModal(){ this.isModalDisplay = true;},
+        disableModal(){ this.isModalDisplay = false;},
+
+        enableButtonTimer(){
+            this.isDisplayPopup = true;
+
+            setTimeout( () =>{
+                this.isDisplayPopup = false;
+            },this.popupTimer);
         },
-        saveLayout(){
+        // Sets localstorage values
+        setValues(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
             localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
             localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
             localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
-
-            // console.log(containerData.allData);
+        },
+        saveLayout(){
+            this.setValues();
+            this.enableButtonTimer();
+            this.popuptext = "Layout Saved!";
             
-            this.showPopup("Saved");
+        },
+
+        openModal(type){
+
+            // Only open modal if the it is enabled.
+            let showModal = (type === "Delete") ? editVariables.isShowDeleteModal : editVariables.isShowCancelModal;
+            if(!showModal){
+
+                // Run the corresponding function
+                if(type==="Delete") this.deleteLayout();
+                if(type==="Cancel") this.cancelEdit();
+
+                return;
+            }
+
+            this.enableModal();
+            this.setModalType(type);
+            this.toggleOffModal = false;
         },
 
         // These functions should be call other functions from different areas and process them 
         deleteLayout(){
+            this.disableModal();
 
-            this.openModal(
-                "Delete layout",
-                "Are you sure you want to delete this layout? \n This cannot be undone.",
-            );
+            // turns off modal for next time
+            if(this.toggleOffModal) { editVariables.setDeleteModal(false);}
 
-            // if(!this.modal.confirmed){ return; }
-    
             // Reset data
             containerData.resetData();
             layout.resetData();
             iconData.resetData();
-            iconStorage.TMP_resetData(); // Remove later
+            iconStorage.resetData();
 
-            this.saveLayout();
+            this.setValues();
+            this.resetFlag();
             // Reset selected
-            this.$GlobalStates.value.edit.resetSelect = true;
-            this.modal.confirmed = false;
-            // this.showPopup("deleted");
+            editVariables.enableResetSelect();
+
+            this.popuptext = "Layout Deleted!";
+            this.enableButtonTimer();
         },
+
+        // It is enabled for 1 tick to trigger the watchers
+        resetFlag(){
+            editVariables.enableResetFlag();
+            this.$nextTick(() =>{
+                editVariables.disableResetFlag();
+            });
+        },
+
         // Load from localstorage
         cancelEdit(){
+            this.disableModal();
 
-            // Tmp
-            // Show message
-            this.openModal(
-                "Cancel layout",
-                "Are you sure you want to cancel? \n Any unsaved changes will be lost",
-            );
-
-            // if(!this.modal.confirmed){ return; }
+            // turns off modal for next time
+            if(this.toggleOffModal) { editVariables.setCancelModal(false);}
 
             this.loadData();
-
+            this.resetFlag();
+            
             // Reset selected
-            this.$GlobalStates.value.edit.resetSelect = true;
-            this.modal.confirmed = false;
-            this.showPopup("cancelled");
+            editVariables.enableResetSelect();
 
-            // Could also try and toggle off the global enabled.
-            // Turn off the edit mode.
+
+            this.popuptext = "Cancelled!";
+            this.enableButtonTimer();
         },
 
         loadData(){
@@ -175,17 +291,10 @@ export default {
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
             iconData.initializeData(dataIcon);
-            iconStorage.TMP_initData(storageData); // Change later
+            iconStorage.initDataFromStorage(storageData); // Change later
             
-            this.$GlobalStates.clickLoad = true; 
-            this.$GlobalStates.isRenderFinalNode = true;
+            editVariables.enableRenderFinalNode();
         },
-
-        // Above the containers, show a message showing what the user has clicked.
-        // E.g ___ Successfully.
-        showPopup(message){
-            console.log(message);
-        }
     }
 }
 </script>
@@ -193,25 +302,52 @@ export default {
 <style scoped>
 @import '../../assets/base.css';
 
-  
-.modal-enter {
-    opacity: 0;
+.popup{
+    
+    position: absolute;
+    background-color: var(--Secondary-background-colour);
+    
+    width: fit-content;
+    height: fit-content;
+
+    padding: 10px 15px;
+    
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+    border-radius: var(--WindowBorder-Radius);
+    box-shadow: var(--box-shadow);
+
+    transform: translateY(-100%);
+
+    z-index: 2;
+
+    animation-name: popupMovement;
+    animation-timing-function: ease-out;
+    animation-duration: 1000ms;
+    animation-delay: 1750ms;
 }
 
-.modal-leave-active {
-    opacity: 0;
-}
-
-.modal-enter .modal-container,
-.modal-leave-active .modal-container {
-    -webkit-transform: scale(1.1);
-    transform: scale(1.1);
+@keyframes popupMovement {
+    0% {
+        transform: translateY(-100%);
+        opacity: 100%;
+    }
+    100% {
+        transform: translateY(-200%);
+        opacity: 0%;
+    }
 }
 
 .action-container{
     display: flex;
     position: absolute;
-    background-color: black;
+
+    background-color: var(--Secondary-background-colour);
+
+    padding: 10px;
+
+    border: solid var(--WindowBorder-Thickness) var(--Secondary-background-colour);
+    border-radius: var(--WindowBorder-Radius);
+    box-shadow: var(--box-shadow);
 
     right: 0;
     bottom: 0;

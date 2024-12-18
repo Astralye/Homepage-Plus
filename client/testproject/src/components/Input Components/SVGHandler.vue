@@ -1,20 +1,28 @@
 <!-- 
     This file is responsible in only loading the SVG data
+
+    Note: Ref can only be used on HTML elements, NOT components,
+    hence the ref prop
 -->
 
 <template>
+<div
+    class="flex"
+    :ref="ref_Value" >
     <svg
-        xmlns="http://www.w3.org/2000/svg"
-        :viewBox="view_Box"
-        :width="width"
-        :height="height"
-        :fill="fill_Colour"
-        >
+    class="change-size"
+    
+    xmlns="http://www.w3.org/2000/svg"
+    :viewBox="view_Box"
+    :width="width"
+    :height="height"
+    :fill="fill_Colour">
         <path
             fill-rule="evenodd"
-            :d="path_Value">
-        </path>
+            :d="path_Value"
+        />
     </svg>
+</div>
 </template>
 
 <script>
@@ -42,11 +50,20 @@
             path_Value:{
                 type: String,
                 required: true
+            },
+
+            ref_Value:{
+                type: String,
             }
-        },
+        }
     }
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+.flex{
+    display: flex;
+}
+.change-size{
+    transition: width 300ms ease-out, height 300ms ease-out;
+}
 </style>

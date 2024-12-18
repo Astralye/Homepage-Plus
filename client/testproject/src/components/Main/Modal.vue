@@ -3,44 +3,30 @@
         <div class="modal-wrapper"
         @mousedown.self="this.$emit('close')">
             <div class="modal-container">
-                <div class="modal-header">
-                    <h1>
-                        <slot name="header"></slot>
-                    </h1>
-                </div>
-
-                <div class="modal-body">
-                    <slot name="body">
-                        default body
-                    </slot>
-                </div>
-
-                <div class="modal-footer">
-                    <slot name="footer">
-                        default footer
-                    </slot>
-                    <button class="modal-default-button" @click="$emit('accept')">
-                        OK
-                    </button>
-                </div>
+                <slot></slot>
             </div>
         </div>
     </div>
+    
 </template>
 
 <script>
-    export default {
-        data(){
-            return{
-            }
-        },
-        props:{
-        },
-        created(){
-        },
-        methods: {
+
+import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
+
+export default {
+    data(){
+        return{
+            WindowContainerDivider
         }
+    },
+    props:{
+    },
+    created(){
+    },
+    methods: {
     }
+}
 </script>
 
 <style scoped>
@@ -64,11 +50,12 @@
 }
   
   .modal-container {
-    width: 300px;
+    width: fit-content;
+    max-width: 33vw;
     margin: 0px auto;
     padding: 20px 30px;
-    background-color: #fff;
-    border-radius: 2px;
+    background-color: var(--Secondary-background-colour);
+    border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
     transition: all 0.3s ease;
 }

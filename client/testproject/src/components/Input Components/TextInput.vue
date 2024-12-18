@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="margin">
         <input 
             class="input" 
             type="text" 
@@ -7,7 +7,9 @@
             :maxlength="max_length"
 
             :value="modelValue" 
-            @input="$emit('update:modelValue', $event.target.value)">
+            @input="$emit('update:modelValue', $event.target.value)"
+            :disabled="!enabled"
+            >
     </div>
 </template>
 
@@ -17,6 +19,10 @@
             placeholder_text: String,
             modelValue: String,
             max_length: [ String, Number],
+            enabled: {
+                type: Boolean,
+                default: true,
+            },
         },
 
         emits: [ 'update:modelValue' ],
@@ -25,6 +31,11 @@
 
 <style scoped>
 /* From Uiverse.io by ErzenXz */ 
+.margin{
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+
 .input {
     width: 100%;
     height: 30px;

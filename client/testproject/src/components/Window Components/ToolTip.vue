@@ -2,6 +2,8 @@
 import { iconImageStorage } from '../../Data/iconImages';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 
+// The window gets cropped if it is in a parent overflow
+
 export default{
     components:{
         SVGHandler,
@@ -52,6 +54,10 @@ export default{
     bottom: 150%;
     opacity: 0;
     pointer-events: none;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+
     transition: opacity 0.15s linear 0.4s;
     
     background-color: rgb(255, 255, 255);

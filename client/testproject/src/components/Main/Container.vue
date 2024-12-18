@@ -1,15 +1,114 @@
+<template>
+    <!-- Container wrapper -->
+    <div class="height-full">
+        
+        <!-- Container -->
+        <div
+            class="page-content-container height-full"
+            ref="refContainer"
+            >
+            
+            <!-- Edit based container functions -->
+            <div 
+            :class="{'edit-mode': editVariables.isEnabled, 
+                     'normal-mode' : !editVariables.isEnabled,
+                    'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
+            'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
+            'grid-template' : m_LayoutData.NoChildren > 0 }"
+            @mouseover.self="m_isHover = editVariables.containerSelectionMode"
+            @mouseout.self="m_isHover=false"
+            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null">
+
+                <!-- Recurrsion, uses data to determine how many to render -->
+                <template v-if="m_LayoutData.NoChildren > 0">
+                    <Container 
+                        v-for="n in m_LayoutData.NoChildren" 
+                        :nest_level="nest_level+1"
+                        :parent_ID="m_LayoutData.id"
+                        :child_Instance="n-1"
+                        :render_divider="true"
+                        @drag="p_updateColumnRow"
+                        />
+                </template>
+
+                <!-- If no children, display the grid layout -->
+                <div v-else-if="m_LayoutData.NoChildren === 0"
+                    class="container-wrapper"
+                    @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null"
+                    @mouseover="m_isHover = editVariables.containerSelectionMode"
+                    @mouseout="m_isHover=false"
+                    >
+
+                    <!-- Container header -->
+                    <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
+                        ref="header"> 
+                        <div class="container-header">
+                            {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
+                        </div>
+                        <hr>
+                    </div>
+
+                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
+                        <Gridlayout
+                            :component_ID="m_LayoutData.id"
+                            :update_Grid_Flag="m_updateGrid"
+                        />
+                    </template>
+                    <!-- Container Grid -->
+                    <template v-else>
+                        <div>
+                            <ListLayout
+                                
+                                :component_ID="m_LayoutData.id"/>
+                        </div>
+                    </template>
+                     
+                </div>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <template v-if="render_divider">
+            <div v-if="editVariables.isEnabled && displayDivider()"
+            :class="{
+                'page-drag-Horizontal': ( !m_isVertical),
+                'page-drag-Vertical height-full': (m_isVertical)
+            }"
+            @mousedown="initDividerDrag"
+            ref="divider">
+            </div>
+
+            <Transition name="fade">
+                <!-- Temporary next position slider -->
+                <div v-if="editVariables.isEnabled && m_isMoveContainer && displayDivider()"
+                    class="next-pos"
+                    :class="{
+                        'next-pos-horizontal': ( !m_isVertical),
+                        'next-pos-vertical': (m_isVertical)
+                    }"
+                    ref="next-divider">
+                </div>
+            </Transition>
+        </template>
+    </div>
+</template>
+
 <script>
 import { containerData } from '../../Data/containerData.js'
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
+import { editVariables } from '../../Data/SettingVariables.js';
+import ListLayout from './ListLayout.vue';
+
 import Gridlayout from './GridLayout.vue'
 
 export default {
     name: "recursive-container",
     components: {
-        Gridlayout
+        Gridlayout,
+        ListLayout,
     },
     props: {
         nest_level: {
@@ -48,7 +147,10 @@ export default {
             layout,
             mouseData,
 
+            editVariables,
+            // Data
 
+            
             /*
                 Each component stores data of the container.
                 This data determines how it is rendered
@@ -56,7 +158,6 @@ export default {
                 The values are taken from the global variable and 
                 watchers update the values
             */
-            // 
             m_LayoutData:
             {
                 level: 0,
@@ -76,11 +177,6 @@ export default {
                 height: 0,
             },
 
-            m_MouseCoordinate:{
-                x: 0,
-                y: 0
-            },
-
             // Conditional HTML 
             m_edit: true,
             m_isHover: false,
@@ -88,7 +184,6 @@ export default {
 
             // Default instantiate values
             m_EditMode: false,
-            m_isStoredClick: false,
             m_isVertical: true,
             m_isMoveContainer: false,
             
@@ -103,6 +198,7 @@ export default {
             m_cursor: "default",
 
             m_updateGrid: false,
+            m_headerOffset: "0px",
         }
     },
 
@@ -115,71 +211,18 @@ export default {
     },
     mounted(){
         this.setComponentDOMValues();
+        this.getHeaderSize();
     },
     updated(){
         if(this.m_updateGrid){ this.m_updateGrid = false; }
     },
-    /*
-        Note: when using hot-reloading, saving causes unmounted function to run
-        Not sure why, but keep that in mind when values suddenly change on save
-    */
     unmounted(){
         this.removeGlobalData();
     },
     methods:{
 
-// Logging Functions 
-// -----------------------------------------------------------------------------------------------------
-        printLayoutInfo(){
-                console.log("Container Info\n",
-                            "\nLevel: ",        this.m_LayoutData.level,
-                            "\nDivision Type:", this.m_LayoutData.divisionType,
-                            "\nID:",            this.m_LayoutData.id,
-                            "\nSiblings:",      this.m_LayoutData.siblings,
-                            "\nEven Split?",    this.m_LayoutData.evenSplit,
-                            "\nFR data:",       this.m_LayoutData.unevenFRData,
-                );
-        },
-        printMouseCoordinate(){
-            console.log("Mouse Coordinate (Absolute)\n",
-                        "\nX:", this.m_MouseCoordinate.x,
-                        "\nY:", this.m_MouseCoordinate.y,
-            );
-        },
-        printParentContainerInfo(){
-            console.log("Parent information\n" ,
-                        "\nx:",      this.$parent.$data.m_ComponentData.x,
-                        "\ny:",      this.$parent.$data.m_ComponentData.y,
-                        "\nheight:", this.$parent.$data.m_ComponentData.height,
-                        "\nwidth:",  this.$parent.$data.m_ComponentData.width);
-        },
-// -------------------------------------------------------------------------------------------------------
-
-// Row + Column Data variable setters
-// -------------------------------------------------------------------------------------------------------
-
-        setGridEven(type){
-            let repeatedData = "1fr ".repeat(this.m_LayoutData.NoChildren);
-            let normal = "1fr";
-
-            this.m_rowData    = (type === "Horizontal")  ? repeatedData : normal;
-            this.m_columnData = (type === "Horizontal")  ? normal : repeatedData;
-        },
-        setGridNonEven(container){
-            let normal = "1fr";
-
-            this.m_rowData    = (container.divisionType === "Horizontal") ? container.unevenFRData : normal;
-            this.m_columnData = (container.divisionType === "Horizontal") ? normal : container.unevenFRData;
-        },
-
-// -------------------------------------------------------------------------------------------------------
-
 // General Container Functions
 // --------------------------------------------------------------------------------------------------------
-
-        isStoredClick(){
-            this.m_isStoredClick = (this.$GlobalStates.value.edit.containerSelected != this.m_LayoutData.id) ? false : true;
-        },
 
         // Applies any changed data to the container
         updateContainerData(){
@@ -215,14 +258,26 @@ export default {
         // Loads the fractional data
         loadFractionalData(){
             if(this.m_LayoutData.evenSplit){ this.setGridEven(this.m_LayoutData.divisionType); }
-            else if(this.$GlobalStates.isRenderFinalNode){ this.setGridNonEven(this.m_LayoutData); }
+            else if(editVariables.isRenderFinalNode){ this.setGridNonEven(this.m_LayoutData); }
         },
 
         // Turn off Load rendering
         // Check if the container is the final container to be rendered
         renderLastContainer(){
             let lastRenderContainer = LayoutDataClass.isFinalNode(LayoutDataClass.getLevelData(layout.allData, 0, "0A"), this.m_LayoutData. id);
-            if( lastRenderContainer && this.$GlobalStates.isRenderFinalNode) { this.$GlobalStates.isRenderFinalNode = false;}
+            if( lastRenderContainer && editVariables.isRenderFinalNode) { editVariables.disableRenderFinalNode(); }
+        },
+
+        // Provides offset in px when using lists, to correctly place scrollable div.
+        getHeaderSize(){
+            let headerRef = this.$refs["header"];
+            let isList = (containerData.getObjectFromID(this.m_LayoutData.id).layoutType == "List");
+
+            // No header or grid layout
+            if(!headerRef || !isList){ this.m_headerOffset = "0px"; return; }
+
+            // Set value to height of header
+            this.m_headerOffset = (Math.round(headerRef.getBoundingClientRect().height * 100) / 100) + "px";
         },
 
 // Singleton Data Config
@@ -231,16 +286,13 @@ export default {
         // On Unmount, remove it
         removeGlobalData(){
             containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
-            
-            // Remove LayoutData
         },
 
         // Store container data on click to singleton
         storeClickedContainer(){
             if(this.m_LayoutData.id === null) {return;}
-            this.$GlobalStates.value.edit.containerSelected = this.m_LayoutData.id;
-            this.$GlobalStates.value.containerSelectionMode = false;
-            this.$GlobalStates.value.edit.enabled = true;
+            editVariables.setContainerSelected(this.m_LayoutData.id);
+            editVariables.disableContainerSelection();
         },
         
 // Divider drag functions
@@ -257,29 +309,25 @@ export default {
             This runs N times for N containers on window resize 
             Modifies (in px) the threshold of mouse position to move per stepsize
         */
-        recalculateThreshold(){ this.m_pxThreshold = ContainerDividerClass.calculateThreshold(this.m_LayoutData, this.$parent.$data, this.m_StepSize); },
+        recalculateThreshold(){ this.m_pxThreshold = ContainerDividerClass.calculateThreshold(this.m_LayoutData, this.$parent.$data, editVariables.dragStepSize); },
 
         // Start event on mouse down on divider. End event on mouse up.
-        onMouseHold(event, holding){
-            this.m_isMoveContainer = true;
+        initDividerDrag(){
+
+            // Mouse Functions
+            mouseData.movementFunctions( [ this.drag_MouseMove ]);
+            mouseData.mouseUpFunctions ( [ this.drag_MouseUp   ]);
             
-            document.addEventListener('mouseup', function(e) {
-                this.m_isMoveContainer = false;
-                this.m_cursor = "default";
-                mouseData.disableTracking();
-                document.documentElement.style.setProperty("--cursor", this.m_cursor); 
-
-            }, { once: true });
-
-            mouseData.movementFunctions( [ this.moveContainer ]);
             mouseData.enableTracking();
+            mouseData.enableMouseUp();
 
+            this.m_isMoveContainer = true;
             this.m_cursor = (this.$parent.$data.m_LayoutData.divisionType === "Vertical") ? "col-resize" : "row-resize";
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
         },
 
         // If drag passes threshold, update parent row/column data
-        moveContainer(){
+        drag_MouseMove(){
 
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
@@ -290,13 +338,68 @@ export default {
                 this.$parent.$data.m_ComponentData
             );
             const data = ContainerDividerClass.movementData(parentObj, this.m_LayoutData.id, this.m_isVertical, this.m_pxThreshold, difference);
+
+            this.calculateDisplayDragLocation(difference);
+            
             // Run parent function
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
 
+        drag_MouseUp(){
+            mouseData.disableTracking();
+            mouseData.disableMouseUp();
+
+            this.m_isMoveContainer = false;
+            this.m_cursor = "default";
+            document.documentElement.style.setProperty("--cursor", this.m_cursor); 
+        },
+
+        calculateDisplayDragLocation(difference){
+            
+            let isPositive;
+            var translateXVal;
+            var translateYVal;
+            
+            // Within the drag size
+            let isInside = ( Math.abs(difference) < 5);
+
+            // If not inside drag, find the difference.
+            if(!isInside){ isPositive = (difference > 0); }
+
+            let parent = LayoutDataClass.getParentObj(this.m_LayoutData);
+
+            // value to nothing to reset it.
+            this.$refs["next-divider"].style.transform = null;
+            
+            // Y value changes
+            if(parent.divisionType === "Horizontal"){
+                translateXVal = 0;
+
+                if(isInside){
+                    translateYVal = "-100%";
+                }
+                else{
+                    translateYVal = -this.$refs["next-divider"].getBoundingClientRect().height;
+                    translateYVal += (isPositive) ? this.m_pxThreshold : -this.m_pxThreshold;
+                    translateYVal += "px";
+                }
+            }
+            // X Value changes
+            else{
+                translateYVal = "-200%";
+                
+                translateXVal = -15;
+                if(!isInside){
+                    translateXVal += (isPositive) ? this.m_pxThreshold : -this.m_pxThreshold;
+                }
+            }
+
+            this.$refs["next-divider"].style.transform = `translate(${translateXVal}px, ${translateYVal})`; 
+        },
+
         // Only runs at the parent container to modify css variable
         p_updateColumnRow(data){            
-            let newColumnData = ContainerDividerClass.updateParentConfig(data, this.m_StepSize, this.m_columnData, this.m_rowData);
+            let newColumnData = ContainerDividerClass.updateParentConfig(data, editVariables.dragStepSize, this.m_columnData, this.m_rowData);
             if(data.type === "Vertical"){ this.m_columnData = newColumnData; } else { this.m_rowData = newColumnData; } 
 
             // Updates the global container values
@@ -326,19 +429,6 @@ export default {
             // Calculate new grid value.
             containerData.addNewID(this.m_LayoutData.id);
         },
-        updateGridDimension(){
-            let data = containerData.getObjectFromID(this.m_LayoutData.id);
-
-            if(data === undefined) { return; }
-            if(!data.display){ return; } // If it is not the top layer do not modify.
-
-            let iconSize = containerData.getIconSize(this.m_LayoutData.id);
-            
-            let dimension = GridModificationClass.calculateGridDimension(this.m_ComponentData.width, this.m_ComponentData.height, iconSize);
-            containerData.setGridDimension(this.m_LayoutData.id, `${dimension.rows},${dimension.columns}`);
-
-            // console.log(`ID: ${this.m_LayoutData.id} rows: ${dimension.rows}, columns: ${dimension.columns}`);
-        },
 
         disableConfigOnNonLeaf(){ if(!LayoutDataClass.isLeafNode(this.m_LayoutData)){ containerData.disableDisplay(this.m_LayoutData.id); }},
 
@@ -353,60 +443,108 @@ export default {
 
         All this just for contiguous row + column updating...
     */
-        p_storeParentID(){ this.$GlobalStates.value.parentIDGridUpdate = this.m_LayoutData.id; },
+        p_storeParentID(){ editVariables.setParentID(this.m_LayoutData.id); },
 
         // Reset only after last sibling.
         updateContainerGrid(){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$GlobalStates.value.parentIDGridUpdate = null; }
+            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ editVariables.resetParentID(); }
 
             this.m_updateGrid = true;
 
             // $ref returns null on tick, look at next tick to update values
             this.$nextTick(() => {
                 this.setComponentDOMValues();
-                this.updateGridDimension();
+                this.getHeaderSize();
             });
         },
 
 // --------------------------------------------------------------------------------------------------------
 
+// Row + Column Data variable setters
+// -------------------------------------------------------------------------------------------------------
+
+        setGridEven(type){
+            let repeatedData = "1fr ".repeat(this.m_LayoutData.NoChildren);
+            let normal = "1fr";
+
+            this.m_rowData    = (type === "Horizontal")  ? repeatedData : normal;
+            this.m_columnData = (type === "Horizontal")  ? normal : repeatedData;
+        },
+        setGridNonEven(container){
+            let normal = "1fr";
+
+            this.m_rowData    = (container.divisionType === "Horizontal") ? container.unevenFRData : normal;
+            this.m_columnData = (container.divisionType === "Horizontal") ? normal : container.unevenFRData;
+        },
+
+// -------------------------------------------------------------------------------------------------------
+
+// Logging Functions 
+// -----------------------------------------------------------------------------------------------------
+        printLayoutInfo(){
+            console.log("Container Info\n",
+                        "\nLevel: ",        this.m_LayoutData.level,
+                        "\nDivision Type:", this.m_LayoutData.divisionType,
+                        "\nID:",            this.m_LayoutData.id,
+                        "\nSiblings:",      this.m_LayoutData.siblings,
+                        "\nEven Split?",    this.m_LayoutData.evenSplit,
+                        "\nFR data:",       this.m_LayoutData.unevenFRData,
+            );
+        },
+        printParentContainerInfo(){
+            console.log("Parent information\n" ,
+                        "\nx:",      this.$parent.$data.m_ComponentData.x,
+                        "\ny:",      this.$parent.$data.m_ComponentData.y,
+                        "\nheight:", this.$parent.$data.m_ComponentData.height,
+                        "\nwidth:",  this.$parent.$data.m_ComponentData.width);
+        },
+// -------------------------------------------------------------------------------------------------------
+
     },
+
+    computed:{
+        
+        // Updates if the container is the current selected
+        m_isStoredClick(){
+            return (editVariables.containerSelected === this.m_LayoutData.id);
+        },
+    },
+
+
 // Watchers
 // --------------------------------------------------------------------------------------------------------------
 
     watch: {
 
-        // update grid layout
-        // &&&&&
-        'm_LayoutData.siblings'(val, oldval){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
+        'editVariables.dragStepSize'(){ this.recalculateThreshold(); },
+
+        // Updates recalculates the layout when the flag changes
+        'editVariables.recalculateLayout'(flag){
+            if(!flag){ return; }
+
+            this.setComponentDOMValues();
+            this.recalculateThreshold();
+            this.getHeaderSize();
+            
+            if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
+            editVariables.disableRecalculation();
         },
-        '$GlobalStates.value.parentIDGridUpdate'(val,oldval){
-            if(val === null) { return; }
+
+        // All containers run this watcher, but only the parent of the selected gets ran.
+        'editVariables.parentID'(p_ID){
+            if(p_ID === null) { return; }
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
             if(parentObj === null) { return; }
-            else if(parentObj.id === val){ this.updateContainerGrid(); }
+            else if(parentObj.id === p_ID){ this.updateContainerGrid(); }
+        },
+
+        // update grid layout
+        'm_LayoutData.siblings'(){
+            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
         },
 
         'm_LayoutData.unevenFRData'(){ this.p_storeParentID(); },
         'm_LayoutData.divisionType'(){ this.p_storeParentID(); },
-        // &&&&
-
-        '$GlobalStates.value.edit.containerSelected'(val, oldval){
-            this.isStoredClick();
-        },
-        '$GlobalStates.value.edit.windowSize':{
-            handler(val,oldval){
-                this.setComponentDOMValues();
-                this.recalculateThreshold();
-                
-                if(this.m_LayoutData.id !== "0A"){ this.$parent.p_storeParentID(); } // Change in window size update grid Values
-            },
-            deep: true
-        },
-        '$GlobalStates.value.edit.dragStepSize'(val, oldval){
-            this.m_StepSize = val;
-        },
         // When the values in the container data change
         'layout':{
             handler(val, oldval){
@@ -414,11 +552,7 @@ export default {
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
                 this.setComponentDOMValues();
-
-                // // For updating orientation
-                // this.$nextTick(() => {
-                //     this.updateGridDimension();
-                // });
+                this.getHeaderSize();
             },
             deep: true,
         }
@@ -426,64 +560,6 @@ export default {
     }
 }
 </script>
-
-<template>
-    <!-- Container wrapper -->
-    <div class="component-container">
-        
-        <!-- Container -->
-        <div
-            class="page-content-container"
-            ref="refContainer"
-            >
-            
-            <!-- Edit based container functions -->
-            <div 
-            :class="{'edit-mode': this.$GlobalStates.value.edit.enabled, 
-                    'edit-hover': (this.$GlobalStates.value.edit.enabled && this.m_isHover && !this.m_isStoredClick),
-            'selected-container': (this.m_isStoredClick && this.$GlobalStates.value.edit.enabled),
-            'grid-template' : this.m_LayoutData.NoChildren > 0 }"
-            @mouseover.self="m_isHover = this.$GlobalStates.value.containerSelectionMode"
-            @mouseout.self="m_isHover=false"
-            @click.self="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null">
-
-                <!-- Recurrsion, uses data to determine how many to render -->
-                <template v-if="this.m_LayoutData.NoChildren > 0">
-                    <Container 
-                        v-for="n in this.m_LayoutData.NoChildren" 
-                        :nest_level="nest_level+1"
-                        :parent_ID="this.m_LayoutData.id"
-                        :child_Instance="n-1"
-                        :render_divider="true"
-                        @drag="p_updateColumnRow"
-                        />
-                </template>
-
-                <template v-if="this.m_LayoutData.NoChildren === 0">
-                    <Gridlayout
-                        @mouseover="m_isHover = this.$GlobalStates.value.containerSelectionMode"
-                        @mouseout="m_isHover=false"
-                        @click="this.$GlobalStates.value.containerSelectionMode ? ( this.$GlobalStates.value.edit.enabled ? storeClickedContainer() : null ) : null"
-                        
-                        :component_ID="m_LayoutData.id"
-                        :update_Grid_Flag="m_updateGrid"/>
-                </template>
-            </div>
-        </div>
-        
-        <!-- Divider -->
-        <template v-if="this.render_divider">
-            <div v-if="this.$GlobalStates.value.edit.enabled && this.displayDivider()"
-            :class="{
-                'page-drag-Horizontal': ( !this.m_isVertical),
-                'page-drag-Vertical': (this.m_isVertical)}"
-            @mousedown="onMouseHold"
-            ref="divider">
-            </div>
-        </template>
-    </div>
-</template>
-
 <!---------------------------------------------------------------------------------------------------------------------------
     CSS
 -->
@@ -491,7 +567,57 @@ export default {
 <style scoped>
 @import '../../assets/base.css';
 
-.component-container{
+.next-pos{
+    pointer-events: none;
+}
+
+.next-pos-horizontal{
+    height: 10px;
+    width: 100%;
+    transform: translate(0, -100%);
+    background-color: rgba(0, 0, 0, 0.61);
+    border-radius: 10px;
+    transition: all 150ms ease-in-out;
+}
+
+.next-pos-vertical{
+    width: 20px;
+    height: 100%;
+    transform: translate(-15px, -200%);
+    background-color: rgba(0, 0, 0, 0.61);
+    border-radius: 10px;
+    transition: all 150ms ease-in-out;
+}
+
+hr{
+    border: 1px solid white;
+    margin: 0em 2em;
+}
+
+.container-wrapper{
+    display: flex;
+    flex-flow: column;
+
+    position: relative;
+    height: calc(100% - v-bind("m_headerOffset"));
+}
+/* 
+    The wrapper requires 100% height.
+
+    An offset is used if there is text, AND if it uses a list. 
+*/
+
+.container-header{
+    height: min-content;
+    width: 100%;
+
+    padding: 0.75em 1.25em 0.25em 1.25em;
+    
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.height-full{
     height: 100%;
 }
 
@@ -499,32 +625,42 @@ export default {
     display: grid;
     grid-template-columns: v-bind("m_columnData");
     grid-template-rows: v-bind("m_rowData");
-    grid-gap: 10px;
-    padding: 8px;
+    grid-gap: 0.5em;
+    padding: 1em;
     
+    max-width: 100%;
+    max-height: 100%;
     
+    overflow: hidden;
     /*
     Transitions change the position of the slider.
         Causes bugs with the math and calculations
         Maybe in future implement
         transition: grid 0.2s linear;
     */
-
     border-radius: 10px;
 }
 
 .selected-container{
     background-color: var(--Select-colour);
+    transition: background-color 200ms ease;
+}
+
+.normal-mode{
+    border-radius: 10px;
+    outline: rgba(192, 192, 192, 0) dashed 2px;
+    transition: outline 100ms ease;
 }
 
 .edit-mode{
-    border-color: black;
     border-radius: 10px;
-    outline: silver dashed 2px;
+    outline: rgba(192, 192, 192, 1) dashed 2px;
+    transition: outline 100ms ease;
 }
 
 .edit-hover{
     background-color: var(--Hover-colour) !important;
+    transition: background-color 200ms ease;
 }
 
 .page-drag-Horizontal{
@@ -547,7 +683,6 @@ export default {
     Use a standard colour
 */
 .page-drag-Vertical{
-    height: 100%;
     width: 20px;
     transform: translate(-15px, -100%);
     background-color: rgba(255,255,255,0.4);
@@ -565,8 +700,7 @@ export default {
 
 .page-content-container{
     display: grid;
-
-    height: 100%;
+    
     width: 100%;
     background-color: var(--Primary-background-colour);
     transition: all 0.1s ease-in-out;
