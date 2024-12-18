@@ -11,6 +11,7 @@
             <!-- Edit based container functions -->
             <div 
             :class="{'edit-mode': editVariables.isEnabled, 
+                     'normal-mode' : !editVariables.isEnabled,
                     'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
             'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
@@ -33,7 +34,10 @@
                 <!-- If no children, display the grid layout -->
                 <div v-else-if="m_LayoutData.NoChildren === 0"
                     class="container-wrapper"
-                    @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null">
+                    @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null"
+                    @mouseover="m_isHover = editVariables.containerSelectionMode"
+                    @mouseout="m_isHover=false"
+                    >
 
                     <!-- Container header -->
                     <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
@@ -46,9 +50,6 @@
 
                     <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
                         <Gridlayout
-                            @mouseover="m_isHover = editVariables.containerSelectionMode"
-                            @mouseout="m_isHover=false"
-                            
                             :component_ID="m_LayoutData.id"
                             :update_Grid_Flag="m_updateGrid"
                         />
@@ -57,8 +58,6 @@
                     <template v-else>
                         <div>
                             <ListLayout
-                                @mouseover="m_isHover = editVariables.containerSelectionMode"
-                                @mouseout="m_isHover=false"
                                 
                                 :component_ID="m_LayoutData.id"/>
                         </div>
@@ -639,22 +638,29 @@ hr{
         Maybe in future implement
         transition: grid 0.2s linear;
     */
-
     border-radius: 10px;
 }
 
 .selected-container{
     background-color: var(--Select-colour);
+    transition: background-color 200ms ease;
+}
+
+.normal-mode{
+    border-radius: 10px;
+    outline: rgba(192, 192, 192, 0) dashed 2px;
+    transition: outline 100ms ease;
 }
 
 .edit-mode{
-    border-color: black;
     border-radius: 10px;
-    outline: silver dashed 2px;
+    outline: rgba(192, 192, 192, 1) dashed 2px;
+    transition: outline 100ms ease;
 }
 
 .edit-hover{
     background-color: var(--Hover-colour) !important;
+    transition: background-color 200ms ease;
 }
 
 .page-drag-Horizontal{
