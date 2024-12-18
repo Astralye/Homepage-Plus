@@ -238,8 +238,8 @@ export default {
             containerData.resetData();
             layout.resetData();
             iconData.resetData();
-            iconStorage.TMP_resetData(); // Remove later
-
+            iconStorage.resetData();
+            
             this.setValues();
             // Reset selected
             editVariables.enableResetSelect();
@@ -280,7 +280,7 @@ export default {
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
             iconData.initializeData(dataIcon);
-            iconStorage.TMP_initData(storageData); // Change later
+            iconStorage.initDataFromStorage(storageData); // Change later
             
             // this.$GlobalStates.clickLoad = true; 
             editVariables.enableRenderFinalNode();

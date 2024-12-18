@@ -14,14 +14,10 @@ class IconData{
 
     // For testing purposes, to keep initalized data.
     // Will be removed later
-    TMP_initData(storageData){
+    initDataFromStorage(storageData){
         this.data = storageData;
     }
-
-    TMP_resetData(){
-        this.data = [];
-    }
-
+    
     checkContainerExist(containerID){
         for(let i = 0; i < this.data.length; i++){ if(this.data[i].containerID === containerID){ return true; } }
         if(this.isFromStorage(containerID)){ return true; }

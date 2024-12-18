@@ -18,7 +18,6 @@
                 'icon-Selection' : isSelectedIcon(index),
                 'unselect-icon'  : !isSelectedIcon(index)}"
             >
-
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
                     <IconHandler v-show="renderIcon(index)"
@@ -378,6 +377,15 @@ export default {
             this.m_GridDimensions.Rows    = rows
             this.m_GridDimensions.Columns = columns
         },
+    },
+    watch:{
+        // Resets the grid if deleted 
+
+        // However, Looks at icon data, not the layout data,
+        // Todo, convert this to check layout data reset, not icon data length
+        'iconData.data.length'(val, oldVal){
+            if(val === 0){ this.initGrid(); }
+        }
     }
 }
 </script>
