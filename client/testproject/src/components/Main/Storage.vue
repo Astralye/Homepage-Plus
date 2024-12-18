@@ -239,13 +239,22 @@ export default {
             layout.resetData();
             iconData.resetData();
             iconStorage.resetData();
-            
+
             this.setValues();
+            this.resetFlag();
             // Reset selected
             editVariables.enableResetSelect();
 
             this.popuptext = "Layout Deleted!";
             this.enableButtonTimer();
+        },
+
+        // It is enabled for 1 tick to trigger the watchers
+        resetFlag(){
+            editVariables.enableResetFlag();
+            this.$nextTick(() =>{
+                editVariables.disableResetFlag();
+            });
         },
 
         // Load from localstorage
@@ -256,9 +265,11 @@ export default {
             if(this.toggleOffModal) { editVariables.setCancelModal(false);}
 
             this.loadData();
+            this.resetFlag();
             
             // Reset selected
             editVariables.enableResetSelect();
+
 
             this.popuptext = "Cancelled!";
             this.enableButtonTimer();
@@ -282,7 +293,6 @@ export default {
             iconData.initializeData(dataIcon);
             iconStorage.initDataFromStorage(storageData); // Change later
             
-            // this.$GlobalStates.clickLoad = true; 
             editVariables.enableRenderFinalNode();
         },
     }

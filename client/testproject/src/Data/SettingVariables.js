@@ -26,7 +26,10 @@ export class EditVariables{
         modalToggle:{
             delete: true,
             cancel: true,
-        }
+        },
+
+        // For a single frame, it turns on to be detected by watchers
+        resetFlag: false,
     }}
 
     enableEdit() { this.values.enabled = true; }
@@ -52,6 +55,9 @@ export class EditVariables{
 
     enableContainerSelection() { this.values.containerSelectionMode = true; }
     disableContainerSelection(){ this.values.containerSelectionMode = false; }
+
+    enableResetFlag(){ this.values.resetFlag = true; }
+    disableResetFlag(){ this.values.resetFlag = false; }
 
     selectionContainerToggler(){
         this.activeContainerSelection = (this.values.activeLayoutWindow || this.values.activeContainerWindow);
@@ -85,6 +91,8 @@ export class EditVariables{
     get isRenderFinalNode(){ return this.values.isRenderFinalNode; }
     get containerSelectionMode() { return this.values.containerSelectionMode; }
     get parentID() { return this.values.parentIDGridUpdate; }
+
+    get resetFlag() { return this.values.resetFlag; }
 
     // User modifiers
 

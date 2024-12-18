@@ -285,6 +285,11 @@ export default {
             if(!val){
                 this.m_OriginalDrag = false;
             } 
+        },
+        'editVariables.resetFlag'(val, oldVal){
+            if(val){
+                this.initData();
+            }
         }
     }
 }

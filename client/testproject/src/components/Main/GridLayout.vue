@@ -379,12 +379,10 @@ export default {
         },
     },
     watch:{
-        // Resets the grid if deleted 
-
-        // However, Looks at icon data, not the layout data,
-        // Todo, convert this to check layout data reset, not icon data length
-        'iconData.data.length'(val, oldVal){
-            if(val === 0){ this.initGrid(); }
+        'editVariables.resetFlag'(val, oldVal){
+            if(val){
+                this.initGrid();
+            }
         }
     }
 }
