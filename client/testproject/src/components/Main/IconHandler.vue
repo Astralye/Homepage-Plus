@@ -18,16 +18,18 @@
             />
         </div>
 
-        <template v-if="iconData.isDisplayText">
-            <div class="fit-content text-padding">
-                <p class="text"
-                    :style="{
-                        'font-size' : iconData.text_Size
-                    }">
-                    {{ iconData.text }}
-                </p>
-            </div>
-        </template>
+        <transition name="fade">
+            <template v-if="iconData.isDisplayText">
+                <div class="fit-content text-padding">
+                    <p class="text"
+                        :style="{
+                            'font-size' : iconData.text_Size
+                        }">
+                        {{ iconData.text }}
+                    </p>
+                </div>
+            </template>
+        </transition>
     </div>
 </template>
 
