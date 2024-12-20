@@ -76,7 +76,7 @@
 								<RadioButton
 								v-model="ContentAlign"
 								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
+								@clickEvent="id => changeSelectedValue(ContentAlign, 'setGridAlign',id)"
 								/>
 							</template>
 						</WindowContainerDivider>
@@ -99,7 +99,7 @@
 								<RadioButton
 								v-model="OrientationLeftRight"
 								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
+								@clickEvent="id => changeSelectedValue(OrientationLeftRight, 'setXDirection', id)"
 								/>
 					
 								<h4>
@@ -109,7 +109,7 @@
 								<RadioButton
 								v-model="OrientationTopBottom"
 								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
+								@clickEvent="id => changeSelectedValue(OrientationTopBottom, 'setYDirection',id)"
 								/>
 								
 							</template>
@@ -120,15 +120,15 @@
 					<template #Tab-1>
 						<WindowContainerDivider>
 							<template #header>
-								<h3> Temporary </h3> 
-							</template>
-			
-							<template #tooltip>
-								<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+								<h3> Text Align </h3> 
 							</template>
 							
 							<template #content>
-								Some content
+								<RadioButton
+									v-model="textAlign"
+									:enable_Radio="(editVariables.containerSelected) ? true : false"
+									@clickEvent="id => changeSelectedValue(textAlign, 'setTextAlign',id)"
+								/>
 							</template>
 						</WindowContainerDivider>
 					</template>
@@ -181,6 +181,8 @@ export default {
 				{ id: "List",    selected: false},
 			],
 
+			// Grid type
+
 			ContentAlign: [
 				{ id: "Compact", selected: false},
 				{ id: "Free",    selected: false},
@@ -195,6 +197,15 @@ export default {
 				{ id: "Left",    selected: false},
 				{ id: "Right",   selected: false},
 			],
+
+			// List type
+
+			textAlign: [
+				{ id: "Left", selected: false},
+				{ id: "Center", selected: false},
+				{ id: "Right", selected: false},
+			],
+
 
 			containerString: null,
 			showName: false,
@@ -221,6 +232,8 @@ export default {
 		changeSelectedValue(valueType, functionPrefix, idValue){
 
 			if(!editVariables.containerSelected) return;
+
+
 			valueType.forEach(element => {
 				element.selected = false;
 
@@ -259,6 +272,7 @@ export default {
 			this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
 			this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
 			this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
+			this.modifyValue(this.textAlign, 			containerData.getTextLayout(id));
 			
 			this.tabIndex = this.setTabIndex();
 		},

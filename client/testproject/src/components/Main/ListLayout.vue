@@ -18,7 +18,6 @@
         @mouseenter="dragAndDrop.enabled ? mouseEnterList() : null"
         @mouseleave="mouseLeaveList()"
     >
-        
         <TransitionGroup name="list">
             <div v-for="(item, index) in m_GroupData"
             :key="item.iconID"
@@ -49,9 +48,13 @@
             
                     <!-- Name -->
                     <div
-                        class="center-text"
+                        class="base-text-wrapper"
+                        :class="{
+                            'center-text' : (isCenter),
+                        }"
                         :style="{
-                            'font-size' : item.iconStringSize
+                            'font-size' : item.iconStringSize,
+                            'text-align': layoutCSSDirection,
                         }">
                         {{ item.iconString }}
                     </div>
@@ -279,6 +282,14 @@ export default {
         // checks if index is last position of the indexing.
         isLastPosition(index){ return (this.m_GroupData.length-1 === index); },
     },
+    computed:{
+        layoutCSSDirection(){
+            return containerData.getTextLayout(this.component_ID)
+        },
+        isCenter(){
+            return (this.layoutCSSDirection === "Center");
+        }
+    },
     watch:{
         'editVariables.iconDragData.storedContainer'(val,oldVal){
             // null value, was reset
@@ -290,7 +301,7 @@ export default {
             if(val){
                 this.initData();
             }
-        }
+        },
     }
 }
 </script>
@@ -366,14 +377,28 @@ export default {
     padding-right: 0.75em;
 }
 
-.center-text{
-    text-align: center;   
-    margin-top: auto;
-    margin-bottom: auto; 
+.base-text-wrapper{
+    width: 100%;
 
     overflow: hidden;
-
     transition: font-size ease 200ms;
+
+    margin-top: auto;
+    margin-bottom: auto; 
+}
+
+.center-text{
+    
+    position: absolute;
+    margin-left: 0.5em;
+    padding-right: 0.5em;
+    height: 2em;
+
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    
 }
 
 .flex{
@@ -381,10 +406,11 @@ export default {
 }
 
 .list-item-wrapper{
-    margin: 0.5em;
     box-sizing: border-box;
-
+    position: relative;
+    
     width: auto;
+    margin: 0.5em;
     padding: 0.5em;
 }
 

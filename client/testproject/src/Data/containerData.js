@@ -66,7 +66,9 @@ class ContainerDataClass{
           xAxisDirection: "Left",
           yAxisDirection: "Top"
       },
-      ListData: {},
+      ListData: {
+        textDirection: "Left",
+      },
       };
   };
 
@@ -99,6 +101,10 @@ class ContainerDataClass{
   setYDirectionTop(objectID)      { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Top"}};
   setYDirectionBottom(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Bottom"}};
 
+  setTextAlignLeft(objectID){   let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.textDirection = "Left"}; }
+  setTextAlignRight(objectID){  let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.textDirection = "Right"}; }
+  setTextAlignCenter(objectID){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.textDirection = "Center"}; }
+
   // Grid Getters
   
   isHeaderToggled(objectID) {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.toggle; }}
@@ -108,6 +114,8 @@ class ContainerDataClass{
   getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; }}
   getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; }}
   getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; }}
+  getTextLayout(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.ListData.textDirection; }}
+
 }
 
 const containerDataInstance = new ContainerDataClass;
