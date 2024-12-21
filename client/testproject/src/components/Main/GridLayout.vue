@@ -18,6 +18,7 @@
                 'icon-Selection' : isSelectedIcon(index),
                 'unselect-icon'  : !isSelectedIcon(index)}"
             >
+            
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
                     <IconHandler v-show="renderIcon(index)"
@@ -26,6 +27,7 @@
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
+                        :toggle_Container_Text="m_containerData.gridData.displayText"
                         @mousedown="(editVariables.isEnabled) ?  $refs['icon-drag-handler'].dragDropSetup($event, index, getIconData(index), 'GRID'): null"
                     />
                 </Transition>

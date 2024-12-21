@@ -19,7 +19,7 @@
         </div>
 
         <transition name="fade">
-            <template v-if="iconData.isDisplayText">
+            <template v-if="iconData.isDisplayText && toggle_Container_Text">
                 <div class="fit-content text-padding">
                     <p class="text"
                         :style="{
@@ -49,6 +49,10 @@ export default {
             type: Object,
             default: null,
         },
+        toggle_Container_Text:{
+            type: Boolean,
+            default: true,
+        }
     },
     data(){
         return{

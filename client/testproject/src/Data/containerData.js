@@ -62,9 +62,10 @@ class ContainerDataClass{
         text: ""
       },
       gridData: {
+          displayText: true,
           contentAlign: "Compact",
           xAxisDirection: "Left",
-          yAxisDirection: "Top"
+          yAxisDirection: "Top",
       },
       ListData: {
         textDirection: "Left",
@@ -84,8 +85,11 @@ class ContainerDataClass{
   enableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = true; }};
   disableContainerText(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = false; }};
 
-  enableContainerIcon(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = true; }};
-  disableContainerIcon(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = false; }};
+  enableListIcon(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = true; }};
+  disableListIcon(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = false; }};
+
+  enableGridText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.displayText = true; }};
+  disableGridText(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.displayText = false; }};
 
 
   setLayoutGrid(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "Grid" }};
@@ -114,7 +118,9 @@ class ContainerDataClass{
   
   isHeaderToggled(objectID) {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.toggle; }}
   isShowIcon(objectID)      {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.ListData.displayIcon; }}
-  
+  isShowText(objectID)      {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.displayText; }}
+    
+
   getHeaderName(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.text; }}
   getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;}}
   getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;}}

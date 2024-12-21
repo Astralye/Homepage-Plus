@@ -19,6 +19,7 @@
 				</template>
 		
 				<template #content>
+
 					<TextInput
 						placeholder_text="Container Name"
 						max_length=30
@@ -64,34 +65,27 @@
 					<!-- Content Align -->
 					
 						<WindowContainerDivider>
-							<template #header>
-								<h3> Grid Content Align </h3> 
-							</template>
-			
-							<template #tooltip>
-								<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
-							</template>
-							
 							<template #content>
+
+								<Checkbox
+									@onChange="check => showText = check"
+									:checkValue="showText"
+									text="Display text for whole container"
+								/>
+
+								<br>
+								
+								<h3> Grid Content Align </h3> 
+
 								<RadioButton
 									v-model="ContentAlign"
 									:enable_Radio="(editVariables.containerSelected) ? true : false"
 									@clickEvent="id => changeSelectedValue(ContentAlign, 'setGridAlign',id)"
 								/>
-							</template>
-						</WindowContainerDivider>
-						<!-- Dimensions -->
-						
-						<WindowContainerDivider>
-							<template #header>
+
+								<br>
 								<h3>Container Dimensions</h3>
-							</template>
-							
-							<template #tooltip>
-								<ToolTip> Content align direction of the y axis </ToolTip>
-							</template>
-							
-							<template #content>
+								
 								<h4>
 									X Axis Direction
 								</h4>
@@ -101,6 +95,7 @@
 								:enable_Radio="(editVariables.containerSelected) ? true : false"
 								@clickEvent="id => changeSelectedValue(OrientationLeftRight, 'setXDirection', id)"
 								/>
+								<br class="br-second">
 					
 								<h4>
 									Y Axis Direction
@@ -216,7 +211,9 @@ export default {
 
 			containerString: null,
 			showName: false,
+
 			showIcon: true,
+			showText: true,
 
 			tabIndex: -1,
 			tab_Data: [
@@ -273,6 +270,8 @@ export default {
 			this.containerString = containerData.getHeaderName(id);
 			this.showName = containerData.isHeaderToggled(id);
 			this.showIcon = containerData.isShowIcon(id);
+			this.showText = containerData.isShowText(id);
+
 			this.isSelected = this.isCurrentlySelected();
 
 			if(!id){ this.tabIndex = -1; return; } // Resetted value
@@ -312,8 +311,14 @@ export default {
 		'showIcon'(isShow){
 			if(!this.m_CurrentID) return;
 
-			(isShow) ? containerData.enableContainerIcon(this.m_CurrentID) : 
-				containerData.disableContainerIcon(this.m_CurrentID);
+			(isShow) ? containerData.enableListIcon(this.m_CurrentID) : 
+				containerData.disableListIcon(this.m_CurrentID);
+		},
+		'showText'(isShow){
+			if(!this.m_CurrentID) return;
+
+			(isShow) ? containerData.enableGridText(this.m_CurrentID) : 
+				containerData.disableGridText(this.m_CurrentID);
 		}
 	}
 }
