@@ -34,7 +34,7 @@
                     @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
                 >   
                     <!-- Icon if any -->
-                    <div v-if="hasIcon(item)"
+                    <div v-if="m_containerData.ListData.displayIcon"
                         class="icon-spacing"
                         >
                         <SVGHandler
@@ -50,7 +50,7 @@
                     <div
                         class="base-text-wrapper"
                         :class="{
-                            'center-text' : (isCenter),
+                            'center-text' : (isCenter && m_containerData.ListData.displayIcon),
                         }"
                         :style="{
                             'font-size' : item.iconStringSize,

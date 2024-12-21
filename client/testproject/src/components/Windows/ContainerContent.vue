@@ -27,7 +27,7 @@
 					/>
 		
 					<Checkbox
-						@onChange="check => showName = check"
+						@onChange="check => show = check"
 						:checkValue="showName"
 						:enabled="isSelected"
 						text="Display name"
@@ -74,9 +74,9 @@
 							
 							<template #content>
 								<RadioButton
-								v-model="ContentAlign"
-								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(ContentAlign, 'setGridAlign',id)"
+									v-model="ContentAlign"
+									:enable_Radio="(editVariables.containerSelected) ? true : false"
+									@clickEvent="id => changeSelectedValue(ContentAlign, 'setGridAlign',id)"
 								/>
 							</template>
 						</WindowContainerDivider>
@@ -128,6 +128,13 @@
 									v-model="textAlign"
 									:enable_Radio="(editVariables.containerSelected) ? true : false"
 									@clickEvent="id => changeSelectedValue(textAlign, 'setTextAlign',id)"
+								/>
+								<br>
+
+								<Checkbox
+									@onChange="check => showIcon = check"
+									:checkValue="showIcon"
+									text="Display Icons for whole container"
 								/>
 							</template>
 						</WindowContainerDivider>
@@ -209,6 +216,7 @@ export default {
 
 			containerString: null,
 			showName: false,
+			showIcon: true,
 
 			tabIndex: -1,
 			tab_Data: [
@@ -264,6 +272,7 @@ export default {
 			this.m_CurrentID = id;
 			this.containerString = containerData.getHeaderName(id);
 			this.showName = containerData.isHeaderToggled(id);
+			this.showIcon = containerData.isShowIcon(id);
 			this.isSelected = this.isCurrentlySelected();
 
 			if(!id){ this.tabIndex = -1; return; } // Resetted value
@@ -295,10 +304,16 @@ export default {
 		},
 		// Enables and disables show name
 		'showName'(isShow){
-			if(!this.m_CurrentID) return ;
+			if(!this.m_CurrentID) return;
 
 			(isShow) ? containerData.enableContainerText(this.m_CurrentID) : 
 				containerData.disableContainerText(this.m_CurrentID);
+		},
+		'showIcon'(isShow){
+			if(!this.m_CurrentID) return;
+
+			(isShow) ? containerData.enableContainerIcon(this.m_CurrentID) : 
+				containerData.disableContainerIcon(this.m_CurrentID);
 		}
 	}
 }

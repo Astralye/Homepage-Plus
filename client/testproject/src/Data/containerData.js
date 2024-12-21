@@ -68,6 +68,7 @@ class ContainerDataClass{
       },
       ListData: {
         textDirection: "Left",
+        displayIcon: true,
       },
       };
   };
@@ -81,7 +82,11 @@ class ContainerDataClass{
   setContainerName(objectID, text){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.text = text; }};
 
   enableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = true; }};
-  disableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = false; }};
+  disableContainerText(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = false; }};
+
+  enableContainerIcon(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = true; }};
+  disableContainerIcon(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = false; }};
+
 
   setLayoutGrid(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "Grid" }};
   setLayoutList(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "List" }};
@@ -108,6 +113,8 @@ class ContainerDataClass{
   // Grid Getters
   
   isHeaderToggled(objectID) {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.toggle; }}
+  isShowIcon(objectID)      {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.ListData.displayIcon; }}
+  
   getHeaderName(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.text; }}
   getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;}}
   getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;}}
