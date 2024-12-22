@@ -14,11 +14,12 @@ import SVGHandler from './components/Input Components/SVGHandler.vue'
 
 import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
-import { multiSelect } from './Data/multiSelect'
+import { multiSelect, contextMenu } from './Data/multiSelect'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
 import Settings from './components/Windows/Settings.vue'
 import Multidrag from './components/Main/Multidrag.vue'
+import ContextMenu from './components/Main/ContextMenu.vue'
 
 export default{
     name: "App",
@@ -28,6 +29,7 @@ export default{
         PageSubDivision,
         PageContainer,
         WindowButton,
+        ContextMenu,
         IconButton,
         Multidrag,
         LinkMaker,
@@ -42,7 +44,9 @@ export default{
             iconImageStorage,
             editVariables,
             windowHandler,
+
             multiSelect,
+            contextMenu,
 
             // This is used just for iteration. To find the values,
             // See userWindow.js
@@ -63,6 +67,18 @@ export default{
         // Resize window
         window.addEventListener("resize", () => { editVariables.enableRecalculation(); });
     },
+    methods:{
+        contextHandler(event) {
+            event.preventDefault();
+
+            contextMenu.enable();
+            contextMenu.setStartLocation(event.x, event.y);
+        },
+        disableContext(){
+            contextMenu.disable();
+            contextMenu.resetStartLocation();
+        }
+    }
 }
 
 </script>
@@ -254,12 +270,18 @@ export default{
 
     <!-- Main body content -->
 
-    <div class="main-body">
+    <div class="main-body"
+        @contextmenu="contextHandler($event)"
+        @click="disableContext()">
         <PageContainer :nest_level="0"/>
     </div>
 
     <Teleport to="body">
         <Multidrag v-show="multiSelect.isEnabled"/>
+    </Teleport>
+
+    <Teleport to="body">
+        <ContextMenu v-show="contextMenu.isEnabled"/>
     </Teleport>
 </template>
 <style>

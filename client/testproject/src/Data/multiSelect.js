@@ -60,5 +60,38 @@ export class MultiSelect{
     get isInverseY(){ return this.data.YdirectionBottom; }
 }
 
+export class ContextMenu{
+    constructor(){ this.data ={
+        isEnabled: false,
+
+        intiLocation: {
+            x: 0,
+            y: 0,
+        },
+
+        width: 0,
+        height: 0,
+    }}
+
+    // Setters
+    enable(){ this.data.isEnabled = true; }
+    disable(){ this.data.isEnabled = false; }
+
+    resetStartLocation(){ this.setStartLocation(0,0); }
+    setStartLocation(x,y){ 
+        this.data.intiLocation.x = x;
+        this.data.intiLocation.y = y;
+    }
+
+    // Getter
+    get isEnabled(){ return this.data.isEnabled; }
+    
+    get x(){ return this.data.intiLocation.x; }
+    get y(){ return this.data.intiLocation.y; }
+}
+
+const contextMenuInstance = new ContextMenu;
 const multiSelectInstance = new MultiSelect;
+
+export const contextMenu = reactive(contextMenuInstance);
 export const multiSelect = reactive(multiSelectInstance);
