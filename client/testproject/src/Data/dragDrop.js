@@ -3,6 +3,7 @@ import { editVariables } from './SettingVariables';
 import { iconImageStorage } from './iconImages';
 import { iconData } from './iconData';
 import { mouseData } from './mouseData';
+import { multiSelect } from './multiSelect';
 /*
 
     Drag and drop functionality for icons.
@@ -58,6 +59,7 @@ class dragAndDropClass{
         this.setContainerOrigin(containerID);
         this.setSVGDragData();
         this.updateContainerType(type);
+        multiSelect.setValidDrag(false);
     }
     
     /*
@@ -130,6 +132,7 @@ class dragAndDropClass{
         this.setDisplayIcon(null);
         this.setDragWrapperRef(null);
         this.data.savedIndex = -1;
+        multiSelect.setValidDrag(true);
 
         mouseData.disableTracking();
         mouseData.disableMouseUp();

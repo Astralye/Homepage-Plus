@@ -1,7 +1,6 @@
 <template>
     <!-- Container wrapper -->
     <div class="height-full">
-        
         <!-- Container -->
         <div
             class="page-content-container height-full"
@@ -15,9 +14,15 @@
                     'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
             'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
+            
+            @mousedown="(m_isBase && multiSelect.isValidDrag) ? initMultiSelectDrag($event) : null"
+            @mouseup="(m_isBase && multiSelect.isEnabled) ? exitMultiSelectDrag() : null"
+
             @mouseover.self="m_isHover = editVariables.containerSelectionMode"
             @mouseout.self="m_isHover=false"
-            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null">
+            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null"
+
+            >
 
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
@@ -69,7 +74,7 @@
         
         <!-- Divider -->
         <template v-if="render_divider">
-            <div v-if="editVariables.isEnabled && displayDivider()"
+            <div v-if="editVariables.isEnabled && m_DisplayDivider"
             :class="{
                 'page-drag-Horizontal': ( !m_isVertical),
                 'page-drag-Vertical height-full': (m_isVertical)
@@ -80,7 +85,7 @@
 
             <Transition name="fade">
                 <!-- Temporary next position slider -->
-                <div v-if="editVariables.isEnabled && m_isMoveContainer && displayDivider()"
+                <div v-if="editVariables.isEnabled && m_isMoveContainer && m_DisplayDivider"
                     class="next-pos"
                     :class="{
                         'next-pos-horizontal': ( !m_isVertical),
@@ -100,8 +105,9 @@ import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
 import { editVariables } from '../../Data/SettingVariables.js';
-import ListLayout from './ListLayout.vue';
+import { multiSelect } from '../../Data/multiSelect.js';
 
+import ListLayout from './ListLayout.vue';
 import Gridlayout from './GridLayout.vue'
 
 export default {
@@ -138,16 +144,17 @@ export default {
     data(){
         return{
             // Static class functionality
-            LayoutDataClass,
-            ContainerDividerClass,
             GridModificationClass,
+            ContainerDividerClass,
+            LayoutDataClass,
 
             // Objects
-            containerData,
-            layout,
-            mouseData,
-
             editVariables,
+            containerData,
+            multiSelect,
+            mouseData,
+            layout,
+
             // Data
 
             
@@ -295,15 +302,39 @@ export default {
             editVariables.disableContainerSelection();
         },
         
+
+// Mouse Actions
+// --------------------------------------------------------------------------------------------------------
+
+        initMultiSelectDrag(event){
+            multiSelect.enable();
+            
+            // Mouse Functions
+            mouseData.movementFunctions( [ this.multiSelectDragMove ]);
+            mouseData.enableTracking();
+            
+            mouseData.updateCoordinate(event.x, event.y);
+
+            // Set starting position
+            multiSelect.setStartLocation(mouseData.Coordinates.x, mouseData.Coordinates.y);
+            multiSelect.setBoxDimensions(mouseData.Coordinates.x, mouseData.Coordinates.y);
+        },
+
+        multiSelectDragMove(){
+            // Set locations
+            multiSelect.setBoxDimensions(mouseData.Coordinates.x, mouseData.Coordinates.y);
+        },
+
+        exitMultiSelectDrag(){
+            mouseData.disableTracking();
+
+            multiSelect.disable();
+            multiSelect.resetStartLocation();
+        },
+
+
 // Divider drag functions
 // ---------------------------------------------------------------------------------------------------------
-
-        /*
-            Due to rendering the order of the division varies
-            Vertical -> Extra at the start
-            Horizontal -> Extra at the end
-        */
-        displayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
 
         /* 
             This runs N times for N containers on window resize 
@@ -316,10 +347,12 @@ export default {
 
             // Mouse Functions
             mouseData.movementFunctions( [ this.drag_MouseMove ]);
-            mouseData.mouseUpFunctions ( [ this.drag_MouseUp   ]);
+            mouseData.mouseUpFunctions ( [ this.exitDividerDrag   ]);
             
             mouseData.enableTracking();
             mouseData.enableMouseUp();
+
+            multiSelect.setValidDrag(false);
 
             this.m_isMoveContainer = true;
             this.m_cursor = (this.$parent.$data.m_LayoutData.divisionType === "Vertical") ? "col-resize" : "row-resize";
@@ -345,10 +378,13 @@ export default {
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
 
-        drag_MouseUp(){
+        // This uses the same components mouse up function
+        // Hence, cannot use @mouseup or @mousemove
+        exitDividerDrag(){
             mouseData.disableTracking();
             mouseData.disableMouseUp();
 
+            multiSelect.setValidDrag(true);
             this.m_isMoveContainer = false;
             this.m_cursor = "default";
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
@@ -501,13 +537,21 @@ export default {
 // -------------------------------------------------------------------------------------------------------
 
     },
-
     computed:{
         
         // Updates if the container is the current selected
         m_isStoredClick(){
             return (editVariables.containerSelected === this.m_LayoutData.id);
         },
+        // Level 0
+        m_isBase(){ return (this.m_LayoutData.level === 0); },
+        
+        /*
+            Due to rendering the order of the division varies
+            Vertical -> Extra at the start
+            Horizontal -> Extra at the end
+        */
+        m_DisplayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
     },
 
 
