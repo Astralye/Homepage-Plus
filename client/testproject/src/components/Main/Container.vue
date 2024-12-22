@@ -15,8 +15,8 @@
             'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
             
-            @mousedown="(m_isBase && multiSelect.isValidDrag) ? initMultiSelectDrag($event) : null"
-            @mouseup="(m_isBase && multiSelect.isEnabled) ? exitMultiSelectDrag() : null"
+            @mousedown.left="(m_isBase && multiSelect.isValidDrag) ? initMultiSelectDrag($event) : null"
+            @mouseup.left="(m_isBase && multiSelect.isEnabled) ? exitMultiSelectDrag() : null"
 
             @mouseover.self="m_isHover = editVariables.containerSelectionMode"
             @mouseout.self="m_isHover=false"
@@ -317,7 +317,8 @@ export default {
 
             // Set starting position
             multiSelect.setStartLocation(mouseData.Coordinates.x, mouseData.Coordinates.y);
-            multiSelect.setBoxDimensions(mouseData.Coordinates.x, mouseData.Coordinates.y);
+            multiSelect.setWidth (0);
+            multiSelect.setHeight(0);
         },
 
         multiSelectDragMove(){
@@ -329,7 +330,6 @@ export default {
             mouseData.disableTracking();
 
             multiSelect.disable();
-            multiSelect.resetStartLocation();
         },
 
 

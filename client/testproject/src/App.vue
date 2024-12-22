@@ -14,7 +14,7 @@ import SVGHandler from './components/Input Components/SVGHandler.vue'
 
 import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
-import { multiSelect, contextMenu } from './Data/multiSelect'
+import { contextMenu } from './Data/multiSelect'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
 import Settings from './components/Windows/Settings.vue'
@@ -45,7 +45,6 @@ export default{
             editVariables,
             windowHandler,
 
-            multiSelect,
             contextMenu,
 
             // This is used just for iteration. To find the values,
@@ -277,7 +276,7 @@ export default{
     </div>
 
     <Teleport to="body">
-        <Multidrag v-show="multiSelect.isEnabled"/>
+        <Multidrag/>
     </Teleport>
 
     <Teleport to="body">

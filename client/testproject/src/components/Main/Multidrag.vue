@@ -9,18 +9,21 @@
 -->
 
 <template>
-    <div
-        class="container"
-        :class="{
-            'transform-inverse' : (multiSelect.isInverseX || multiSelect.isInverseY),
-        }"
-        :style="{
-            'left' : (multiSelect.x + 'px'),
-            'top' : (multiSelect.y + 'px'),
-            'height' : m_Height,
-            'width'  : m_Width,
-        }">
-    </div>
+    <Transition name="fade">
+        <div
+            v-if="multiSelect.isEnabled && (multiSelect.width > 5 || multiSelect.height > 5)"
+            class="container"
+            :class="{
+                'transform-inverse' : (multiSelect.isInverseX || multiSelect.isInverseY),
+            }"
+            :style="{
+                'left' : (multiSelect.x + 'px'),
+                'top' : (multiSelect.y + 'px'),
+                'height' : m_Height,
+                'width'  : m_Width,
+            }">
+        </div>
+    </Transition>
 </template>
 
 <script>
@@ -69,7 +72,7 @@ export default {
     
     pointer-events: none;
     background-color: rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.568);
     border-radius: 4px;
 }
 
