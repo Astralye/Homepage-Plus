@@ -21,7 +21,7 @@
             <SingleButton
                 class="flex"
                 m_IconString="Delete"
-                :enabled="(iconSelect.dataValue.iconID != '')"
+                :enabled="(iconSelect.array.length != 0)"
                 @click="deleteIcon"
             >
                 Delete
@@ -44,7 +44,7 @@
                                 'mouse-pointer': renderIcon(index)}"
 
                     @mouseup="checkDropIcon(index)"
-                    @click="(editVariables.isIconSelector) ? setSelectData(index) : null"
+                    @click="(editVariables.isIconSelector) ? setSelectData(index, true) : null"
                 >
                     <div class="icon-container flex">
 
@@ -511,7 +511,7 @@ export default {
     },
     created(){
         editVariables.enableIsIconSelector();
-        this.displaySelectedData(iconSelect.dataValue);
+        this.displaySelectedData(iconSelect.array);
     },
     unmounted(){
         editVariables.disableIsIconSelector();
@@ -523,14 +523,24 @@ export default {
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
         // When a new icon / none is selected, displays the link data.
-        displaySelectedData(newIconData){
+        displaySelectedData(iconArray){
 
             // Reset everything first.
 
             this.setLinkData("", "", "");
             this.m_SelectedIndex = -1;
 
-            if(newIconData.iconID === "" || newIconData.groupID === ""){  this.m_SelectedObject = {};  return; }
+            if(iconArray.length === 0){  this.m_SelectedObject = {};  return; }
+
+            /*
+                Todo, fix
+                
+                Need to do something else in the event of multi select
+                Right now, it was build with a single value in mind
+
+                Set it to the first value for now.
+            */
+            let newIconData = iconArray[0];
 
             let group = iconData.getGroup(newIconData.groupID);
             this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
@@ -565,10 +575,7 @@ export default {
 
     // Setter
 
-        setCurrentTab(type){
-            this.m_IconTabOpen = type;
-            console.log("set:",  this.m_IconTabOpen);
-        },
+        setCurrentTab(type){ this.m_IconTabOpen = type; },
 
         // From the name of the icon, get the index at which it appears in iconImages
         setSVGIndex(svgName){
@@ -629,13 +636,20 @@ export default {
 
         isSelectedIcon(index){
             if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
-            return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_STORAGE === iconSelect.data.groupID);
+
+            return iconSelect.isContainSelectedData(this.getIconData(index).iconID, this.m_STORAGE);
         },
 
-        setSelectData(index){
+        setSelectData(index, AABBcollision){
             let data = iconStorage.getIconDataFromIndex(iconStorage.allData, index);
             if(!data){ iconSelect.resetData(); return; } // no data
-            iconSelect.setData(data.iconID, this.m_STORAGE);
+
+            if(AABBcollision){
+                iconSelect.addNewData(data.iconID, this.m_STORAGE);
+            }
+            else{
+                iconSelect.removeData(data.iconID, this.m_STORAGE);
+            }
         },
 
 // Some of the functions are copied but altered from GridLayout.vue
@@ -676,7 +690,7 @@ export default {
 
         deleteIcon(){
             // If nothing, a popup shows 'nothing selected', like the storage values.
-            if(iconSelect.dataValue.groupID === "" || iconSelect.dataValue.iconID === "") { return; }
+            if(iconSelect.array.length === 0) { return; }
 
             // Perhaps popup message comes here to confirm
             // User can click a 'Stop showing me this message prompt'
@@ -694,7 +708,7 @@ export default {
     watch: {
 
         // Gets fired when selected icon changes
-        'iconSelect.dataValue': {
+        'iconSelect.array': {
             handler(val){ this.displaySelectedData(val); },
             deep: true
         },

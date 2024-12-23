@@ -24,10 +24,12 @@
                 'width'  : m_Width,
             }">
 
-            <!-- Temporary -->
-            Top left: {{  multiSelect.TLBounds.x }} , {{  multiSelect.TLBounds.y }}
-            <br>
-            Max Bounds: {{  multiSelect.TLBounds.maxX}} , {{  multiSelect.TLBounds.maxY }}
+            <div v-if="m_Debug">
+                <!-- Temporary -->
+                Top left: {{  multiSelect.TLBounds.x }} , {{  multiSelect.TLBounds.y }}
+                <br>
+                Max Bounds: {{  multiSelect.TLBounds.maxX}} , {{  multiSelect.TLBounds.maxY }}
+            </div>
         </div>
     </Transition>
 </template>
@@ -47,6 +49,8 @@ export default {
             m_StartedDrag: false,
             m_InverseWidth: 0,
             m_InverseHeight: 0,
+
+            m_Debug: false,
         }
     },
     methods:{

@@ -317,6 +317,7 @@ export default {
 
             // Set starting position
             multiSelect.setStartLocation(mouseData.Coordinates.x, mouseData.Coordinates.y);
+            multiSelect.resetAllIcons();
             multiSelect.setWidth (0);
             multiSelect.setHeight(0);
         },

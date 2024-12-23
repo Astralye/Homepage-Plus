@@ -7,8 +7,8 @@
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
-            @mouseup="checkDropIcon(index);"
-            @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+            @mouseup="checkDropIcon(index)"
+            @click="setSelectedIcon(index, true)"
             >
 
             <!-- Generalized grid item -->
@@ -179,10 +179,6 @@ export default {
             }
         },
 
-        resetBounds(){
-            this.initGrid();
-        },
-
 // Coordinate Index
 // -------------------------------------------------------------------------------------------
 
@@ -293,8 +289,8 @@ export default {
 
         // Click selection for linkmaker
         isSelectedIcon(index){
-            if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
-            return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
+            if(!this.getIconData(index) || iconSelect.length === 0 ){ return false; } // No data
+            return iconSelect.isContainSelectedData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
     // Grid Direction
@@ -347,9 +343,15 @@ export default {
 
     // Setters
 
-        setSelectedIcon(index){
-            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
-            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
+        setSelectedIcon(index, AABBcollision){
+            if(!this.renderIcon(index)){ iconSelect.resetData(); return; } // No data
+
+            if(AABBcollision){
+                iconSelect.addNewData(this.getIconData(index).iconID, this.m_containerData.ID);
+            }
+            else{
+                iconSelect.removeData(this.getIconData(index).iconID, this.m_containerData.ID);
+            }
         },
 
 

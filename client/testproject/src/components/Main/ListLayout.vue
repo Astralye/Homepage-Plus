@@ -29,7 +29,7 @@
                     :class="{ 'icon-Selection' : isSelectedIcon(index),
                               'unselect-icon'  : !isSelectedIcon(index)
                     }"
-                    @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+                    @click="(editVariables.isIconSelector) ? setSelectedIcon(index, true) : null"
                     @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
                     @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
                 >   
@@ -272,26 +272,27 @@ export default {
             this.resetData();
         },
 
-        multiSingleSelection(){
-            console.log("here");
-        },
-
         // Click selection for linkmaker
         isSelectedIcon(index){
 
             let icon = this.m_GroupData[index];
             if(!icon || !iconSelect) return false;
-            return (icon.iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
+
+            return iconSelect.isContainSelectedData(icon.iconID, this.m_containerData.ID);
         },
 
         // Because they are rendered in indexes, they must have values.
-        setSelectedIcon(index){
-            console.log(index,"Setting,,,,");
+        setSelectedIcon(index, AABBcollision){
             let icon = this.m_GroupData[index];
             if(!icon) return; 
             // no data, however, this should not occur because it indexes through each of the elements
 
-            iconSelect.setData(icon.iconID, this.m_containerData.ID);
+            if(AABBcollision){
+                iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
+            }
+            else{
+                iconSelect.removeData(icon.iconID, this.m_containerData.ID);
+            }
         },
 
         getIconData(index){ return this.m_GroupData[index]; },

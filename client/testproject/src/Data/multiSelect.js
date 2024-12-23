@@ -57,13 +57,8 @@ export class MultiSelect{
         this.data.allIcons.forEach(renderedElement => {
             renderedElement.collision = this.intersect(this.data.topLeftCoord, renderedElement.bounds);
 
-            // When there is a collision
-            // it needs to be responded to by the corresponding class.
-            if(renderedElement.collision){
-
-                // Run the function with the index as the parameter
-                renderedElement.collFnc.apply(null, [renderedElement.index]);
-            }
+            // Run the function with the index as the parameter
+            renderedElement.collFnc.apply(null, [renderedElement.index, renderedElement.collision]);
         });
     }
 
