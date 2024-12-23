@@ -11,6 +11,7 @@
 <template>
     <Transition name="fade">
         <div
+            ref="multidrag-ref"
             v-if="multiSelect.isEnabled && (multiSelect.width > 5 || multiSelect.height > 5)"
             class="container"
             :class="{
@@ -22,6 +23,11 @@
                 'height' : m_Height,
                 'width'  : m_Width,
             }">
+
+            <!-- Temporary -->
+            Top left: {{  multiSelect.TLBounds.x }} , {{  multiSelect.TLBounds.y }}
+            <br>
+            Max Bounds: {{  multiSelect.TLBounds.maxX}} , {{  multiSelect.TLBounds.maxY }}
         </div>
     </Transition>
 </template>
@@ -43,15 +49,26 @@ export default {
             m_InverseHeight: 0,
         }
     },
+    methods:{
+        setTLBounds(){
+            if(!this.$refs['multidrag-ref']) return;
+
+            let dims = this.$refs['multidrag-ref'].getBoundingClientRect();
+            multiSelect.setTopLeftCoord(dims.x, dims.y);
+            multiSelect.setMaxBounds();
+        }
+    },
     computed:{
         m_Width(){
             let val = multiSelect.width;
             this.m_InverseWidth = (multiSelect.isInverseX) ? -val + "px" : 0;
+            this.setTLBounds();
             return val + "px";
         },
         m_Height(){
             let val = multiSelect.height;
             this.m_InverseHeight = (multiSelect.isInverseY) ? -val + "px" : 0;
+            this.setTLBounds();
             return val + "px";
         }
     }

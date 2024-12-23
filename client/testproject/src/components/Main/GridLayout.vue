@@ -72,17 +72,18 @@
 -->
 
 <script>
+
+import { iconImageStorage } from '../../Data/iconImages';
+import { GridModificationClass } from '../Functions/gridModification.js';
 import { containerData } from '../../Data/containerData';
-import IconHandler from './IconHandler.vue';
 import { iconData, iconSelect } from '../../Data/iconData.js';
 import { mouseData } from '../../Data/mouseData.js';
-import { GridModificationClass } from '../Functions/gridModification.js';
-import SVGHandler from '../Input Components/SVGHandler.vue';
-import { iconImageStorage } from '../../Data/iconImages';
-
 import { editVariables } from '../../Data/SettingVariables';
 import { dragAndDrop } from '../../Data/dragDrop';
+import { multiSelect } from '../../Data/multiSelect';
 
+import IconHandler from './IconHandler.vue';
+import SVGHandler from '../Input Components/SVGHandler.vue';
 import IconDragHandler from './IconDragHandler.vue';
 
 export default {
@@ -109,6 +110,7 @@ export default {
             iconImageStorage,
             editVariables,
             dragAndDrop,
+            multiSelect,
             iconSelect,
             mouseData,
             iconData,
@@ -151,11 +153,34 @@ export default {
             this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
-
-    // Resetters
-    
+        // Resetters
+        
         resetSelection(){
             editVariables.resetIconDragData();
+        },
+
+// AABB collision detection
+// -------------------------------------------------------------------------------------------
+
+        // this.$refs['gridPosition'] would contain ALL the currently rendered icons
+        // We only want the values with data
+        initBounds(){
+
+            for(let i = 0; i < this.$refs['gridPosition'].length; i++ ){
+
+                // If a valid icon is in the position.
+                if(!this.renderIcon(i)) continue;
+
+                multiSelect.allIconDataSetter(
+                    this.$refs['gridPosition'][i].getBoundingClientRect(),
+                    i,
+                    this.setSelectedIcon
+                );
+            }
+        },
+
+        resetBounds(){
+            this.initGrid();
         },
 
 // Coordinate Index
@@ -384,6 +409,12 @@ export default {
         'editVariables.resetFlag'(val, oldVal){
             if(val){
                 this.initGrid();
+            }
+        },
+        // Check if started multiselect drag
+        'multiSelect.isEnabled'(val, oldVal){
+            if(val){
+                this.initBounds();
             }
         }
     }

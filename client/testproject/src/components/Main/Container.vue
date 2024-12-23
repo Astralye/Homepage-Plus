@@ -324,11 +324,13 @@ export default {
         multiSelectDragMove(){
             // Set locations
             multiSelect.setBoxDimensions(mouseData.Coordinates.x, mouseData.Coordinates.y);
+            multiSelect.selectionBoundingBox();
         },
 
         exitMultiSelectDrag(){
             mouseData.disableTracking();
 
+            multiSelect.resetAllIcons();
             multiSelect.disable();
         },
 

@@ -79,6 +79,7 @@ import { iconData, iconSelect } from '../../Data/iconData';
 import { editVariables } from '../../Data/SettingVariables';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
+import { multiSelect } from '../../Data/multiSelect';
 
 import { toRaw } from 'vue';
 
@@ -106,6 +107,7 @@ export default {
             editVariables,
             iconStorage,
             dragAndDrop,
+            multiSelect,
             iconSelect,
             iconData,
 
@@ -139,7 +141,25 @@ export default {
             window.open(item.link, '_blank');
         },
 
-    // Drag drop temporary data
+// AABB collision detection
+// -------------------------------------------------------------------------------------------
+
+        // Because it is all filled from the start, add everything.
+        initBounds(){
+            
+            if(this.m_GroupData.length === 0) return;
+
+            for(let i = 0; i < this.$refs['list-item'].length; i++ ){
+                multiSelect.allIconDataSetter(
+                    this.$refs['list-item'][i].getBoundingClientRect(), 
+                    i,
+                    this.setSelectedIcon
+                );
+            }
+        },
+
+// Drag drop temporary data
+// ---------------------------------------------------------------------------------------------------
         
         // Swaps the temporary list
         hoveringIndex(index){
@@ -161,9 +181,8 @@ export default {
             this.initData();
         },
 
-    // Taken from GridLayout.vue
-
-        getIconData(index){ return this.m_GroupData[index]; },
+// Mouse Functions
+// ----------------------------------------------------------------------------------------------------------------
 
         // Start drag handler
         iconHandlerDataMove(event, index){
@@ -204,6 +223,8 @@ export default {
 
             this.m_GroupData.splice(index, 1);
         },
+
+// ----------------------------------------------------------------------------------------------------------------
 
         
         createTempGroupData(){
@@ -251,6 +272,10 @@ export default {
             this.resetData();
         },
 
+        multiSingleSelection(){
+            console.log("here");
+        },
+
         // Click selection for linkmaker
         isSelectedIcon(index){
 
@@ -261,12 +286,15 @@ export default {
 
         // Because they are rendered in indexes, they must have values.
         setSelectedIcon(index){
+            console.log(index,"Setting,,,,");
             let icon = this.m_GroupData[index];
             if(!icon) return; 
             // no data, however, this should not occur because it indexes through each of the elements
 
             iconSelect.setData(icon.iconID, this.m_containerData.ID);
         },
+
+        getIconData(index){ return this.m_GroupData[index]; },
 
     // Resetter
 
@@ -300,6 +328,13 @@ export default {
         'editVariables.resetFlag'(val, oldVal){
             if(val){
                 this.initData();
+            }
+        },
+
+        // Check if started multiselect drag
+        'multiSelect.isEnabled'(val, oldVal){
+            if(val){
+                this.initBounds();
             }
         },
     }

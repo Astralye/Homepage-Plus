@@ -2,10 +2,12 @@ import { reactive } from 'vue'
 
 export class MultiSelect{
     constructor(){ this.data ={
-        isEnabled: false,
 
+        // General Data
+        isEnabled: false,
         isValidDrag: true,
 
+        // Top left corner
         startLocation: {
             x: 0,
             y: 0,
@@ -16,14 +18,83 @@ export class MultiSelect{
 
         XdirectionRight: false,
         YdirectionBottom: false,
+        
+    // AABB, axis aligned bounding box.
+
+        // Due to the transform the coordinates change
+        topLeftCoord:{
+            minX: 0,
+            minY: 0,
+            maxX: 0,
+            maxY: 0,
+        },
+        
+        // This stores all the displayed icons in grid and list to be checked
+        // if their axes are aligned. 
+        allIcons: [],
     }}
     
+// Bounding boxes
+    allIconDataSetter(bounds, index, collisionFnc){
+
+        let maxBounds = {
+            minX: bounds.x,
+            minY: bounds.y,
+            maxX: bounds.x + bounds.width,
+            maxY: bounds.y + bounds.height,
+        }
+
+        this.data.allIcons.push({
+            index: index,
+            bounds: maxBounds,
+            collision: false,
+            collFnc: collisionFnc,
+        })
+    }
+
+    // Collision detection for every icon in the list.
+    selectionBoundingBox(){
+        this.data.allIcons.forEach(renderedElement => {
+            renderedElement.collision = this.intersect(this.data.topLeftCoord, renderedElement.bounds);
+
+            // When there is a collision
+            // it needs to be responded to by the corresponding class.
+            if(renderedElement.collision){
+
+                // Run the function with the index as the parameter
+                renderedElement.collFnc.apply(null, [renderedElement.index]);
+            }
+        });
+    }
+
+    // AABB intersection
+    intersect(a, b){
+        return (
+            a.minX <= b.maxX &&
+            a.maxX >= b.minX &&
+            a.minY <= b.maxY &&
+            a.maxY >= b.minY
+        );
+    }
+
+    isIconIDSelected(iconID){
+        for(let i = 0; i < this.data.allIcons.length; i++){
+            console.log(this.data.allIcons[i].id);
+            if(this.data.allIcons[i].id === iconID){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+// Base functions
+
     // Setters
     enable(){ this.data.isEnabled = true; }
     disable(){ this.data.isEnabled = false; }
 
     setBoxDimensions(mousePosX, mousePosY){
-
         let width = this.data.startLocation.x - mousePosX;
         let height = this.data.startLocation.y - mousePosY;
 
@@ -32,6 +103,10 @@ export class MultiSelect{
 
         this.setWidth (Math.abs(width));
         this.setHeight(Math.abs(height));
+    }
+
+    resetAllIcons(){
+        this.data.allIcons = [];
     }
 
     // This is set when within dragdrop.
@@ -46,6 +121,16 @@ export class MultiSelect{
         this.data.startLocation.x = x;
         this.data.startLocation.y = y;
     }
+
+    setMaxBounds(){
+        this.data.topLeftCoord.maxX = this.data.topLeftCoord.minX + this.data.width;
+        this.data.topLeftCoord.maxY = this.data.topLeftCoord.minY + this.data.height;
+    }
+
+    setTopLeftCoord(x, y){
+        this.data.topLeftCoord.minX = x;
+        this.data.topLeftCoord.minY = y;
+    }
     
     // Getter
     get isEnabled(){ return this.data.isEnabled; }
@@ -58,6 +143,9 @@ export class MultiSelect{
 
     get isInverseX(){ return this.data.XdirectionRight; }
     get isInverseY(){ return this.data.YdirectionBottom; }
+
+    get TLBounds(){ return this.data.topLeftCoord; }
+    get iconArray(){ return this.data.allIcons; }
 }
 
 export class ContextMenu{
