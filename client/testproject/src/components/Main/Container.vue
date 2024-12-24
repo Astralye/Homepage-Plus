@@ -106,6 +106,7 @@ import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
 import { editVariables } from '../../Data/SettingVariables.js';
 import { multiSelect } from '../../Data/multiSelect.js';
+import { iconSelect } from '../../Data/iconData.js';
 
 import ListLayout from './ListLayout.vue';
 import Gridlayout from './GridLayout.vue'
@@ -152,6 +153,7 @@ export default {
             editVariables,
             containerData,
             multiSelect,
+            iconSelect,
             mouseData,
             layout,
 
@@ -307,6 +309,7 @@ export default {
 // --------------------------------------------------------------------------------------------------------
 
         initMultiSelectDrag(event){
+            multiSelect.init();
             multiSelect.enable();
             
             // Mouse Functions
@@ -314,12 +317,7 @@ export default {
             mouseData.enableTracking();
             
             mouseData.updateCoordinate(event.x, event.y);
-
-            // Set starting position
             multiSelect.setStartLocation(mouseData.Coordinates.x, mouseData.Coordinates.y);
-            multiSelect.resetAllIcons();
-            multiSelect.setWidth (0);
-            multiSelect.setHeight(0);
         },
 
         multiSelectDragMove(){
@@ -330,8 +328,7 @@ export default {
 
         exitMultiSelectDrag(){
             mouseData.disableTracking();
-
-            multiSelect.resetAllIcons();
+            
             multiSelect.disable();
         },
 

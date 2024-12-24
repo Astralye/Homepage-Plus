@@ -266,7 +266,7 @@ class IconData{
 };
 
 class IconSelected {
-    constructor(){ this.resetData(); }
+    constructor(){ this.iconSelectionArray = []; }
 
     // It will be stored as a list.
     addNewData(iconID, groupID){
@@ -304,10 +304,12 @@ class IconSelected {
     // Check within array if it is found.
     isContainSelectedData(inputID, inputGroup){
 
-        var isFound;
+        var isFound = false;
 
         this.iconSelectionArray.forEach(iconData => {
             if(iconData.iconID === inputID && iconData.groupID === inputGroup){
+
+                console.log(iconData.iconID, iconData.groupID, );
                 isFound = true;
             }
         });

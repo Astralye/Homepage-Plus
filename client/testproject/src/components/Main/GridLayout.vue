@@ -8,7 +8,7 @@
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
             @mouseup="checkDropIcon(index)"
-            @click="setSelectedIcon(index, true)"
+            @click="setSelectedIcon(index, true, true)"
             >
 
             <!-- Generalized grid item -->
@@ -165,7 +165,6 @@ export default {
         // this.$refs['gridPosition'] would contain ALL the currently rendered icons
         // We only want the values with data
         initBounds(){
-
             for(let i = 0; i < this.$refs['gridPosition'].length; i++ ){
 
                 // If a valid icon is in the position.
@@ -290,6 +289,7 @@ export default {
         // Click selection for linkmaker
         isSelectedIcon(index){
             if(!this.getIconData(index) || iconSelect.length === 0 ){ return false; } // No data
+
             return iconSelect.isContainSelectedData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
@@ -343,10 +343,14 @@ export default {
 
     // Setters
 
-        setSelectedIcon(index, AABBcollision){
+        setSelectedIcon(index, AABBcollision, click=false){
             if(!this.renderIcon(index)){ iconSelect.resetData(); return; } // No data
 
+            console.log("before:", AABBcollision, click);
+
             if(AABBcollision){
+                if(click){ iconSelect.resetData(); }
+                console.log("add!");
                 iconSelect.addNewData(this.getIconData(index).iconID, this.m_containerData.ID);
             }
             else{

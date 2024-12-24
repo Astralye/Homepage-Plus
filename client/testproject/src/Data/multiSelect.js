@@ -1,38 +1,42 @@
 import { reactive } from 'vue'
 
 export class MultiSelect{
-    constructor(){ this.data ={
+    constructor(){ this.init(); }
 
-        // General Data
-        isEnabled: false,
-        isValidDrag: true,
+    init(){
+        this.data ={
 
-        // Top left corner
-        startLocation: {
-            x: 0,
-            y: 0,
-        },
-
-        width: 0,
-        height: 0,
-
-        XdirectionRight: false,
-        YdirectionBottom: false,
-        
-    // AABB, axis aligned bounding box.
-
-        // Due to the transform the coordinates change
-        topLeftCoord:{
-            minX: 0,
-            minY: 0,
-            maxX: 0,
-            maxY: 0,
-        },
-        
-        // This stores all the displayed icons in grid and list to be checked
-        // if their axes are aligned. 
-        allIcons: [],
-    }}
+            // General Data
+            isEnabled: false,
+            isValidDrag: true,
+    
+            // Top left corner
+            startLocation: {
+                x: 0,
+                y: 0,
+            },
+    
+            width: 0,
+            height: 0,
+    
+            XdirectionRight: false,
+            YdirectionBottom: false,
+            
+        // AABB, axis aligned bounding box.
+    
+            // Due to the transform the coordinates change
+            topLeftCoord:{
+                minX: 0,
+                minY: 0,
+                maxX: 0,
+                maxY: 0,
+            },
+            
+            // This stores all the displayed icons in grid and list to be checked
+            // if their axes are aligned. 
+            allIcons: [],
+        }
+    }
     
 // Bounding boxes
     allIconDataSetter(bounds, index, collisionFnc){
@@ -55,7 +59,7 @@ export class MultiSelect{
     // Collision detection for every icon in the list.
     selectionBoundingBox(){
         this.data.allIcons.forEach(renderedElement => {
-            renderedElement.collision = this.intersect(this.data.topLeftCoord, renderedElement.bounds);
+            renderedElement.collision = this.intersect(this.data.topLeftCoord, renderedElement.bounds, );
 
             // Run the function with the index as the parameter
             renderedElement.collFnc.apply(null, [renderedElement.index, renderedElement.collision]);
@@ -100,10 +104,6 @@ export class MultiSelect{
         this.setHeight(Math.abs(height));
     }
 
-    resetAllIcons(){
-        this.data.allIcons = [];
-    }
-
     // This is set when within dragdrop.
     // It is set to false in a drag event 
     setValidDrag(val){ this.data.isValidDrag = val; }
@@ -111,7 +111,6 @@ export class MultiSelect{
     setWidth(val) { this.data.width = val; }
     setHeight(val){ this.data.height = val; }
 
-    resetStartLocation(){ this.setStartLocation(0,0); }
     setStartLocation(x,y){ 
         this.data.startLocation.x = x;
         this.data.startLocation.y = y;

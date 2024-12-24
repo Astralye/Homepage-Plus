@@ -22,6 +22,7 @@
             <div v-for="(item, index) in m_GroupData"
             :key="item.iconID"
             @mousemove="dragAndDrop.enabled ? hoveringIndex(index) : null"
+            @click="setSelectedIcon(index, true, true)"
             >
                 <div
                     ref="list-item"         
@@ -29,7 +30,6 @@
                     :class="{ 'icon-Selection' : isSelectedIcon(index),
                               'unselect-icon'  : !isSelectedIcon(index)
                     }"
-                    @click="(editVariables.isIconSelector) ? setSelectedIcon(index, true) : null"
                     @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
                     @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
                 >   
@@ -276,18 +276,19 @@ export default {
         isSelectedIcon(index){
 
             let icon = this.m_GroupData[index];
-            if(!icon || !iconSelect) return false;
+            if(!icon || iconSelect.length === 0) return false;
 
             return iconSelect.isContainSelectedData(icon.iconID, this.m_containerData.ID);
         },
 
         // Because they are rendered in indexes, they must have values.
-        setSelectedIcon(index, AABBcollision){
+        setSelectedIcon(index, AABBcollision, click=false){
             let icon = this.m_GroupData[index];
             if(!icon) return; 
             // no data, however, this should not occur because it indexes through each of the elements
 
             if(AABBcollision){
+                if(click){ iconSelect.resetData(); }
                 iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
             }
             else{
