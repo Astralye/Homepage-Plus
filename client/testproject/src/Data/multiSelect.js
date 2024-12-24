@@ -78,7 +78,6 @@ export class MultiSelect{
 
     isIconIDSelected(iconID){
         for(let i = 0; i < this.data.allIcons.length; i++){
-            console.log(this.data.allIcons[i].id);
             if(this.data.allIcons[i].id === iconID){
                 return true;
             }
@@ -146,7 +145,7 @@ export class ContextMenu{
     constructor(){ this.data ={
         isEnabled: false,
 
-        intiLocation: {
+        initLocation: {
             x: 0,
             y: 0,
         },
@@ -161,15 +160,15 @@ export class ContextMenu{
 
     resetStartLocation(){ this.setStartLocation(0,0); }
     setStartLocation(x,y){ 
-        this.data.intiLocation.x = x;
-        this.data.intiLocation.y = y;
+        this.data.initLocation.x = x;
+        this.data.initLocation.y = y;
     }
 
     // Getter
     get isEnabled(){ return this.data.isEnabled; }
     
-    get x(){ return this.data.intiLocation.x; }
-    get y(){ return this.data.intiLocation.y; }
+    get x(){ return this.data.initLocation.x; }
+    get y(){ return this.data.initLocation.y; }
 }
 
 const contextMenuInstance = new ContextMenu;

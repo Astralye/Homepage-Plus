@@ -309,8 +309,6 @@ export default {
             if(!icon) return; 
             // no data, however, this should not occur because it indexes through each of the elements
 
-            console.log("before:", AABBcollision, click);
-
             if(AABBcollision){
                 if(click){ iconSelect.resetData(); }
                 iconSelect.addNewData(icon.iconID, this.m_containerData.ID);

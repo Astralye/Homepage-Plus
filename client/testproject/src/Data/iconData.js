@@ -303,13 +303,10 @@ class IconSelected {
 
     // Check within array if it is found.
     isContainSelectedData(inputID, inputGroup){
-
         var isFound = false;
 
         this.iconSelectionArray.forEach(iconData => {
             if(iconData.iconID === inputID && iconData.groupID === inputGroup){
-
-                console.log(iconData.iconID, iconData.groupID, );
                 isFound = true;
             }
         });
@@ -317,10 +314,7 @@ class IconSelected {
         return isFound;
     }
 
-    resetData(){
-        console.log("reset");
-        this.iconSelectionArray = [];
-    }
+    resetData(){ this.iconSelectionArray = []; }
 
     get array(){ return this.iconSelectionArray; };
 }
