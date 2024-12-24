@@ -13,7 +13,7 @@
     <!-- Container wrapper -->
     <div
         class="list-container no-pointer-event"
-        @click.self="iconSelect.resetData()"
+        @click="checkReset($event)"
         @mouseup="checkDrop(); dragAndDrop.resetTimer();"
         @mouseenter="dragAndDrop.enabled ? mouseEnterList() : null"
         @mouseleave="mouseLeaveList()"
@@ -80,6 +80,7 @@ import { editVariables } from '../../Data/SettingVariables';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
 import { multiSelect } from '../../Data/multiSelect';
+import { mouseData } from '../../Data/mouseData';
 
 import { toRaw } from 'vue';
 
@@ -109,6 +110,7 @@ export default {
             dragAndDrop,
             multiSelect,
             iconSelect,
+            mouseData,
             iconData,
 
             m_GroupData: null,
@@ -117,6 +119,14 @@ export default {
 
             m_placementIndex: -1,
             m_startIndex: -1,
+
+            // JS doesn't distinguish between click
+            // and click drag.
+            // Need to compare coordinates
+            m_ClickStart: {
+                x: 0,
+                y: 0,
+            }
         }
     },
     created(){
@@ -156,6 +166,17 @@ export default {
                     this.setSelectedIcon
                 );
             }
+
+            this.m_ClickStart.x = mouseData.Coordinates.x;
+            this.m_ClickStart.y = mouseData.Coordinates.y;
+        },
+
+        // Prevents reset if there is selection
+        checkReset(event){
+            if(Math.abs(event.x - this.m_ClickStart.x) < 2 || Math.abs(event.y - this.m_ClickStart.y) < 2){
+                iconSelect.resetData();
+            }
+
         },
 
 // Drag drop temporary data
@@ -245,6 +266,7 @@ export default {
 
         // If dropped at any empty space
         checkDrop(){
+            
             if(!editVariables.iconDragData){ return; } // Requires data
             
             // Assuming it is here, just push to end.
@@ -286,6 +308,8 @@ export default {
             let icon = this.m_GroupData[index];
             if(!icon) return; 
             // no data, however, this should not occur because it indexes through each of the elements
+
+            console.log("before:", AABBcollision, click);
 
             if(AABBcollision){
                 if(click){ iconSelect.resetData(); }

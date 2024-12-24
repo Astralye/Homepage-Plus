@@ -346,11 +346,8 @@ export default {
         setSelectedIcon(index, AABBcollision, click=false){
             if(!this.renderIcon(index)){ iconSelect.resetData(); return; } // No data
 
-            console.log("before:", AABBcollision, click);
-
             if(AABBcollision){
                 if(click){ iconSelect.resetData(); }
-                console.log("add!");
                 iconSelect.addNewData(this.getIconData(index).iconID, this.m_containerData.ID);
             }
             else{

@@ -318,6 +318,7 @@ class IconSelected {
     }
 
     resetData(){
+        console.log("reset");
         this.iconSelectionArray = [];
     }
 
