@@ -159,9 +159,15 @@ export default {
             
             if(this.m_GroupData.length === 0) return;
 
-            for(let i = 0; i < this.$refs['list-item'].length; i++ ){
+            // Sorted by y coordinate
+            // Otherwise, the ref index will not be aligned with what is shown.
+            let sortedRef = this.$refs['list-item'].sort(function(a,b){
+                return a.getBoundingClientRect().y - b.getBoundingClientRect().y;
+            })
+
+            for(let i = 0; i < sortedRef.length; i++ ){
                 multiSelect.allIconDataSetter(
-                    this.$refs['list-item'][i].getBoundingClientRect(), 
+                    sortedRef[i].getBoundingClientRect(), 
                     i,
                     this.setSelectedIcon
                 );
