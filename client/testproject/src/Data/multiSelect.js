@@ -35,6 +35,11 @@ export class MultiSelect{
             // This stores all the displayed icons in grid and list to be checked
             // if their axes are aligned. 
             allIcons: [],
+
+        // Keyboard shortcuts
+
+            holdShift: false,
+            holdCtrl:  false,
         }
     }
     
@@ -86,6 +91,17 @@ export class MultiSelect{
         return false;
     }
 
+    toggleIndexCollision(index){
+        this.data.allIcons[index].collision = !this.data.allIcons[index].collision;
+    }
+
+    // Sets the values on between the indices in the array
+    setCollisionEnableList(indexA, indexB){
+        
+        let test = this.data.allIcons.slice(indexA, indexB)
+        test.forEach(element => { element.collision = true; });
+    }
+
 // Base functions
 
     // Setters
@@ -124,10 +140,18 @@ export class MultiSelect{
         this.data.topLeftCoord.minX = x;
         this.data.topLeftCoord.minY = y;
     }
+
+    setHoldingShift(val) { this.data.holdShift  = val; }
+    setHoldingCtrl(val){ this.data.holdCtrl = val; }
     
     // Getter
+    
+    isIndexSelected(index){ return this.data.allIcons[index].collision; }
+    
     get isEnabled(){ return this.data.isEnabled; }
     get isValidDrag(){ return this.data.isValidDrag;}
+
+    get hasMultiSelection(){ return this.data.allIcons > 1;}
 
     get x(){ return this.data.startLocation.x; }
     get y(){ return this.data.startLocation.y; }
@@ -137,8 +161,12 @@ export class MultiSelect{
     get isInverseX(){ return this.data.XdirectionRight; }
     get isInverseY(){ return this.data.YdirectionBottom; }
 
-    get TLBounds(){ return this.data.topLeftCoord; }
+    get TLBounds() { return this.data.topLeftCoord; }
     get iconArray(){ return this.data.allIcons; }
+    get isArrayEmpty(){ return this.data.allIcons <= 0; }
+    
+    get isHoldingShift(){  return this.data.holdShift; }
+    get isHoldingCtrl() {  return this.data.holdCtrl; }
 }
 
 export class ContextMenu{

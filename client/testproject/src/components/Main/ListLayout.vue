@@ -22,7 +22,7 @@
             <div v-for="(item, index) in m_GroupData"
             :key="item.iconID"
             @mousemove="dragAndDrop.enabled ? hoveringIndex(index) : null"
-            @click="setSelectedIcon(index, true, true)"
+            @click="kbShortcut($event); setSelectedIcon(index, true, true)"
             >
                 <div
                     ref="list-item"         
@@ -119,6 +119,7 @@ export default {
 
             m_placementIndex: -1,
             m_startIndex: -1,
+            m_lastClickedIndex: -1,
 
             // JS doesn't distinguish between click
             // and click drag.
@@ -182,7 +183,6 @@ export default {
             if(Math.abs(event.x - this.m_ClickStart.x) < 2 || Math.abs(event.y - this.m_ClickStart.y) < 2){
                 iconSelect.resetData();
             }
-
         },
 
 // Drag drop temporary data
@@ -210,6 +210,12 @@ export default {
 
 // Mouse Functions
 // ----------------------------------------------------------------------------------------------------------------
+
+        // Sets alt and ctrl holds.
+        kbShortcut(event){
+            multiSelect.setHoldingShift(event.shiftKey);
+            multiSelect.setHoldingCtrl(event.ctrlKey);
+        },
 
         // Start drag handler
         iconHandlerDataMove(event, index){
@@ -251,9 +257,9 @@ export default {
             this.m_GroupData.splice(index, 1);
         },
 
+// Single and multi selection
 // ----------------------------------------------------------------------------------------------------------------
 
-        
         createTempGroupData(){
 
             // Do no add if this was the original location
@@ -315,12 +321,62 @@ export default {
             if(!icon) return; 
             // no data, however, this should not occur because it indexes through each of the elements
 
-            if(AABBcollision){
-                if(click){ iconSelect.resetData(); }
-                iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
-            }
-            else{
+            // No collision, remove data
+            if(!AABBcollision){
                 iconSelect.removeData(icon.iconID, this.m_containerData.ID);
+                return;
+            }
+            
+            var keyHold = multiSelect.isHoldingCtrl || multiSelect.isHoldingShift;
+            
+            // No keys held
+            if(!keyHold){
+                // Standard click
+                if(click){ iconSelect.resetData(); }
+
+                // Drag or click
+                iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
+                this.m_lastClickedIndex = index;
+                return;
+            }
+
+            this.specialKeySelection(icon.iconID, index);
+        },
+
+        specialKeySelection(iconID, index){
+            // Check if empty
+            if(multiSelect.isArrayEmpty){ this.initBounds(); }
+
+            // Toggle index collision value
+            if(multiSelect.isHoldingCtrl){
+                multiSelect.toggleIndexCollision(index);
+
+                (multiSelect.isIndexSelected(index)) ?
+                    iconSelect.addNewData(iconID, this.m_containerData.ID):
+                    iconSelect.removeData(iconID, this.m_containerData.ID);
+
+                return;
+            }
+
+            // Shift click
+
+            // Gets min and max indexes
+            let indexA = this.m_lastClickedIndex;
+            let indexB = index;
+
+            if(indexA === -1 || indexB === -1) return; // non-valid values
+            if(indexA === indexB) return; // the same
+
+            let minIndex = (indexA > indexB) ? indexB : indexA;
+            let maxIndex = (indexA > indexB) ? indexA : indexB;
+            maxIndex += 1; // +1, it removes the current index
+
+            multiSelect.setCollisionEnableList(minIndex, maxIndex); 
+
+            // Set all the selected values on.
+            for(let i = minIndex; i < maxIndex; i++){
+                let icon = this.m_GroupData[i];
+                iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
             }
         },
 
