@@ -31,7 +31,7 @@
                               'unselect-icon'  : !isSelectedIcon(index)
                     }"
                     @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
-                    @mousedown="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
+                    @mousedown.left="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
                 >   
                     <!-- Icon if any -->
                     <div v-if="m_containerData.ListData.displayIcon"
