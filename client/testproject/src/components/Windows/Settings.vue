@@ -54,6 +54,12 @@
                             Reset 'Cancel' and 'Delete'
                         </SingleButton>
 
+                        <br>
+                        <Checkbox
+                            @onChange="val => editVariables.setStateContextMenu(val)"
+                            :checkValue="editVariables.isEnabledSiteContextMenu"
+                            text="Disable site context menu"
+                        />
 
                         <!-- Language, mention it only supports english. -->
                     </template>

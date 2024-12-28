@@ -68,6 +68,7 @@ export default{
     },
     methods:{
         contextHandler(event) {
+            if(!editVariables.isEnabledSiteContextMenu) return;
             event.preventDefault();
 
             contextMenu.enable();

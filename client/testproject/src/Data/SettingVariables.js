@@ -23,6 +23,8 @@ export class EditVariables{
 
         // Variables that can be modified within the settings.
 
+        enabledSiteContextMenu: true,
+
         modalToggle:{
             delete: true,
             cancel: true,
@@ -78,6 +80,7 @@ export class EditVariables{
     resetModal(){ this.setDeleteModal(true); this.setCancelModal(true); }
     setDeleteModal(val){ this.values.modalToggle.delete = val; }
     setCancelModal(val){ this.values.modalToggle.cancel = val; }
+    setStateContextMenu(val){ this.values.enabledSiteContextMenu = val; }
 
 // Getters
     get isEnabled() { return this.values.enabled; }
@@ -98,6 +101,8 @@ export class EditVariables{
 
     get isShowDeleteModal(){ return this.values.modalToggle.delete; }
     get isShowCancelModal(){ return this.values.modalToggle.cancel; }
+
+    get isEnabledSiteContextMenu(){ return this.values.enabledSiteContextMenu; }
 
 }
 
