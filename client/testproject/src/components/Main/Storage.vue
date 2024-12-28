@@ -162,7 +162,8 @@ export default {
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
                 iconData: "iconData",
-                iconStorage: "iconStorage"
+                iconStorage: "iconStorage",
+                userSettings: "userSettings"
             },
 
             // Confirmation.
@@ -201,12 +202,14 @@ export default {
             localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
             localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
             localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
+
+            localStorage.setItem(this.localStorageVarNames.userSettings,   JSON.stringify(editVariables.userSettings));
         },
+
         saveLayout(){
             this.setValues();
             this.enableButtonTimer();
             this.popuptext = "Layout Saved!";
-            
         },
 
         openModal(type){
@@ -280,18 +283,20 @@ export default {
             const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
             const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
             const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
+            const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
             
-
             if(layoutData  === null) { console.log("No Layout Data!");  return; }
             if(displayData === null) { console.log("No Display Data!"); return;}
             if(dataIcon === null)    { console.log("No Icon Data!");    return;}
             if(storageData === null) { console.log("No Icon Storage Data!");    return;}
+            if(userData === null)    { console.log("No Settings Data!");    return;}
             
 
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
             iconData.initializeData(dataIcon);
             iconStorage.initDataFromStorage(storageData); // Change later
+            editVariables.loadUserSettings(userData);
             
             editVariables.enableRenderFinalNode();
         },

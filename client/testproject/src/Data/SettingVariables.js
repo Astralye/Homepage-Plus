@@ -21,17 +21,18 @@ export class EditVariables{
         containerSelectionMode: false,
         parentIDGridUpdate: "",
 
-        // Variables that can be modified within the settings.
-
-        enabledSiteContextMenu: true,
-
-        modalToggle:{
-            delete: true,
-            cancel: true,
-        },
-
         // For a single frame, it turns on to be detected by watchers
         resetFlag: false,
+
+        // Variables that can be modified within the settings.
+        userSettings:{
+            enabledSiteContextMenu: true,
+    
+            modalToggle:{
+                delete: true,
+                cancel: true,
+            },
+        }
     }}
 
     enableEdit() { this.values.enabled = true; }
@@ -78,9 +79,11 @@ export class EditVariables{
     // User modifiers
 
     resetModal(){ this.setDeleteModal(true); this.setCancelModal(true); }
-    setDeleteModal(val){ this.values.modalToggle.delete = val; }
-    setCancelModal(val){ this.values.modalToggle.cancel = val; }
-    setStateContextMenu(val){ this.values.enabledSiteContextMenu = val; }
+    setDeleteModal(val){ this.values.userSettings.modalToggle.delete = val; }
+    setCancelModal(val){ this.values.userSettings.modalToggle.cancel = val; }
+    setStateContextMenu(val){ this.values.userSettings.enabledSiteContextMenu = val; }
+
+    loadUserSettings(val){ this.values.userSettings = val;}
 
 // Getters
     get isEnabled() { return this.values.enabled; }
@@ -98,11 +101,12 @@ export class EditVariables{
     get resetFlag() { return this.values.resetFlag; }
 
     // User modifiers
+    get userSettings(){ return this.values.userSettings; }
 
-    get isShowDeleteModal(){ return this.values.modalToggle.delete; }
-    get isShowCancelModal(){ return this.values.modalToggle.cancel; }
+    get isShowDeleteModal(){ return this.values.userSettings.modalToggle.delete; }
+    get isShowCancelModal(){ return this.values.userSettings.modalToggle.cancel; }
 
-    get isEnabledSiteContextMenu(){ return this.values.enabledSiteContextMenu; }
+    get isEnabledSiteContextMenu(){ return this.values.userSettings.enabledSiteContextMenu; }
 
 }
 
