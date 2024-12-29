@@ -329,41 +329,49 @@ export default {
             
             if(!editVariables.iconDragData){ return; } // Requires data
             
+            // TODO
+            // Again, this is the same stored ID and container,     
+            // this has to be changed to use the icon data instead.
+
             // Assuming it is here, just push to end.
             let oldGroupID = editVariables.iconDragData.storedContainer;
             let iconID     = editVariables.iconDragData.storedID;
 
-            // Different group
-            if(oldGroupID !== this.m_containerData.ID){
-
-                if(iconSelect.isMultiSelect){
-
-                    // TODO
-                    // Ok so now the problem is, that if there is data from different groups
-                    // for now, i will ignore this and only focus if they are within the same group and fix this later
-                    iconSelect.array.forEach(icon => {
-                        iconData.moveIcon(icon.iconID, icon.groupID, this.m_containerData.ID, 0, false);
-                    });
-                    this.resetData();
-                    return;
-                }
-                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false, this.m_placementIndex);
-            }
-            else{
-                // Swap within group.
-                this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
-
-                let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
-                let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
-
-                if(!iconData.isIconIDInGroup(this.m_GroupData, editVariables.iconDragData.storedID)) return;
-
-                let iconIndex = iconData.getIconIndexOfGroup(this.m_GroupData, tmpIcon.iconID);
-                iconData.deleteIndex(this.m_GroupData, iconIndex);
-                iconData.moveItemToIndex(this.m_GroupData, this.m_placementIndex, tmpIcon);
-            }
+            // Check where has been dropped
+            (oldGroupID !== this.m_containerData.ID) ? this.differentGroupDrop(iconID, oldGroupID) : this.sameGroupDrop() ;
 
             this.resetData();
+        },
+
+        // If dropped to different group
+        differentGroupDrop(iconID, oldGroupID){
+            if(iconSelect.isMultiSelect){
+
+                // TODO
+                // Ok so now the problem is, that if there is data from different groups
+                // for now, i will ignore this and only focus if they are within the same group and fix this later
+                iconSelect.array.forEach(icon => {
+                    iconData.moveIcon(icon.iconID, icon.groupID, this.m_containerData.ID, 0, false);
+                });
+            }
+            else{
+                iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false, this.m_placementIndex);
+            }
+            this.resetData();
+        },
+
+        // Swap within group.
+        sameGroupDrop(){
+            this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+
+            let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
+            let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
+
+            if(!iconData.isIconIDInGroup(this.m_GroupData, editVariables.iconDragData.storedID)) return;
+
+            let iconIndex = iconData.getIconIndexOfGroup(this.m_GroupData, tmpIcon.iconID);
+            iconData.deleteIndex(this.m_GroupData, iconIndex);
+            iconData.moveItemToIndex(this.m_GroupData, this.m_placementIndex, tmpIcon);
         },
 
         // Click selection for linkmaker
@@ -375,7 +383,7 @@ export default {
             return iconSelect.isContainSelectedData(icon.iconID, this.m_containerData.ID);
         },
 
-        // Because they are rendered in indexes, they must have values.
+        // Because the icons are rendered in indexes, they must have values.
         setSelectedIcon(index, AABBcollision, click=false){
             let icon = this.m_GroupData[index];
             if(!icon) return; 
@@ -403,6 +411,7 @@ export default {
             this.specialKeySelection(icon.iconID, index);
         },
 
+        // For holding Shift or Ctrl
         specialKeySelection(iconID, index){
             // Check if empty
             if(multiSelect.isArrayEmpty){ this.initBounds(); }
