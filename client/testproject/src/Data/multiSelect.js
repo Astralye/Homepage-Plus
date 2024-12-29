@@ -61,7 +61,7 @@ export class MultiSelect{
         })
     }
 
-    // Collision detection for every icon in the list.
+    // Collision detection for eveyr icon in the list.
     selectionBoundingBox(){
         this.data.allIcons.forEach(renderedElement => {
             renderedElement.collision = this.intersect(this.data.topLeftCoord, renderedElement.bounds, );

@@ -265,6 +265,9 @@ class IconData{
     }
 };
 
+/*
+    This object stores all the icons whether it is single or multiple selected
+*/
 class IconSelected {
     constructor(){ this.iconSelectionArray = []; }
 

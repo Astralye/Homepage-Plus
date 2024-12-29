@@ -236,7 +236,10 @@ export default {
             this.createTempGroupData();
         },
 
-        // Resets the data.
+        /*
+            Remove any temporary data cause from dragging in.
+            Removes the visual for the current icon dragged out
+        */
         mouseLeaveList(){
 
             // Resets the data back to the original 
@@ -249,6 +252,24 @@ export default {
             if(editVariables.iconDragData.storedContainer !== this.component_ID) return;
             
             this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
+            var selectionArray = iconSelect.array;
+
+            // Check for multiple selection
+            if(iconSelect.isMultiSelect){
+                
+                // TODO
+                // Ok so now the problem is, that if there is data from different groups
+                // for now, i will ignore this and only focus if they are within the same group and fix this later
+                selectionArray.forEach(icon => {
+                    let groupData = iconData.getGroup(icon.groupID);
+                    let tmpIcon   = iconData.getIconDataFromID(groupData, icon.iconID);
+                    let index     = iconData.getIconIndexOfGroup(groupData, tmpIcon.iconID);
+                    this.m_GroupData.splice(index, 1);
+                });
+                return;
+            }
+
+            console.log("mouse leave");
 
             let groupData = iconData.getGroup(editVariables.iconDragData.storedContainer);
             let tmpIcon = iconData.getIconDataFromID(groupData, editVariables.iconDragData.storedID);
@@ -261,12 +282,37 @@ export default {
 // Single and multi selection
 // ----------------------------------------------------------------------------------------------------------------
 
+        /*
+            Create temporary store to display the new data for the list
+            This will get removed if the mouse is left
+            But will remain if dropped.
+        */
         createTempGroupData(){
 
             // Do no add if this was the original location
             this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
 
             if(!editVariables.iconDragData) return;
+
+            var selectionArray = iconSelect.array;
+
+            // Check if multiple selected
+            if(iconSelect.isMultiSelect){
+
+                console.log("b");
+
+                // TODO
+                // Ok so now the problem is, that if there is data from different groups
+                // for now, i will ignore this and only focus if they are within the same group and fix this later
+                selectionArray.forEach(icon => {
+                    let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(icon.groupID), icon.iconID);
+                    this.m_GroupData.push(tmpIcon);
+                });
+                this.m_placementIndex = this.m_GroupData.length -1;
+                return;
+            }
+            
+            console.log("c");
 
             // Check the origin of the data
             let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
@@ -276,6 +322,7 @@ export default {
             this.m_GroupData.push(tmpIcon);
             this.m_placementIndex = this.m_GroupData.length -1;
         },
+        
 
         // If dropped at any empty space
         checkDrop(){
@@ -288,6 +335,18 @@ export default {
 
             // Different group
             if(oldGroupID !== this.m_containerData.ID){
+
+                if(iconSelect.isMultiSelect){
+
+                    // TODO
+                    // Ok so now the problem is, that if there is data from different groups
+                    // for now, i will ignore this and only focus if they are within the same group and fix this later
+                    iconSelect.array.forEach(icon => {
+                        iconData.moveIcon(icon.iconID, icon.groupID, this.m_containerData.ID, 0, false);
+                    });
+                    this.resetData();
+                    return;
+                }
                 iconData.moveIcon(iconID, oldGroupID, this.m_containerData.ID, 0, false, this.m_placementIndex);
             }
             else{
