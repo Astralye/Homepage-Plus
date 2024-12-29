@@ -205,6 +205,7 @@ export default {
             this.m_placementIndex = -1;
             this.m_startIndex   = -1;
             this.m_OriginalDrag = false;
+            multiSelect.setValidDrag(true);
             this.initData();
         },
 
