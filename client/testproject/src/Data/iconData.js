@@ -317,6 +317,8 @@ class IconSelected {
     resetData(){ this.iconSelectionArray = []; }
 
     get array(){ return this.iconSelectionArray; };
+    get size(){ return this.iconSelectionArray.length}
+    get isMultiSelect(){ return (this.iconSelectionArray.length > 1);}
 }
 
 const iconDataInstance    = new IconData;

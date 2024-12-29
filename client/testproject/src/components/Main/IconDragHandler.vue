@@ -14,16 +14,18 @@
             <div class="drag-container-wrapper"
                 ref="drag-wrapper"
                 v-show="show || isDisplay"
-                :class="{
-                    'grid-display' : dragAndDrop.isHoverGrid,
-                    'list-display' : dragAndDrop.isHoverList,
-                }"
                 >
                 <div class="drag-container"
+                    :class="{ 'flex-column' : iconSelect.isMultiSelect, 
+                              'flex-row'    : !iconSelect.isMultiSelect,
+                    }"
+
                 >
+                    <!-- Both list item and icon -->
                     <div
                         :class="{
-                            'icon-spacing' : dragAndDrop.isHoverList
+                            'icon-spacing' : dragAndDrop.isHoverList,
+                            'icon-center'  : iconSelect.isMultiSelect
                         }">
                         <SVGHandler
                             :fill_Colour="dragAndDrop.iconColour"
@@ -34,10 +36,13 @@
                         />
                     </div>
 
+                    <!-- List item -->
                     <Transition :name="transitionName">
-                        <div v-show="show || dragAndDrop.isHoverList"
+                        <div v-show="show || dragAndDrop.isHoverList || iconSelect.isMultiSelect"
                             ref="text-ref"
-                            class="icon-center text prevent-overflow">
+                            class="icon-center text prevent-overflow"
+                            :class="{ 'flex-column' : iconSelect.isMultiSelect}"
+                            >
                             {{ m_stringText }}
                         </div>
                     </Transition>
@@ -50,6 +55,7 @@
 <script>
 
 import { dragAndDrop } from '../../Data/dragDrop';
+import { iconSelect } from '../../Data/iconData';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 
 export default {
@@ -65,6 +71,7 @@ export default {
     data(){
         return{
             dragAndDrop,
+            iconSelect,
 
             m_iconIndex: -1,
             m_stringText: "",
@@ -79,16 +86,9 @@ export default {
         dragDropSetup(event, index, iconData, contType){
 
             // Initialize variables for drag and drop start
-            dragAndDrop.initVariables(iconData.iconID, this.component_ID, contType);
+            dragAndDrop.initVariables(iconData.iconID, this.component_ID, contType, iconSelect.isMultiSelect);
             
-            this.m_stringText = iconData.iconString;
-
-            // truncate if longer than 30 chars
-            if(this.m_stringText.length >= 30){
-                this.m_stringText = 
-                    this.m_stringText.substring(0,27)
-                    + "...";
-            }
+            this.initText(iconData.iconString);
 
             this.m_iconIndex = index; 
             
@@ -105,14 +105,31 @@ export default {
                 dragAndDrop.setDragWrapperRef(this.$refs["drag-wrapper"]);
                 dragAndDrop.setTextRef(this.$refs["text-ref"]);
 
-                dragAndDrop.setVisibility("hidden"); 
-
                 // Prevents the old transition from rendering. 
+                dragAndDrop.setVisibility("hidden"); 
 
                 // Start the drag and drop functionality
                 dragAndDrop.initDragDrop(event, index, contType);
             });
         },
+        initText(iconString){
+
+            // Multi select
+            if(iconSelect.isMultiSelect){
+                this.m_stringText = `Selection: ${iconSelect.size} items`;
+                return;
+            }
+
+
+            this.m_stringText = iconString;
+
+            // truncate if longer than 30 chars
+            if(this.m_stringText.length >= 30){
+                this.m_stringText = 
+                    this.m_stringText.substring(0,27)
+                    + "...";
+            }
+        }
     },
     computed:{
         isDisplay(){
@@ -158,6 +175,16 @@ export default {
 /*
     List
 */
+
+.flex-column{
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-row{
+    display: flex;
+    flex-direction: row;
+}
 
 .list-type-success-enter-active{
     animation: grow 200ms ease-out;
@@ -215,9 +242,6 @@ padding-right: 0.75em;
 
 .drag-container{
     position: relative;
-    display: flex;
-
-    flex-direction: row;
 }
 
 </style>

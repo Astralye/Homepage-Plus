@@ -41,6 +41,8 @@ class dragAndDropClass{
             textWidth: null,
     
             mouseHoverContainerType: "",
+
+            isMultiSelect: false,
         } 
     }
 
@@ -48,18 +50,21 @@ class dragAndDropClass{
 
 // Initializer on click
 
-    initVariables(iconID, containerID, type){
+    initVariables(iconID, containerID, type, isMultiSelect){
         editVariables.setIconDragData({
             storedContainer:  containerID,
             storedID: iconID,
         });
+
+        this.setIsMultiSelect(isMultiSelect);
+        multiSelect.setValidDrag(false);
 
         this.setTransitionName("");
         this.setDisplayIcon(iconID);
         this.setContainerOrigin(containerID);
         this.setSVGDragData();
         this.updateContainerType(type);
-        multiSelect.setValidDrag(false);
+
     }
     
     /*
@@ -77,7 +82,7 @@ class dragAndDropClass{
         this.data.iconBounds = structuredClone(this.data.dragWrapRef.getBoundingClientRect());
         
         this.data.textWidth = Math.floor(this.data.textRef.getBoundingClientRect().width) + "px";
-        var localTextWidth = Math.floor(this.data.textRef.getBoundingClientRect().width);
+        var localTextWidth  = Math.floor(this.data.textRef.getBoundingClientRect().width);
     
         // Dragging functionality only works after a period of time holding the icon.
         this.m_draggableFnc = setTimeout(() => {
@@ -86,25 +91,24 @@ class dragAndDropClass{
             document.querySelectorAll( ":hover" ).forEach(el => {
                 if(el == event.target){ return;}
             });
+            
+            console.log(this.data.isMultiSelect)
+
 
             this.data.enabled = true;
             this.data.isDraggingEvent = true;
             this.data.savedIndex = index;
 
-            this.setIconCSSHandler(containerType,`success`);
-
             // Set mouse functions
             mouseData.movementFunctions ([ "drag_Move" ]);
             mouseData.mouseUpFunctions  ([ "drag_End" ]);
-            mouseData.useObject(this);
+            mouseData.useObject(this); // allows the mouse objects to run this object functions.
             
             mouseData.enableTracking();
             mouseData.enableMouseUp();
             
-            // Make the drag icon visible again 
             this.setVisibility("visible");
-
-            // Update the coordinates.
+            this.setIconCSSHandler(containerType,`success`);
             this.updateIconDragPosition(event.clientX, event.clientY, localTextWidth)
         }, 125);
     }
@@ -133,6 +137,7 @@ class dragAndDropClass{
         this.setDragWrapperRef(null);
         this.data.savedIndex = -1;
         multiSelect.setValidDrag(true);
+        this.setIsMultiSelect(false);
 
         mouseData.disableTracking();
         mouseData.disableMouseUp();
@@ -208,9 +213,8 @@ class dragAndDropClass{
     setTransitionName(name){ this.data.transitionName = name; }
     setDragWrapperRef(ref){ this.data.dragWrapRef = ref; }
     setTextRef(ref){ this.data.textRef = ref; }
-    setDisplayIcon(iconID){
-        this.data.displayIconID = iconID; 
-    }
+    setIsMultiSelect(val){ this.data.isMultiSelect = val; }
+    setDisplayIcon(iconID){ this.data.displayIconID = iconID; }
 
     setIconData(colour="#000000", size="100", image="", viewBox=""){
         this.data.displayIconData = {
@@ -235,8 +239,21 @@ class dragAndDropClass{
 
 // Getter
     
+    // Note:
+    // This is for retrieving the icon data to be displayed, not for anything other
+    // Because in the event of multi drag, data would be passed as static.
     get storedIconData(){
         if(!editVariables.iconDragData || !this.data.displayIconID){ return null; } // Requires data
+
+        // Change to different icon if multi select 
+        if(this.isMultiSelect){
+            return {
+                iconColour: "#000000",
+                iconSize: "4em",
+                iconImage: "Stack",
+                viewBox: `${iconImageStorage.getViewBoxName('Stack')}`, 
+            }
+        }
 
         let group = iconData.getGroup(editVariables.iconDragData.storedContainer);
         return iconData.getIconDataFromID(group, this.data.displayIconID);
@@ -256,6 +273,8 @@ class dragAndDropClass{
     get isHoverGrid() { return (this.data.mouseHoverContainerType === "GRID"); }
     get isHoverList() { return (this.data.mouseHoverContainerType === "LIST"); }
     get textWidth()   { return this.data.textWidth; }
+
+    get isMultiSelect(){ return this.data.isMultiSelect; }
 }
 
 const dragAndDropInstance = new dragAndDropClass;

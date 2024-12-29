@@ -151,7 +151,7 @@ export class MultiSelect{
     get isEnabled(){ return this.data.isEnabled; }
     get isValidDrag(){ return this.data.isValidDrag;}
 
-    get hasMultiSelection(){ return this.data.allIcons > 1;}
+    get hasMultiSelection(){ return (this.data.allIcons.length > 1)}
 
     get x(){ return this.data.startLocation.x; }
     get y(){ return this.data.startLocation.y; }
