@@ -28,7 +28,7 @@
 					/>
 		
 					<Checkbox
-						@onChange="check => show = check"
+						@onChange="check => showName = check"
 						:checkValue="showName"
 						:enabled="isSelected"
 						text="Display name"
