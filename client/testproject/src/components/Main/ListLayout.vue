@@ -329,7 +329,7 @@ export default {
 
         removeSingleItemData(){
             this.m_GroupData.splice(
-                this.getIndexFromGroup(editVariables.iconDragData.storedContainer, editVariables.iconDragData.storedID),
+                this.getIndexFromGroup(editVariables.iconDragData.storedID, editVariables.iconDragData.storedContainer),
                 1
             );
         },
