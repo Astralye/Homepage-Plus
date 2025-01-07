@@ -252,41 +252,32 @@ export default {
             if(editVariables.iconDragData.storedContainer !== this.component_ID) return;
             
             this.m_GroupData = structuredClone(toRaw(this.m_GroupData));
-            var selectionArray = iconSelect.array;
 
-            // Check for multiple selection
-            if(iconSelect.isMultiSelect){
-                
-                // TODO
-                // Ok so now the problem is, that if there is data from different groups
-                // for now, i will ignore this and only focus if they are within the same group and fix this later
-                selectionArray.forEach(icon => {
-                    let groupData = iconData.getGroup(icon.groupID);
-                    let tmpIcon   = iconData.getIconDataFromID(groupData, icon.iconID);
-                    let index     = iconData.getIconIndexOfGroup(groupData, tmpIcon.iconID);
-                    this.m_GroupData.splice(index, 1);
-                });
-                return;
-            }
-
-            console.log("mouse leave");
-
-            let groupData = iconData.getGroup(editVariables.iconDragData.storedContainer);
-            let tmpIcon = iconData.getIconDataFromID(groupData, editVariables.iconDragData.storedID);
-            
-            let index = iconData.getIconIndexOfGroup(groupData, tmpIcon.iconID);
-
-            this.m_GroupData.splice(index, 1);
+            (iconSelect.isMultiSelect) ? this.removeMultiSelectData() : this.removeSingleItemData();
         },
 
 // Single and multi selection
 // ----------------------------------------------------------------------------------------------------------------
 
-        /*
-            Create temporary store to display the new data for the list
-            This will get removed if the mouse is left
-            But will remain if dropped.
-        */
+        // Check if data is currently within the group
+        isDataInGroup(iconID, groupID){
+            let isContained = false;
+
+            this.m_GroupData.forEach(element => {
+                if(element.iconID === iconID && element.groupID === groupID){
+                    isContained = true;
+                }
+            });
+
+            return isContained;
+        },
+
+    /*
+        Create temporary store to display the new data for the list
+        This will get removed if the mouse is left
+        But will remain if dropped.
+        ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    */
         createTempGroupData(){
 
             // Do no add if this was the original location
@@ -294,35 +285,57 @@ export default {
 
             if(!editVariables.iconDragData) return;
 
-            var selectionArray = iconSelect.array;
+            // Check if drag is multiple.
+            (iconSelect.isMultiSelect) ? this.createMultiSelectGroup() : this.createSingleItemGroup() ;
+        },
 
-            // Check if multiple selected
-            if(iconSelect.isMultiSelect){
-
-                console.log("b");
-
-                // TODO
-                // Ok so now the problem is, that if there is data from different groups
-                // for now, i will ignore this and only focus if they are within the same group and fix this later
-                selectionArray.forEach(icon => {
-                    let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(icon.groupID), icon.iconID);
-                    this.m_GroupData.push(tmpIcon);
+        createMultiSelectGroup(){
+            iconSelect.array.forEach(icon => {
+                    if(!this.isDataInGroup(icon.iconID, icon.groupID)){
+                        let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(icon.groupID), icon.iconID);
+                        this.m_GroupData.push(tmpIcon);
+                    }
                 });
-                this.m_placementIndex = this.m_GroupData.length -1;
-                return;
-            }
-            
-            console.log("c");
+            this.m_placementIndex = this.m_GroupData.length -1;
+        },
+
+        createSingleItemGroup(){
 
             // Check the origin of the data
             let containerString = (this.m_OriginalDrag) ? this.m_containerData.ID : editVariables.iconDragData.storedContainer;
-
             let tmpIcon = iconData.getIconDataFromID( iconData.getGroup(containerString), editVariables.iconDragData.storedID);
 
             this.m_GroupData.push(tmpIcon);
             this.m_placementIndex = this.m_GroupData.length -1;
         },
-        
+
+    // Mouse leave
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        getIndexFromGroup(iconID, groupID){
+            let groupData = iconData.getGroup(groupID);
+            let tmpIcon   = iconData.getIconDataFromID(groupData, iconID);
+            return iconData.getIconIndexOfGroup(groupData, tmpIcon.iconID);
+        },
+
+        // TODO
+        // Ok so now the problem is, that if there is data from different groups
+        // for now, i will ignore this and only focus if they are within the same group and fix this later
+        removeMultiSelectData(){
+            iconSelect.array.forEach(icon => {
+                this.m_GroupData.splice(this.getIndexFromGroup(icon.iconID, icon.groupID), 1);
+            });
+        },
+
+        removeSingleItemData(){
+            this.m_GroupData.splice(
+                this.getIndexFromGroup(editVariables.iconDragData.storedContainer, editVariables.iconDragData.storedID),
+                1
+            );
+        },
+
+// Drop Algorithms
+// ---------------------------------------------------------------------------------------------------------------------        
 
         // If dropped at any empty space
         checkDrop(){
@@ -373,6 +386,9 @@ export default {
             iconData.deleteIndex(this.m_GroupData, iconIndex);
             iconData.moveItemToIndex(this.m_GroupData, this.m_placementIndex, tmpIcon);
         },
+
+// Misc
+// ------------------------------------------------------------------------------------------------------------
 
         // Click selection for linkmaker
         isSelectedIcon(index){
