@@ -2,13 +2,13 @@
     <div class="grid-wrapper border-box"
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
-        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
+        @mouseenter="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
         >
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
             @mouseup="checkDropIcon(index)"
-            @click="setSelectedIcon(index, true, true)"
+            @click="kbShortcut($event); setSelectedIcon(index, true, true)"
             >
 
             <!-- Generalized grid item -->
@@ -28,7 +28,7 @@
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
                         :toggle_Container_Text="m_containerData.gridData.displayText"
-                        @mousedown.left="(editVariables.isEnabled) ?  $refs['icon-drag-handler'].dragDropSetup($event, index, getIconData(index), 'GRID'): null"
+                        @mousedown.left="(editVariables.isEnabled) ? selectionDrag($event, index) : null"
                     />
                 </Transition>
 
@@ -44,30 +44,16 @@
 <!-- 
     Ideas:
 
-    the icon should have different functionalities
-
     In edit mode:
-        Single click on icon -> Select
-        Single click on non icon, selection box
-
-        Right click -> custom context menu.
         Double click -> Rename
-
-        Left click hold -> Drag
-        Left click hold up -> Drop
     
     Normal:
-        Single click
-        Double click
-
         Right Click 
         
     Misc, Other notes:
 
     CTRL + C, CTRL + V
     -> copy paste icon. 
-
-    Mass drag + drop.
 
 -->
 
@@ -165,6 +151,8 @@ export default {
         // this.$refs['gridPosition'] would contain ALL the currently rendered icons
         // We only want the values with data
         initBounds(){
+            if(!this.$refs) return;
+
             for(let i = 0; i < this.$refs['gridPosition'].length; i++ ){
 
                 // If a valid icon is in the position.
@@ -198,6 +186,78 @@ export default {
             console.error("Error: No spaces available");
             return null;
         },
+
+// Multiselect
+// ------------------------------------------------------------------------------------------
+
+        // Sets alt and ctrl holds.
+        kbShortcut(event){
+            multiSelect.setHoldingShift(event.shiftKey);
+            multiSelect.setHoldingCtrl(event.ctrlKey);
+        },
+
+        // For holding Shift or Ctrl
+        specialKeySelection(iconID,index){
+            // Check if empty
+            if(multiSelect.isArrayEmpty){ this.initBounds(); }
+
+            // Toggle index collision value
+            if(multiSelect.isHoldingCtrl){
+
+                multiSelect.toggleGridIndexCollision(index);
+
+                (multiSelect.isGridIndexSelected(index)) ?
+                    iconSelect.addNewData(iconID, this.m_containerData.ID):
+                    iconSelect.removeData(iconID, this.m_containerData.ID);
+
+                return;
+            }
+
+            // Shift click
+
+            // // Gets min and max indexes
+            // let indexA = this.m_lastClickedIndex;
+            // let indexB = index;
+
+            // if(indexA === -1 || indexB === -1) return; // non-valid values
+            // if(indexA === indexB) return; // the same
+
+            // let minIndex = (indexA > indexB) ? indexB : indexA;
+            // let maxIndex = (indexA > indexB) ? indexA : indexB;
+            // maxIndex += 1; // +1, it removes the current index
+
+            // multiSelect.setCollisionEnableList(minIndex, maxIndex); 
+
+            // // Set all the selected values on.
+            // for(let i = minIndex; i < maxIndex; i++){
+            //     let icon = this.m_GroupData[i];
+            //     iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
+            // }
+        },
+
+
+
+        isIconOnGrid(groupID){
+            return (containerData.getLayoutType(groupID) === "Grid");
+        },
+
+        selectionDrag(event, index){
+            console.log("drag!");
+
+            // tmp
+            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index), 'GRID');
+        },
+
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+        mouseLeaveGrid(){
+
+            // Prevent other icons from triggering this.
+            if(editVariables.iconDragData.storedContainer !== this.component_ID) return;
+
+            (iconSelect.isMultiSelect) ? this.removeMultiSelectData() : this.removeSingleItemData();
+        },
+
 
 // Icon Displacement
 // ------------------------------------------------------------------------------------------
@@ -324,20 +384,32 @@ export default {
     // Render Flags
 
         renderIcon(index){
-            if(this.m_GroupData === null){ return false; }
+            if(this.m_GroupData === null){ return false; } // no data
             return (this.m_containerData.gridData.contentAlign === "Compact") ? this.renderCompact(index) : this.renderFree(index);
         },
 
         renderCompact(index){
-            // Contains no value
-            if(!iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index))){ return false; }
+            let tmpIconData = iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index));
+            
+            if(!tmpIconData) return false; // Contains no value
+
+            let containsIcon = iconSelect.isContainSelectedData(tmpIconData.iconID, this.m_containerData.ID);
+
+            if(containsIcon && iconSelect.isMultiSelect && dragAndDrop.enabled) return false;
+            
             return true;
         },
         
         renderFree(index){
             let coord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
-            // Contains no value
-            if(!iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y)){ return false; }
+            let tmpIconData = iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
+            
+            if(!tmpIconData) return false; // Contains no value
+
+            let containsIcon = iconSelect.isContainSelectedData(tmpIconData.iconID, this.m_containerData.ID);
+            
+            if(containsIcon && iconSelect.isMultiSelect && dragAndDrop.enabled) return false;
+
             return true;
         },
 
@@ -346,13 +418,26 @@ export default {
         setSelectedIcon(index, AABBcollision, click=false){
             if(!this.renderIcon(index)){ iconSelect.resetData(); return; } // No data
 
-            if(AABBcollision){
+            let iconID = this.getIconData(index).iconID;
+
+            if(!AABBcollision){
+                iconSelect.removeData(iconID, this.m_containerData.ID);
+                return;
+            }
+            
+            var keyHold = multiSelect.isHoldingCtrl || multiSelect.isHoldingShift;
+            
+            // No keys held
+            if(!keyHold){
+                // Standard click
                 if(click){ iconSelect.resetData(); }
-                iconSelect.addNewData(this.getIconData(index).iconID, this.m_containerData.ID);
+                
+                // Drag or click
+                iconSelect.addNewData(iconID, this.m_containerData.ID);
+                return;
             }
-            else{
-                iconSelect.removeData(this.getIconData(index).iconID, this.m_containerData.ID);
-            }
+
+            this.specialKeySelection(iconID, index);
         },
 
 

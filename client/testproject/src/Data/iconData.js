@@ -234,6 +234,7 @@ class IconData{
         return null;
     }
 
+    // Returns the index within the group array, not the same as the coordinates
     getIconIndexOfGroup(groupArray, iconID){
         for(let i = 0; i < groupArray.length; i++){ if(groupArray[i].iconID === iconID){ return i; } }
         console.error(`Error (iconData.js): IconID '${iconID}' does not exist`);

@@ -81,14 +81,12 @@ export class MultiSelect{
         );
     }
 
-    isIconIDSelected(iconID){
-        for(let i = 0; i < this.data.allIcons.length; i++){
-            if(this.data.allIcons[i].id === iconID){
-                return true;
-            }
-        }
+    toggleGridIndexCollision(index){
+        // checks the index that it was stored with, not the index of the array.
+        this.data.allIcons.forEach(element => {
+            if(element.index == index) element.collision = !element.collision;
+        });
 
-        return false;
     }
 
     toggleIndexCollision(index){
@@ -147,7 +145,14 @@ export class MultiSelect{
     // Getter
     
     isIndexSelected(index){ return this.data.allIcons[index].collision; }
-    
+    isGridIndexSelected(index){ 
+        // Find in the array which is selected
+        for(let i = 0; i < this.data.allIcons.length; i++){
+            if(this.data.allIcons[i].index === index) return this.data.allIcons[i].collision;
+        } 
+    }
+
+
     get isEnabled(){ return this.data.isEnabled; }
     get isValidDrag(){ return this.data.isValidDrag;}
 
