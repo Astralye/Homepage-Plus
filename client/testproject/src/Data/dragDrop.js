@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { editVariables } from './SettingVariables';
 import { iconImageStorage } from './iconImages';
-import { iconData } from './iconData';
+import { iconData, iconSelect } from './iconData';
 import { mouseData } from './mouseData';
 import { multiSelect } from './multiSelect';
 /*
@@ -92,7 +92,7 @@ class dragAndDropClass{
                 if(el == event.target){ return;}
             });
             
-            console.log(this.data.isMultiSelect)
+            console.log("is MultiSelect:", this.data.isMultiSelect)
 
 
             this.data.enabled = true;
@@ -141,6 +141,8 @@ class dragAndDropClass{
 
         mouseData.disableTracking();
         mouseData.disableMouseUp();
+        
+        iconSelect.resetData();
     }
 
 // Updaters
