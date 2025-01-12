@@ -42,18 +42,17 @@
                         </ul>
                         <div class="button-row-align">
 
-                            <!-- <input 
-                                type="file"
-                                @change="console.log('changed')"
-                                accept=".json"
-                                capture
-                            > -->
+                            <FileUpload
+                                fileType="json"
+                                @changeData="data => importData(data)">
+                            </FileUpload>
                             
-                            <SingleButton
+                            
+                            <!-- <SingleButton
                                 m_IconString="Upload"
                                 @click="importData()">
                                 Import Data
-                            </SingleButton>
+                            </SingleButton> -->
                             
                             <SingleButton
                                 m_IconString="Download"
@@ -273,13 +272,17 @@ import SVGHandler from '../Input Components/SVGHandler.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
 import RadioBtn from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import FileUpload from '../Input Components/FileUpload.vue';
 
 import { editVariables } from '../../Data/SettingVariables';
+import { layout } from '../../Data/layoutData';
+import { containerData } from '../../Data/containerData';
 
 export default {
     components:{
         WindowContainerDivider,
         SingleButton,
+        FileUpload,
         SVGHandler,
         Checkbox,
         RadioBtn,
@@ -295,14 +298,12 @@ export default {
                 { id: "Sidebar" , selected: false },
             ],
 
-
             // For Downloading
             localStorageVarNames: {
                 
                 // Get these to work for now.
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
-
 
 
                 iconData: "iconData",
@@ -336,10 +337,17 @@ export default {
             hiddenElement.click();
         },
 
-        importData(){
+        importData(data){
+            
+            // Load all the data
+            // Data has already been parsed on file upload
+            
+            layout.initializeData(data.layout);
+            containerData.intializeData(data.containerData);
 
-            // var obj = JSON.parse(dataToSave);
-            // console.log(obj)
+            // Reset selected
+            editVariables.enableResetSelect();
+            editVariables.enableResetFlag();
         },
 
         
