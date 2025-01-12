@@ -23,14 +23,41 @@
                         <h3> Data </h3>
         
                         *Nonfunctional
+
+                        Needs to be types:
+                        
+                        <ul>
+                            <li>
+                                All
+                            </li>
+                            <li>
+                                Themes
+                            </li>
+                            <li>
+                                Imported Icons
+                            </li>
+                            <li>
+                                Layout and Containers
+                            </li>
+                        </ul>
                         <div class="button-row-align">
+
+                            <!-- <input 
+                                type="file"
+                                @change="console.log('changed')"
+                                accept=".json"
+                                capture
+                            > -->
+                            
                             <SingleButton
-                                m_IconString="Download">
+                                m_IconString="Upload"
+                                @click="importData()">
                                 Import Data
                             </SingleButton>
                             
                             <SingleButton
-                                m_IconString="Upload">
+                                m_IconString="Download"
+                                @click="exportData()">
                                 Export Data
                             </SingleButton>
                         </div>
@@ -266,10 +293,57 @@ export default {
             vmodelValues: [
                 { id: "Windows" , selected: false },
                 { id: "Sidebar" , selected: false },
-            ]
+            ],
+
+
+            // For Downloading
+            localStorageVarNames: {
+                
+                // Get these to work for now.
+                layoutDataName: "layoutData",
+                displayData: "containerDisplayData",
+
+
+
+                iconData: "iconData",
+                iconStorage: "iconStorage",
+                userSettings: "userSettings"
+            },
+
         }
     },
     methods: {
+
+        // Data
+        // -------------------------------------------------------------------------------------------------------
+
+        exportData(){
+            console.log("export data");
+            
+            // Data, all saved as a string
+            var dataToSave = {
+                layout: JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName)),
+                containerData: JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData)),
+            }
+
+            // Convert entire object to string to save as object
+            var dataToSave = JSON.stringify(dataToSave , null, 4);
+
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:attachment/text,' + encodeURI(dataToSave);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'HomepageLayoutSave.json';
+            hiddenElement.click();
+        },
+
+        importData(){
+
+            // var obj = JSON.parse(dataToSave);
+            // console.log(obj)
+        },
+
+        
+        // -------------------------------------------------------------------------------------------------------
 
     },
 }
