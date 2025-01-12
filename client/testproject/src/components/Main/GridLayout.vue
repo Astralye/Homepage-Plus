@@ -10,7 +10,6 @@
             @mouseup="checkDropIcon(index)"
             @click="kbShortcut($event); setSelectedIcon(index, true, true)"
             >
-
             <!-- Generalized grid item -->
             <div class="grid-item"
                 ref="gridPosition"
@@ -113,6 +112,7 @@ export default {
             m_iconID: null,     // ID of currently selected icon
             m_Observer: null,
 
+            m_lastClickedIndex: -1,
         }
     },
     created(){
@@ -216,23 +216,23 @@ export default {
             // Shift click
 
             // // Gets min and max indexes
-            // let indexA = this.m_lastClickedIndex;
-            // let indexB = index;
+            let indexA = this.m_lastClickedIndex;
+            let indexB = index;
 
-            // if(indexA === -1 || indexB === -1) return; // non-valid values
-            // if(indexA === indexB) return; // the same
+            if(indexA === -1 || indexB === -1) return; // non-valid values
+            if(indexA === indexB) return; // the same
 
-            // let minIndex = (indexA > indexB) ? indexB : indexA;
-            // let maxIndex = (indexA > indexB) ? indexA : indexB;
-            // maxIndex += 1; // +1, it removes the current index
+            let minIndex = (indexA > indexB) ? indexB : indexA;
+            let maxIndex = (indexA > indexB) ? indexA : indexB;
+            maxIndex += 1; // +1, it removes the current index
 
-            // multiSelect.setCollisionEnableList(minIndex, maxIndex); 
+            multiSelect.setCollisionEnableList(minIndex, maxIndex); 
 
             // // Set all the selected values on.
-            // for(let i = minIndex; i < maxIndex; i++){
-            //     let icon = this.m_GroupData[i];
-            //     iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
-            // }
+            for(let i = minIndex; i < maxIndex; i++){
+                let icon = this.m_GroupData[i];
+                iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
+            }
         },
 
 
@@ -242,8 +242,6 @@ export default {
         },
 
         selectionDrag(event, index){
-            console.log("drag!");
-
             // tmp
             this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index), 'GRID');
         },
@@ -434,6 +432,7 @@ export default {
                 
                 // Drag or click
                 iconSelect.addNewData(iconID, this.m_containerData.ID);
+                this.m_lastClickedIndex = index;
                 return;
             }
 
