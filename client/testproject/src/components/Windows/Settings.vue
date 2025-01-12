@@ -21,11 +21,8 @@
                         <br>
         
                         <h3> Data </h3>
-        
-                        *Nonfunctional
 
                         Needs to be types:
-                        
                         <ul>
                             <li>
                                 All
@@ -338,6 +335,11 @@ export default {
         },
 
         importData(data){
+            
+            // Check for any unsaved changes before importing
+            
+            
+
             
             // Load all the data
             // Data has already been parsed on file upload
