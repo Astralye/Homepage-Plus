@@ -57,14 +57,13 @@ class dragAndDropClass{
         });
 
         this.setIsMultiSelect(isMultiSelect);
-        multiSelect.setValidDrag(false);
+        multiSelect.setValidDrag(true);
 
         this.setTransitionName("");
         this.setDisplayIcon(iconID);
         this.setContainerOrigin(containerID);
         this.setSVGDragData();
         this.updateContainerType(type);
-
     }
     
     /*
