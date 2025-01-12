@@ -220,7 +220,10 @@
                     </template>
             
                     <template #content>
-                        <!-- Template for Icon size -->
+                        <!-- 
+                            Icon size 
+                            ///////////////////////////////////////////////////////////////////////////////    
+                        -->
                         <template v-if="isIconMenuSelected('Icon Size')">
                             <RangeSlider
                                 :no_Items="m_iconSizes.length"
@@ -229,6 +232,11 @@
                                 v-model="m_SelectedObject.iconSize"
                             />
                         </template>
+
+                        <!--
+                            Icon Text
+                            ///////////////////////////////////////////////////////////////////////////////
+                        -->
                         <template v-else-if="isIconMenuSelected('Icon Text')">
                             <Checkbox
                                 @onChange="check => m_SelectedObject.displayText = check"
@@ -254,6 +262,11 @@
                                 v-model="m_SelectedObject.iconStringSize"
                             />
                         </template>
+
+                        <!--
+                            Icon type
+                            ///////////////////////////////////////////////////////////////////////////
+                        -->
                         <template v-else-if="isIconMenuSelected('Icon Type')">
                             <div class="icon-selection-menu width-full flex">
                                 <template v-for="(item, index) in 50" :key="index">
@@ -273,6 +286,18 @@
                                     </div>
                                 </template>
                             </div>
+                            <h4>
+                                Import SVGs
+                            </h4>
+
+                            <br>
+                            <FileUpload
+                                fileType="svg+xml"
+                                @changeData="data => console.log(data)"
+                                >
+                                
+                            </FileUpload>
+                            
 
                         </template>
                     </template>
@@ -430,6 +455,7 @@ import { editVariables } from '../../Data/SettingVariables';
 import IconDragHandler from '../Main/IconDragHandler.vue';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { dragAndDrop } from '../../Data/dragDrop';
+import FileUpload from '../Input Components/FileUpload.vue';
 
 
 export default {
@@ -441,6 +467,7 @@ export default {
         OptionSelect,
         RangeSlider,
         IconHandler,
+        FileUpload,
         SVGHandler,
         TabWrapper,
         TextInput,

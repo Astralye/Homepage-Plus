@@ -210,16 +210,58 @@ class IconImages{
         console.error(`Error iconImages.js: ${inputName} does not exist within the array`);
     }
 
-    newSVGObject(objName, data){
+    newSVGObject(svgName, data, viewBox){
         this.data.push({
-            name: objName,
-            pathData: data
+            name: svgName,
+            pathData: data,
+            viewBox: viewBox,
         });
     }
 
-    // Extracts only the 'd' part of the tag.
-    svgParser(svgString){
+    /*
+        SVG parser
+        Input is a SVG icon
+        Scrapes the 'd' path data to store it.
+    */
+    svgParser(result){
+
+        // Parses the string to a DOM element
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(result, "image/svg+xml");
+
+        let svgEl = doc.lastElementChild;
+
+        // last node is not svg
+        if(svgEl.nodeName != "svg"){
+            console.log("last child, not svg");
+            return;
+        }
+
+
+        // TODO
+        // Using googles icons:
+        // Make sure to generalize later
         
+        var svgName = "test";
+        var viewBox = svgEl.attributes.viewBox;
+        var pathValue = [];
+
+        // Retrives the path data of the SVG
+        let pathArray = svgEl.children;
+        // This will go over each 'path' element
+        for(let i = 0; i < pathArray.length; i++){
+            
+            // Checks for each 'd' path data
+            let data = pathArray[i].attributes.getNamedItem('d');
+            if(!data) continue;
+
+            pathValue.push(data.nodeValue);
+        }
+
+        // for now, since path value is only 1 value
+        // remove the index, handle the length later
+
+        this.newSVGObject(svgName, pathValue[0], viewBox);
     }
 
 }
