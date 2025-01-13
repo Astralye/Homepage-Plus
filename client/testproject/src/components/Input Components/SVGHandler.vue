@@ -18,47 +18,64 @@
         :height="height"
         :fill="fill_Colour">
 
-        <template v-for="(item, index) in path_Value" :key="index">
+        <!-- Need to check for any g elements -->
+
+        <SVGRecursion :pathData="path_Value"/>
+
+        <!-- <template v-for="(item, index) in path_Value" :key="index">
             <path fill-rule="evenodd"
                 :d="item"
             />
-        </template>
+        </template> -->
+
+        <!--
+            Need to check type 
+            
+            Either the values are a string
+
+            or an object
+        -->
 
     </svg>
 </div>
 </template>
 
 <script>
-    export default {
-        props: {
-            // svg Values
-            view_Box: {
-                type: String,
-                default: "0 0 32 32"
-            },
-            width:{
-                type: String,
-                default: "24",
-            },
-            height:{
-                type: String,
-                default: "24",
-            },
-            fill_Colour:{
-                type: String,
-                default: "#000000",
-            },
+import SVGRecursion from './SVGRecursion.vue';
 
-            // path values
-            path_Value:{
-                required: true
-            },
+export default {
+    components:{
+        SVGRecursion
+    },
+    props: {
+        // svg Values
+        view_Box: {
+            type: String,
+            default: "0 0 32 32"
+        },
+        width:{
+            type: String,
+            default: "24",
+        },
+        height:{
+            type: String,
+            default: "24",
+        },
+        fill_Colour:{
+            type: String,
+            default: "#000000",
+        },
 
-            ref_Value:{
-                type: String,
-            }
+        // path values
+        path_Value:{
+            required: true
+        },
+
+        ref_Value:{
+            type: String,
         }
-    }
+    },
+}
 </script>
 
 <style scoped>
