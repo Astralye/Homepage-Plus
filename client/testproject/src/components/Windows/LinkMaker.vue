@@ -291,11 +291,12 @@
                             </h4>
 
                             <br>
+                            <!-- 
+                                Any SVGs are moved to the svgParser automatically from FileUpload 
+                            -->
                             <FileUpload
                                 fileType="svg+xml"
-                                @changeData="data => console.log(data)"
                                 >
-                                
                             </FileUpload>
                             
 
@@ -580,8 +581,9 @@ export default {
         newSelect(index){
             if(!this.isCurrentlySelected){ return; } // No selection
             
-            this.m_SelectedObject.iconImage = iconImageStorage.getNameFromIndex(index);
-            this.m_SelectedIconIndex = index;
+            var name = iconImageStorage.getNameFromIndex(index);
+            this.m_SelectedObject.iconImage = name;
+            this.setSVGIndex(name)
         },
 
         // Check if current selected icon is the index.

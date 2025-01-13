@@ -202,8 +202,8 @@ class IconImages{
         const iter = this.dataMap.keys();
         
         for(let i = 0; i < this.dataMap.size; i++){
-            if(iter.next().value === name) break;
             index++;
+            if(iter.next().value === name) break;
         }
         return index;
     }
@@ -253,6 +253,7 @@ class IconImages{
     }
 
     newSVGObject(svgName, data, viewBox){
+
         this.dataMap.set(svgName, {
             pathData: data,
             viewBox: viewBox,
@@ -283,8 +284,12 @@ class IconImages{
         // Using googles icons:
         // Make sure to generalize later
         
+        // How to make this unique?
         var svgName = "test";
-        var viewBox = svgEl.attributes.viewBox;
+        
+        
+        
+        var viewBox = svgEl.attributes.viewBox.nodeValue;
         var pathValue = [];
 
         // Retrives the path data of the SVG
@@ -299,10 +304,7 @@ class IconImages{
             pathValue.push(data.nodeValue);
         }
 
-        // for now, since path value is only 1 value
-        // remove the index, handle the length later
-
-        this.newSVGObject(svgName, pathValue[0], viewBox);
+        this.newSVGObject(svgName, pathValue, viewBox);
     }
 
 }
