@@ -233,7 +233,7 @@ class dragAndDropClass{
                 svgData.iconColour,
                 svgData.iconSize,
                 iconImageStorage.getPathData(svgData.iconImage),
-                iconImageStorage.getViewBoxName(svgData.iconImage),
+                iconImageStorage.getViewBox(svgData.iconImage),
             )
         }
     }
@@ -252,7 +252,7 @@ class dragAndDropClass{
                 iconColour: "#000000",
                 iconSize: "4em",
                 iconImage: "Stack",
-                viewBox: `${iconImageStorage.getViewBoxName('Stack')}`, 
+                viewBox: `${iconImageStorage.getViewBox('Stack')}`, 
             }
         }
 

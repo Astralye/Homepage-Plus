@@ -10,17 +10,20 @@
     class="flex"
     :ref="ref_Value" >
     <svg
-    class="change-size"
-    
-    xmlns="http://www.w3.org/2000/svg"
-    :viewBox="view_Box"
-    :width="width"
-    :height="height"
-    :fill="fill_Colour">
-        <path
-            fill-rule="evenodd"
-            :d="path_Value"
-        />
+        class="change-size"
+        
+        xmlns="http://www.w3.org/2000/svg"
+        :viewBox="view_Box"
+        :width="width"
+        :height="height"
+        :fill="fill_Colour">
+
+        <template v-for="(item, index) in path_Value" :key="index">
+            <path fill-rule="evenodd"
+                :d="item"
+            />
+        </template>
+
     </svg>
 </div>
 </template>
@@ -48,7 +51,7 @@
 
             // path values
             path_Value:{
-                type: String,
+                type: Array,
                 required: true
             },
 

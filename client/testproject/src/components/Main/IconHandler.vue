@@ -85,7 +85,7 @@ export default {
             this.iconData.image   = iconImageStorage.getPathData(this.icon_data.iconImage);
             this.iconData.colour  = this.icon_data.iconColour;
             this.iconData.text_Size = this.icon_data.iconStringSize;
-            this.iconData.viewBox = iconImageStorage.getViewBoxName(this.icon_data.iconImage);
+            this.iconData.viewBox = iconImageStorage.getViewBox(this.icon_data.iconImage);
             this.iconData.link    = this.icon_data.link;
             this.iconData.isDisplayText = this.icon_data.displayText; 
             

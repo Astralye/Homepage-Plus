@@ -234,7 +234,7 @@
                                 width="75px"
                                 height="75px"
                                 :path_Value="iconImageStorage.getPathData('Github')"
-                                :view_Box="iconImageStorage.getViewBoxName('Github')"
+                                :view_Box="iconImageStorage.getViewBox('Github')"
                                 fill_Colour="#000000"
                             />
                         </a>

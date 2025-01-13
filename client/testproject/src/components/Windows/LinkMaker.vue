@@ -61,7 +61,7 @@
                                 
                                 :path_Value="iconImageStorage.getPathData(getIconData(index).iconImage)"
                                 :fill_Colour="getIconData(index).iconColour"
-                                :view_Box="iconImageStorage.getViewBoxName(getIconData(index).iconImage)"
+                                :view_Box="iconImageStorage.getViewBox(getIconData(index).iconImage)"
                                 class="center icon-center"
                                 :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, m_STORAGE)),
                                          'opacity-full' : !dragAndDrop.isDraggingEvent }"
@@ -185,7 +185,7 @@
                                                 width="80%"
                                                 :fill_Colour="m_SelectedObject.iconColour"
                                                 :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
-                                                :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
+                                                :view_Box="iconImageStorage.getViewBox(m_SelectedObject.iconImage)"
                                             />
                                         </div>
                                     </template>
@@ -198,7 +198,7 @@
                                                 height="80%"
                                                 width="80%"
                                                 :path_Value="iconImageStorage.getPathData('Cross')"
-                                                :view_Box="iconImageStorage.getViewBoxName('Cross')"
+                                                :view_Box="iconImageStorage.getViewBox('Cross')"
                                             />
                                         </div>
                                     </template>
@@ -277,9 +277,9 @@
                                         <SVGHandler v-if="iconImageStorage.isValidIndex(index)"
                                             width="100%"
                                             height="100%"
-                                            :fill_Colour="m_localIconColourHex"
-                                            :path_Value="getSVG(index)"
-                                            :view_Box="iconImageStorage.getViewBoxIndex(index)"
+                                            fill_Colour="#000000"
+                                            :path_Value="iconImageStorage.getPathData(iconImageStorage.getNameFromIndex(index))"
+                                            :view_Box="iconImageStorage.getViewBox(iconImageStorage.getNameFromIndex(index))"
                                             @click="newSelect(index)"
                                         />
                                         <!-- It needs to load the correct icon -->
@@ -579,10 +579,9 @@ export default {
         // Changes the currently selected. Displays
         newSelect(index){
             if(!this.isCurrentlySelected){ return; } // No selection
-
-            let svg = iconImageStorage.getPathFromIndex(index);
-            this.m_SelectedObject.iconImage = svg.name;
-            this.setSVGIndex(svg.name);
+            
+            this.m_SelectedObject.iconImage = iconImageStorage.getNameFromIndex(index);
+            this.m_SelectedIconIndex = index;
         },
 
         // Check if current selected icon is the index.
@@ -592,13 +591,6 @@ export default {
         },
 
         isIconMenuSelected(type){ return (this.m_IconTabOpen === type); },
-
-    // Getter
-
-        getSVG(index){
-            let svg = iconImageStorage.getPathFromIndex(index);
-            return svg.pathData;
-        },
 
     // Setter
 

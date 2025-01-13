@@ -41,7 +41,7 @@
                             width="2em"
                             height="2em"
                             :path_Value="iconImageStorage.getPathData(item.iconImage)"
-                            :view_Box="iconImageStorage.getViewBoxName(item.iconImage)"
+                            :view_Box="iconImageStorage.getViewBox(item.iconImage)"
                             :fill_Colour="item.iconColour"
                         />
                     </div>
