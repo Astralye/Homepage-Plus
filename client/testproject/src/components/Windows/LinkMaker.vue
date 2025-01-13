@@ -12,7 +12,7 @@
             <SingleButton
                 class="flex"
                 @click="generateIcon" 
-                button_toggle="true"
+                :button_toggle="true"
                 m_IconString="Dotted_Square"
             >
                 New
@@ -515,8 +515,7 @@ export default {
             m_textSizes: [ "10px", "12px", "14px", "16px"],
 
             // Icon Functionality 
-            
-            m_DisplayLink: "",
+
             m_LinkInfo: {
                 protocol: "https://",
                 root: "",

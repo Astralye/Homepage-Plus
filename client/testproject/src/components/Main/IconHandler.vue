@@ -9,7 +9,7 @@
 
             <SVGHandler
                 :height="iconData.size"
-                width="auto"
+                :width="iconData.size"
                 :path_Value="iconData.image"
                 :fill_Colour="iconData.colour"
                 :view_Box="iconData.viewBox"

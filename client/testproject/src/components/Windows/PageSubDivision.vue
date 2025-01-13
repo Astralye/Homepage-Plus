@@ -1,6 +1,5 @@
 
 <script>
-import SingleButton from '../Input Components/SingleButton.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
@@ -14,7 +13,6 @@ export default {
     components: {
         WindowContainerDivider,
         ContainerSelection,
-        SingleButton,
         RadioButton,
         RangeSlider,
         Checkbox,
@@ -150,7 +148,7 @@ export default {
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
             const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
 
-            this.setContainerData(level, newContainerID, evenSplit);
+            this.setContainerData(level, newContainerID, (evenSplit === 'true'));
 
             // Reset everything first before setting.
             this.resetAll(this.ContainerDivision);

@@ -33,7 +33,7 @@ export default {
         enabled: {
             type: Boolean,
             default: true,
-        }
+        },
     },
     emits: [ 'onChange'],
 }

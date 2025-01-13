@@ -14,7 +14,7 @@
                             <SingleButton
                                 class="flex"
                                 @click="activateSelectionMode" 
-                                button_toggle="true"
+                                :button_toggle="true"
                                 m_IconString="Dotted_Square"
                                 >
                                 Select

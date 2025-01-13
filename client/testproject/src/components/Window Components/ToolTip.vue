@@ -21,7 +21,7 @@ export default{
     <div class="tooltip-container">
         <SVGHandler
             height="30px"
-            width="auto"
+            width="30px"
             view_Box="0 -960 960 960"
             fill_Colour="#CCCCCC"
             :path_Value="iconImageStorage.getPathData('Question_Mark')"

@@ -15,6 +15,8 @@ import { iconImageStorage } from '../../Data/iconImages';
 export default {
     emits: [ 'changeData' ],
     props: {
+
+        // SVGs use svg+xml
         fileType: {
             type: String,
             default: "jpg" 
@@ -32,18 +34,19 @@ export default {
         // Data recieved is a blob object
         changeData(event){
 
+            
             const files = event.target.files;
             if(files.length === 0) return;
-
+            
             // For each file inputted
             for(let i = 0; i < files.length; i++){
                 if(files[i].type.split("/")[1] != this.fileType) continue; // Not the specified type
 
-                // // Create a blob for each file
+                // Create a blob for each file
                 const blob = new Blob([files[i]], { type: files[i].type})
 
                 var fr = new FileReader();
-
+                
                 fr.onload = () => {
                     this.$emit('changeData', this.fileParser(fr.result));
                 };

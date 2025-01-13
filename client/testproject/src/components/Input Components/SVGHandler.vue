@@ -51,7 +51,6 @@
 
             // path values
             path_Value:{
-                type: Array,
                 required: true
             },
 
