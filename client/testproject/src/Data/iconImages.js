@@ -16,11 +16,12 @@ import { reactive } from 'vue'
 */
 class IconImages{
     constructor(){ this.baseData(); }
-    get allData(){ return this.data; }
+    get allData(){ return this.dataMap; }
 
     baseData(){
 
         this.dataMap = new Map(); 
+        this.resetImports();
 
         // Social media icons
         // These are taken from: https://icons8.com/icon/set/logos/windows
@@ -194,8 +195,16 @@ class IconImages{
         })
     }
 
+// Boolean
+// --------------------------------------------------------------------------------------------------------------------------
+
+    isValidIndex(index){
+        return (index <= (this.dataMap.size-1) && index >= 0);
+    }
+
 // Get path data
 // --------------------------------------------------------------------------------------------------------------------------
+    
     // Have to just iterate through the keys of the map to find the correct name
     getIndexFromName(name){
         let index = -1;
@@ -219,17 +228,8 @@ class IconImages{
         return name;
     }
 
-    isValidIndex(index){
-        return (index <= (this.dataMap.size-1) && index >= 0);
-    }
-
     // Have to value check outside function
-    getIconObject(name){
-        if(!name){ return null; } // Input is null
-        
-        let data = this.dataMap.get(name);
-        return data;
-    }
+    getIconObject(name){ return this.dataMap.get(name); }
 
     getViewBox(name){
         let data = this.getIconObject(name);
@@ -243,6 +243,18 @@ class IconImages{
         return data.pathData;
     }
 
+// Imports + exports
+// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+    resetImports(){ this.importedSVG = new Map(); }
+
+    setImportedSVGs(data){ 
+        this.importedSVG = new Map(data);
+
+        // add contents of new map to the existing.
+        this.dataMap = new Map([...this.dataMap, ...this.importedSVG]);
+    }
+    get importedSVGs(){ return this.importedSVG; }
 
 // Modifiers
 // ---------------------------------------------------------------------------------------------------------------------------
@@ -252,9 +264,25 @@ class IconImages{
         console.error(`Error iconImages.js: ${inputName} does not exist within the array`);
     }
 
-    newSVGObject(svgName, data, viewBox){
+    // Generates hashed name based on the path data
+    genPathHash(pathData){
+        String.prototype.hashCode = function() {
+            var hash = 0,
+              i, chr;
+            if (this.length === 0) return hash;
+            for (i = 0; i < this.length; i++) {
+              chr = this.charCodeAt(i);
+              hash = ((hash << 5) - hash) + chr;
+              hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        }
 
-        this.dataMap.set(svgName, {
+        return pathData.hashCode();
+    }
+
+    newSVGObject(destination, svgName, data, viewBox){
+        destination.set(svgName, {
             pathData: data,
             viewBox: viewBox,
         })
@@ -274,26 +302,19 @@ class IconImages{
         let svgEl = doc.lastElementChild;
 
         // last node is not svg
-        if(svgEl.nodeName != "svg"){
-            console.log("last child, not svg");
-            return;
-        }
-
+        // This was checked within file upload so it shouldnt early return
+        if(svgEl.nodeName != "svg"){ console.log("last child, not svg"); return; }
 
         // TODO
         // Using googles icons:
         // Make sure to generalize later
-        
-        // How to make this unique?
-        var svgName = "test";
-        
-        
-        
+
         var viewBox = svgEl.attributes.viewBox.nodeValue;
         var pathValue = [];
-
-        // Retrives the path data of the SVG
-        let pathArray = svgEl.children;
+        var pathConcat = "";
+        
+        let pathArray = svgEl.children; // Retrives the path data of the SVG
+        
         // This will go over each 'path' element
         for(let i = 0; i < pathArray.length; i++){
             
@@ -302,9 +323,16 @@ class IconImages{
             if(!data) continue;
 
             pathValue.push(data.nodeValue);
+            pathConcat += data.nodeValue;
         }
 
-        this.newSVGObject(svgName, pathValue, viewBox);
+        var svgName = this.genPathHash(pathConcat);
+
+        if(this.getIconObject(svgName)) return; // Check if name exist
+        // Should inform the user if the icon is already imported...
+
+        this.newSVGObject(this.dataMap, svgName, pathValue, viewBox);
+        this.newSVGObject(this.importedSVG, svgName, pathValue, viewBox); // Put to another map, used for exporting.
     }
 
 }

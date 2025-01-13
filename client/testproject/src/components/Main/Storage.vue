@@ -163,7 +163,9 @@ export default {
                 displayData: "containerDisplayData",
                 iconData: "iconData",
                 iconStorage: "iconStorage",
-                userSettings: "userSettings"
+                
+                userSettings: "userSettings",
+                importedIcons: "importedIcons",
             },
 
             // Confirmation.
@@ -203,6 +205,7 @@ export default {
             localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
             localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
 
+            localStorage.setItem(this.localStorageVarNames.importedIcons,  JSON.stringify(Array.from(iconImageStorage.importedSVGs.entries())));
             localStorage.setItem(this.localStorageVarNames.userSettings,   JSON.stringify(editVariables.userSettings));
         },
 
@@ -242,6 +245,7 @@ export default {
             layout.resetData();
             iconData.resetData();
             iconStorage.resetData();
+            iconImageStorage.resetImports();
 
             this.setValues();
             this.resetFlag();
@@ -283,19 +287,24 @@ export default {
             const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
             const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
             const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
+
+            const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons));
             const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
             
             if(layoutData  === null) { console.log("No Layout Data!");  return; }
             if(displayData === null) { console.log("No Display Data!"); return;}
             if(dataIcon === null)    { console.log("No Icon Data!");    return;}
             if(storageData === null) { console.log("No Icon Storage Data!");    return;}
-            if(userData === null)    { console.log("No Settings Data!");    return;}
             
+            if(importIcons === null) { console.log("No icon Data!");}
+            if(userData === null)    { console.log("No Settings Data!");    return;}
 
             layout.initializeData(layoutData);
             containerData.intializeData(displayData); 
             iconData.initializeData(dataIcon);
             iconStorage.initDataFromStorage(storageData); // Change later
+            
+            iconImageStorage.setImportedSVGs(importIcons);
             editVariables.loadUserSettings(userData);
             
             editVariables.enableRenderFinalNode();
