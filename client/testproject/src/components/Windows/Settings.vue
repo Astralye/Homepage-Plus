@@ -21,41 +21,53 @@
                         <br>
         
                         <h3> Data </h3>
-
-                        Needs to be types:
-                        <ul>
-                            <li>
-                                All
-                            </li>
-                            <li>
-                                Themes
-                            </li>
-                            <li>
-                                Imported Icons
-                            </li>
-                            <li>
-                                Layout and Containers
-                            </li>
-                        </ul>
+                            
+                        <!--
+                            Importing and exporting should involve multiple ways
+                        -->
+                        <h4> Import</h4>
+                        
                         <div class="button-row-align">
 
                             <FileUpload
                                 fileType="json"
-                                @changeData="data => importData(data)">
+                                @changeData="data => importAll(data)">
                             </FileUpload>
-                            
-                            
-                            <!-- <SingleButton
-                                m_IconString="Upload"
-                                @click="importData()">
-                                Import Data
-                            </SingleButton> -->
-                            
+
+                        </div>
+                        
+                        Any imports must be saved before cancelling or leaving page.
+                        <br>
+                        <br>
+
+                        <h4> Exports </h4>
+
+                        <div class="button-row-align">
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportData()">
-                                Export Data
+                                @click="exportAll()">
+                                All data
                             </SingleButton>
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="'exportThemes()'">
+                                Themes <br> (Non-funcitonal)
+                            </SingleButton>
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="exportImportedIcons()">
+                                Imported Icons
+                            </SingleButton> 
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="exportLayout()">
+                                Layout
+                            </SingleButton> 
+
+
                         </div>
         
                         <br>
@@ -301,6 +313,7 @@ export default {
                 // Get these to work for now.
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
+                importedIcons: "importedIcons",
 
 
                 iconData: "iconData",
@@ -312,46 +325,116 @@ export default {
     },
     methods: {
 
-        // Data
-        // -------------------------------------------------------------------------------------------------------
+// Data
+// -------------------------------------------------------------------------------------------------------
 
-        exportData(){
-            console.log("export data");
-            
-            // Data, all saved as a string
-            var dataToSave = {
+    // Exports
+
+        // If given a parameter, add it to an object
+        // if not, just export itself
+
+        exportAll(){
+
+            var dataToSave = {};
+
+            dataToSave = this.exportLayout(dataToSave);
+            dataToSave = this.exportThemes(dataToSave);
+            dataToSave = this.exportImportedIcons(dataToSave);
+
+            this.downloadData(dataToSave);
+        },
+
+        // Not implemented yet
+        exportThemes(dataToSave = null){
+
+            let data = {
+                themes: [],
+            }
+
+            // If parameter contained data, merge
+            if(dataToSave) return {...dataToSave, ...data};
+
+            this.downloadData(data); 
+        },
+
+        exportImportedIcons(dataToSave = null){
+
+            let data = {
+                icons: JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons))
+            } 
+
+            // If parameter contained data, merge
+            if(dataToSave) return {...dataToSave, ...data};
+
+            this.downloadData(data); 
+        },
+
+        exportLayout(dataToSave = null){
+
+            var data = {
                 layout: JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName)),
                 containerData: JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData)),
             }
 
-            // Convert entire object to string to save as object
-            var dataToSave = JSON.stringify(dataToSave , null, 4);
+            // If parameter contained data, merge
+            if(dataToSave) return {...dataToSave, ...data};
+
+            this.downloadData(data); 
+        },
+
+        downloadData(dataToSave){
+            var data = JSON.stringify(dataToSave , null, 4);
 
             var hiddenElement = document.createElement('a');
-            hiddenElement.href = 'data:attachment/text,' + encodeURI(dataToSave);
+            hiddenElement.href = 'data:attachment/text,' + encodeURI(data);
             hiddenElement.target = '_blank';
             hiddenElement.download = 'HomepageLayoutSave.json';
             hiddenElement.click();
         },
 
-        importData(data){
-            
-            // Check for any unsaved changes before importing
-            
-            
+    // Imports
 
-            
-            // Load all the data
-            // Data has already been parsed on file upload
-            
-            layout.initializeData(data.layout);
-            containerData.intializeData(data.containerData);
+        importAll(data){
 
-            // Reset selected
+            console.log(data);
+
+            this.importLayout(data);
+            this.importStoredIcons(data);
+            this.importThemes(data);
+
+            // Reset selection
             editVariables.enableResetSelect();
             editVariables.enableResetFlag();
         },
 
+        // Not implemented
+        importThemes(data){
+
+            // Check if has data
+            if(!data.hasOwnProperty('themes')) return;
+
+        },
+
+        importStoredIcons(data){
+            
+            // Check if has property first
+            if(!data.hasOwnProperty('icons')) return;
+
+            iconImageStorage.setImportedSVGs(data.icons);
+        },
+
+        importLayout(data){
+
+            // Check for any unsaved changes before importing
+            // Perhaps show a modal first before any unsaved changes.
+
+            // Check if has property first
+            if(!(data.hasOwnProperty('layout') || data.hasOwnProperty('containerData'))) return;
+
+            // Load all the data
+            layout.initializeData(data.layout);
+            containerData.intializeData(data.containerData);
+        },
         
         // -------------------------------------------------------------------------------------------------------
 
