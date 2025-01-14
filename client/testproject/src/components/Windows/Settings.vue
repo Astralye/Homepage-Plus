@@ -26,7 +26,7 @@
                             Importing and exporting should involve multiple ways
                         -->
                         <h4> Import</h4>
-                        
+
                         <div class="button-row-align">
 
                             <FileUpload
@@ -37,22 +37,27 @@
                         </div>
                         
                         Any imports must be saved before cancelling or leaving page.
-                        <br>
-                        <br>
+                        
+                        <br><br>
 
                         <h4> Exports </h4>
 
                         <div class="button-row-align">
+
                             <SingleButton
                                 m_IconString="Download"
                                 @click="exportAll()">
                                 All data
                             </SingleButton>
+                        </div>
+                        <br>
+                        
+                        <div class="button-row-align">
 
                             <SingleButton
                                 m_IconString="Download"
                                 @click="'exportThemes()'">
-                                Themes <br> (Non-funcitonal)
+                                Themes*
                             </SingleButton>
 
                             <SingleButton
@@ -286,6 +291,7 @@ import FileUpload from '../Input Components/FileUpload.vue';
 import { editVariables } from '../../Data/SettingVariables';
 import { layout } from '../../Data/layoutData';
 import { containerData } from '../../Data/containerData';
+import { iconData } from '../../Data/iconData';
 
 export default {
     components:{
@@ -313,12 +319,11 @@ export default {
                 // Get these to work for now.
                 layoutDataName: "layoutData",
                 displayData: "containerDisplayData",
-                importedIcons: "importedIcons",
-
-
                 iconData: "iconData",
+                
+                importedIcons: "importedIcons",
+                
                 iconStorage: "iconStorage",
-                userSettings: "userSettings"
             },
 
         }
@@ -374,6 +379,7 @@ export default {
             var data = {
                 layout: JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName)),
                 containerData: JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData)),
+                iconPositions: JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData))
             }
 
             // If parameter contained data, merge
@@ -386,7 +392,7 @@ export default {
             var data = JSON.stringify(dataToSave , null, 4);
 
             var hiddenElement = document.createElement('a');
-            hiddenElement.href = 'data:attachment/text,' + encodeURI(data);
+            hiddenElement.href = 'data:attachment/text,' + encodeURIComponent(data);
             hiddenElement.target = '_blank';
             hiddenElement.download = 'HomepageLayoutSave.json';
             hiddenElement.click();
@@ -395,8 +401,6 @@ export default {
     // Imports
 
         importAll(data){
-
-            console.log(data);
 
             this.importLayout(data);
             this.importStoredIcons(data);
@@ -413,14 +417,22 @@ export default {
             // Check if has data
             if(!data.hasOwnProperty('themes')) return;
 
+            // Display what they are importing...
+            
+            // Give request to cancel action.
         },
 
         importStoredIcons(data){
             
             // Check if has property first
             if(!data.hasOwnProperty('icons')) return;
+            
+            // Display what they are importing...
+            
+            // Give request to cancel action.
 
             iconImageStorage.setImportedSVGs(data.icons);
+
         },
 
         importLayout(data){
@@ -428,12 +440,18 @@ export default {
             // Check for any unsaved changes before importing
             // Perhaps show a modal first before any unsaved changes.
 
+            
             // Check if has property first
-            if(!(data.hasOwnProperty('layout') || data.hasOwnProperty('containerData'))) return;
+            if(!(data.hasOwnProperty('layout') || 
+                 data.hasOwnProperty('containerData') ||
+                 data.hasOwnProperty('iconPositions'))) return;
+            
+            // Display what they are importing...
 
             // Load all the data
             layout.initializeData(data.layout);
             containerData.intializeData(data.containerData);
+            iconData.initializeData(data.iconPositions);
         },
         
         // -------------------------------------------------------------------------------------------------------
