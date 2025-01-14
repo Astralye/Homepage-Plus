@@ -20,6 +20,9 @@ class IconImages{
 
     baseData(){
 
+        this.isFirstItemPushed = false;
+        this.firstPathData = null;
+
         this.dataMap = new Map(); 
         this.resetImports();
 
@@ -449,24 +452,18 @@ class IconImages{
         // This was checked within file upload so it shouldnt early return
         if(svgEl.nodeName != "svg"){ console.log("last child, not svg"); return; }
 
-        // TODO
-        // Using googles icons:
-        // Make sure to generalize later
-
-        var viewBox = svgEl.attributes.viewBox.nodeValue;
-        // var pathConcat = "";
-        
+        // Create ID from the first path data found. 
+        this.isFirstItemPushed = true;
+        this.firstPathData = null;
         
         // Recurrsion algorithm to extract all 'g' and 'path' tag data 
         let pathData = this.extractAllData(svgEl.children)[0]; // 0, it requires the object not the list
-        
-        // For instances with large paths...
-        // Just keep this as a test and fix later
-        // var svgName = "test";
 
         
-        // var svgName = this.genPathHash(pathConcat);
+        var svgName = this.genPathHash(this.firstPathData); // Generated from the path data
+        var viewBox = svgEl.attributes.viewBox.nodeValue;
 
+        
         if(this.getIconObject(svgName)) return; // Check if name exist
         // Should inform the user if the icon is already imported...
 
@@ -512,6 +509,12 @@ class IconImages{
                     d: [data.nodeValue], // node value is an object, we need an array
                     transforms: transform,
                 });
+
+                // If found first node, save the path data for ID
+                if(this.isFirstItemPushed){
+                    this.isFirstItemPushed = false;
+                    this.firstPathData = data.nodeValue;
+                }
             }
         }
 
