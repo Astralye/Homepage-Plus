@@ -19,30 +19,17 @@
                         />
         
                         <br>
-        
-                        <h3> Data </h3>
-                            
-                        <!--
-                            Importing and exporting should involve multiple ways
 
-                            When importing, need to check for any unsaved changes
-                        -->
-                        <h4> Import</h4>
+                        <h3> Import</h3>                        
+                        <FileUpload
+                            fileType="json"
+                            @changeData="data => importModal(data)">
+                        </FileUpload>
 
-                        <div class="button-row-align">
-
-                            <FileUpload
-                                fileType="json"
-                                @changeData="data => importModal(data)">
-                            </FileUpload>
-
-                        </div>
-                        
                         Any imports must be saved before cancelling or leaving page.
-                        
                         <br><br>
 
-                        <h4> Exports </h4>
+                        <h3> Exports </h3>
 
                         <div class="button-row-align">
 
