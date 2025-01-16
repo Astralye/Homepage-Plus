@@ -82,11 +82,20 @@
                         </Checkbox>
 
                         <br>
-                        <SingleButton
-                            m_IconString="Tick"
-                            @click="deleteLayout() ">
-                            Confirm
-                        </SingleButton>
+
+                        <div class="split-button">
+
+                            <SingleButton
+                                m_IconString="Tick"
+                                @click="deleteLayout() ">
+                                Confirm
+                            </SingleButton>
+                            <SingleButton
+                                m_IconString="Cross"
+                                @click="disableModal()">
+                                Cancel
+                            </SingleButton>
+                        </div>
                     </template>
                 </WindowContainerDivider>
             </template>
@@ -113,11 +122,19 @@
                         </Checkbox>
 
                         <br>
-                        <SingleButton
-                            m_IconString="Tick"
-                            @click="cancelEdit()">
-                            Confirm
-                        </SingleButton>
+
+                        <div class="split-button">
+                            <SingleButton
+                                m_IconString="Tick"
+                                @click="cancelEdit()">
+                                Confirm
+                            </SingleButton>
+                            <SingleButton
+                                m_IconString="Cross"
+                                @click="disableModal()">
+                                Cancel
+                            </SingleButton>
+                        </div>
                     </template>
                 </WindowContainerDivider>
             </template>
@@ -315,6 +332,11 @@ export default {
 
 <style scoped>
 @import '../../assets/base.css';
+
+.split-button{
+    display:flex;
+    justify-content:space-between;
+}
 
 .popup{
     
