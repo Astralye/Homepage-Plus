@@ -392,6 +392,9 @@ class IconImages{
     resetImports(){ this.importedSVG = new Map(); }
 
     setImportedSVGs(data){ 
+
+        if(!data) return;
+        
         this.importedSVG = new Map(data);
 
         // add contents of new map to the existing.

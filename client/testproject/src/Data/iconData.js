@@ -5,7 +5,10 @@ class IconData{
     get allData(){ return this.data; };
 
     printData(){ console.log(`data:`, this.data); };
-    initializeData(importData){ this.data = importData; }
+    initializeData(importData){
+        if(!importData) return;
+        this.data = importData;
+    }
 
     // For testing purposes, delete later
     resetData(){

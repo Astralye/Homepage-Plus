@@ -155,7 +155,10 @@ export class LayoutDataClass{
 // --------------------------------------------------------------------------------------------------------------------------
 
     // Load data from localStorage
-    initializeData(importData){ this.data = importData; };
+    initializeData(importData){ 
+        if(!importData) return;
+        this.data = importData;
+    };
 
     // Reset data on deletion
     resetData(){

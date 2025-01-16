@@ -22,7 +22,10 @@ class ContainerDataClass{
 
   // Basic array functions
   resetData() { this.data = [this.generateDefaultLayout("0A")]; };
-  intializeData(inputData){ this.data = inputData; };
+  intializeData(inputData){ 
+    if(!inputData) return;
+    this.data = inputData;
+  };
 
   // Add to data
   add(object){ this.data.push(object); };

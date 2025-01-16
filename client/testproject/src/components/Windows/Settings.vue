@@ -24,6 +24,8 @@
                             
                         <!--
                             Importing and exporting should involve multiple ways
+
+                            When importing, need to check for any unsaved changes
                         -->
                         <h4> Import</h4>
 
@@ -31,7 +33,7 @@
 
                             <FileUpload
                                 fileType="json"
-                                @changeData="data => importAll(data)">
+                                @changeData="data => importModal(data)">
                             </FileUpload>
 
                         </div>
@@ -102,6 +104,7 @@
                         />
 
                         <!-- Language, mention it only supports english. -->
+
                     </template>
                 </WindowContainerDivider>
             </template>
@@ -275,6 +278,96 @@
             </template>
         </WindowContainerDivider>
     </div>
+
+<!-- 
+    Import modal
+
+-->
+
+<Transition name="fade">
+    <Modal 
+        v-if="isModalDisplay"
+        @close="disableModal()">
+
+        <WindowContainerDivider>
+            <template #header>
+                <h1>
+                    Importing 
+                </h1>
+            </template>
+            
+            <template #content>
+
+                <template v-if="importHasDataProperty(localStorageVarNames.importedIcons)">
+
+                    <div v-if="importHasDataProperty(localStorageVarNames.importedIcons)">
+                        <h3> 
+                            Icons
+                        </h3>
+                        <div class="flex iconDisplay">
+                            <div v-for="(item, index) in m_ImportData.importedIcons" :key="index">
+                                <SVGHandler
+                                    :height="getSize"
+                                    :width="getSize"
+                                    :path_Value="item[1].pathData"
+                                    fill_Colour="#ffffff"
+                                    :view_Box="item[1].viewBox"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <br>
+
+                </template>
+
+                <template v-if="importHasDataProperty(localStorageVarNames.containerDisplayData)">
+                    <div>
+                        <h3> 
+                            Layout
+                        </h3>
+                        How do we represent this data?
+                    </div>
+
+                    <br>
+                </template>
+                
+                <div v-if="importHasDataProperty(localStorageVarNames.savedThemes)">
+                    <h3>
+                        Themes
+                    </h3>
+                    
+                </div>
+                
+                <!-- Show a list of the things importing -->
+                Any unsaved changes will be overwritten.
+                Importing does not save any data.
+
+                <!-- <br>
+                <Checkbox
+                    text="Do not remind me again"
+                    @onChange="val => toggleOffModal = val">
+                </Checkbox> -->
+
+                <br>
+
+                <div class="split-button">
+                    <SingleButton
+                        m_IconString="Tick"
+                        @click="importAll()">
+                        Confirm
+                    </SingleButton>
+                    <SingleButton
+                        m_IconString="Cross"
+                        @click="cancelImport()">
+                        Cancel
+                    </SingleButton>
+                </div>
+            </template>
+        </WindowContainerDivider>
+    </Modal>
+</Transition>
+
 </template>
 
 <script>
@@ -287,6 +380,7 @@ import Checkbox from '../Input Components/Checkbox.vue';
 import RadioBtn from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import FileUpload from '../Input Components/FileUpload.vue';
+import Modal from '../Main/Modal.vue';
 
 import { editVariables } from '../../Data/SettingVariables';
 import { layout } from '../../Data/layoutData';
@@ -302,6 +396,7 @@ export default {
         Checkbox,
         RadioBtn,
         ToolTip,
+        Modal,
     },
     data(){
         return{
@@ -316,19 +411,31 @@ export default {
             // For Downloading
             localStorageVarNames: {
                 
-                // Get these to work for now.
-                layoutDataName: "layoutData",
-                displayData: "containerDisplayData",
+                // Variable are the same name as the string
+                // For object lookups for validation
+                layoutData: "layoutData",
+                containerDisplayData: "containerDisplayData",
                 iconData: "iconData",
                 
-                importedIcons: "importedIcons",
-                
                 iconStorage: "iconStorage",
+                importedIcons: "importedIcons",
+
+                savedThemes: 'savedThemes',
             },
 
+            isModalDisplay: false,
+            m_ImportData: null,
         }
     },
     methods: {
+
+        enableModal(){ this.isModalDisplay = true;},
+        disableModal(){ this.isModalDisplay = false;},
+
+        // Boolean
+        importHasDataProperty(prop){
+            return (this.m_ImportData.hasOwnProperty(prop));
+        },
 
 // Data
 // -------------------------------------------------------------------------------------------------------
@@ -352,9 +459,10 @@ export default {
         // Not implemented yet
         exportThemes(dataToSave = null){
 
-            let data = {
-                themes: [],
-            }
+            let data = {}
+
+            // Property is the same name as the main string variable 
+            data[this.localStorageVarNames.savedThemes] =  [];
 
             // If parameter contained data, merge
             if(dataToSave) return {...dataToSave, ...data};
@@ -364,10 +472,11 @@ export default {
 
         exportImportedIcons(dataToSave = null){
 
-            let data = {
-                icons: JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons))
-            } 
+            let data = {};
 
+            // Property is the same name as the main string variable 
+            data[this.localStorageVarNames.importedIcons] = JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons));
+             
             // If parameter contained data, merge
             if(dataToSave) return {...dataToSave, ...data};
 
@@ -376,12 +485,13 @@ export default {
 
         exportLayout(dataToSave = null){
 
-            var data = {
-                layout: JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName)),
-                containerData: JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData)),
-                iconPositions: JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData))
-            }
+            var data = {};
 
+            // Property is the same name as the main string variable 
+            data[this.localStorageVarNames.layoutData] = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutData));
+            data[this.localStorageVarNames.containerDisplayData] = JSON.parse(localStorage.getItem(this.localStorageVarNames.containerDisplayData));
+            data[this.localStorageVarNames.iconData] = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
+            
             // If parameter contained data, merge
             if(dataToSave) return {...dataToSave, ...data};
 
@@ -394,13 +504,63 @@ export default {
             var hiddenElement = document.createElement('a');
             hiddenElement.href = 'data:attachment/text,' + encodeURIComponent(data);
             hiddenElement.target = '_blank';
-            hiddenElement.download = 'HomepageLayoutSave.json';
+            hiddenElement.download = 'HomepageLayoutSave.json'; // Generate a name ...
             hiddenElement.click();
         },
 
-    // Imports
+// Imports
+// ----------------------------------------------------------------------------------------------------------------------
 
-        importAll(data){
+        cancelImport(){
+            this.m_ImportData = null;
+            this.disableModal();
+        },
+
+        // Boolean
+        validateImport(data){
+
+            if(typeof(data) != "object") return false;
+
+            // Check for valid property
+            for (var key in data) {
+
+                if(!this.localStorageVarNames.hasOwnProperty(key)) return false;
+            }
+
+            return true;
+        },
+
+        importModal(data){
+
+            // Check if valid data first.
+            let validImport = this.validateImport(data); 
+            if(!validImport){
+
+                // Display some message for invalid import
+                return;
+            }
+
+            
+            // option to disable import modal?
+            
+            // let showModal = (type === "Delete") ? editVariables.isShowDeleteModal : editVariables.isShowCancelModal;
+            // if(!showModal){
+                
+            //     // Run the corresponding function
+            //     if(type==="Delete") this.deleteLayout();
+            //     if(type==="Cancel") this.cancelEdit();
+            
+            //     return;
+            // }
+            
+            this.m_ImportData = data;
+            // console.log(this.m_ImportData.importedIcons);
+            this.enableModal();
+        },
+
+        importAll(){
+
+            var data = this.m_ImportData;
 
             this.importLayout(data);
             this.importStoredIcons(data);
@@ -409,30 +569,25 @@ export default {
             // Reset selection
             editVariables.enableResetSelect();
             editVariables.enableResetFlag();
+
+            this.disableModal();
         },
 
         // Not implemented
         importThemes(data){
 
             // Check if has data
-            if(!data.hasOwnProperty('themes')) return;
+            if(!data.hasOwnProperty(`${this.localStorageVarNames.themes}`)) return;
 
-            // Display what they are importing...
-            
-            // Give request to cancel action.
+            // Not implemented themes
         },
 
         importStoredIcons(data){
             
             // Check if has property first
-            if(!data.hasOwnProperty('icons')) return;
-            
-            // Display what they are importing...
-            
-            // Give request to cancel action.
+            if(!data.hasOwnProperty(`${this.localStorageVarNames.importedIcons}`)) return;
 
-            iconImageStorage.setImportedSVGs(data.icons);
-
+            iconImageStorage.setImportedSVGs(data.importedIcons);
         },
 
         importLayout(data){
@@ -440,27 +595,49 @@ export default {
             // Check for any unsaved changes before importing
             // Perhaps show a modal first before any unsaved changes.
 
-            
             // Check if has property first
-            if(!(data.hasOwnProperty('layout') || 
-                 data.hasOwnProperty('containerData') ||
-                 data.hasOwnProperty('iconPositions'))) return;
-            
-            // Display what they are importing...
+            if(!(data.hasOwnProperty(`${this.localStorageVarNames.layoutData}`) || 
+                 data.hasOwnProperty(`${this.localStorageVarNames.containerDisplayData}`) ||
+                 data.hasOwnProperty(`${this.localStorageVarNames.iconData}`))) return;
+
 
             // Load all the data
-            layout.initializeData(data.layout);
-            containerData.intializeData(data.containerData);
-            iconData.initializeData(data.iconPositions);
+            // Any null data will not do anything
+            layout.initializeData(data.layoutData);
+            containerData.intializeData(data.containerDisplayData);
+            iconData.initializeData(data.iconData);
         },
         
-        // -------------------------------------------------------------------------------------------------------
-
+        // ------------------------------------------------------------------------------------------------------
     },
+    computed:{
+
+        // Changes import icon size depending on number shown.
+        getSize(){
+            
+            let size = this.m_ImportData.importedIcons.length;
+
+            if(size <= 5) return "5em";
+            if(size <= 10) return "4em";
+            if(size <= 20) return "3em";
+
+            return "1em";
+        }
+    }
 }
 </script>
 
 <style scoped>
+
+.iconDisplay{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.split-button{
+    display:flex;
+    justify-content:space-between;
+}
 
 a:hover{
     background-color: rgba(0, 0, 0, 0);
