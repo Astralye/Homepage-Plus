@@ -67,7 +67,7 @@
                                          'opacity-full' : !dragAndDrop.isDraggingEvent }"
 
                                 @mousedown="$refs['icon-drag-handler'].dragDropSetup($event, index, this.getIconData(index), this.m_STORAGE)"
-                                />
+                            />
                         </Transition>
                     </div>
                 </div>

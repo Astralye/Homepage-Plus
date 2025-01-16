@@ -18,23 +18,7 @@
         :height="height"
         :fill="fill_Colour">
 
-        <!-- Need to check for any g elements -->
-
         <SVGRecursion :pathData="path_Value"/>
-
-        <!-- <template v-for="(item, index) in path_Value" :key="index">
-            <path fill-rule="evenodd"
-                :d="item"
-            />
-        </template> -->
-
-        <!--
-            Need to check type 
-            
-            Either the values are a string
-
-            or an object
-        -->
 
     </svg>
 </div>
