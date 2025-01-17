@@ -1,25 +1,26 @@
 <script>
-
 import Window from './components/Window Components/Window.vue'
 import WindowButton from './components/Main/ListButton.vue'
 import PageContainer from './components/Main/Container.vue'
-import PageSubDivision from './components/Windows/PageSubDivision.vue'
-import ContainerContent from './components/Windows/ContainerContent.vue'
-import LinkMaker from './components/Windows/LinkMaker.vue'
 import Storage from './components/Main/Storage.vue'
 import IconButton from './components/Input Components/IconButton.vue'
-
-import { iconImageStorage } from './Data/iconImages'
 import SVGHandler from './components/Input Components/SVGHandler.vue'
 
+import { iconImageStorage } from './Data/iconImages'
 import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
 import { contextMenu } from './Data/multiSelect'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
-import Settings from './components/Windows/Settings.vue'
 import Multidrag from './components/Main/Multidrag.vue'
 import ContextMenu from './components/Main/ContextMenu.vue'
+
+// Windows
+import LinkMaker from './components/Windows/LinkMaker.vue'
+import PageSubDivision from './components/Windows/PageSubDivision.vue'
+import ContainerContent from './components/Windows/ContainerContent.vue'
+import Settings from './components/Windows/Settings.vue'
+import ThemeMenu from './components/Windows/ThemeMenu.vue'
 
 export default{
     name: "App",
@@ -32,6 +33,7 @@ export default{
         ContextMenu,
         IconButton,
         Multidrag,
+        ThemeMenu,
         LinkMaker,
         Settings,
         Storage,
@@ -52,8 +54,10 @@ export default{
             EditBtns: [
                 "Layout",
                 "Containers",
+                "Link Maker",
+                
+                "Themes",
                 "Widgets",
-                "Link Maker"
             ],
 
             containerData: {
@@ -256,7 +260,29 @@ export default{
                     />
                 </template>
                 <template v-slot:window-content>
-                    <LinkMaker> </LinkMaker>
+                    <LinkMaker/>
+                </template>
+            </Window>
+        </Transition>
+
+        <!-- Themes -->
+        <Transition name="fade">
+            <Window
+                v-if="windowHandler.getEditValue('Themes')"
+                title="Themes"
+                :width="400">
+                <template v-slot:window-icon>
+                    <SVGHandler
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
+                        view_Box="0 -960 960 960"
+                        fill_Colour="#CCCCCC"
+                        :path_Value="iconImageStorage.getPathData('Paint_Bucket')"
+                    />
+                </template>
+                <template v-slot:window-content>
+                    <ThemeMenu/>
                 </template>
             </Window>
         </Transition>
