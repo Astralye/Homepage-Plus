@@ -13,7 +13,7 @@
                 class="flex"
                 @click="generateIcon" 
                 :button_toggle="true"
-                m_IconString="Dotted_Square"
+                m_IconString="Add"
             >
                 New
             </SingleButton>
