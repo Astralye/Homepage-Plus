@@ -45,8 +45,8 @@
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="'exportThemes()'">
-                                Themes*
+                                @click="exportThemes()">
+                                Themes
                             </SingleButton>
 
                             <SingleButton
@@ -407,7 +407,8 @@ export default {
                 iconStorage: "iconStorage",
                 importedIcons: "importedIcons",
 
-                savedThemes: 'savedThemes',
+                savedTheme: 'savedTheme',
+                customThemes: 'customThemes',
             },
 
             isModalDisplay: false,
@@ -446,10 +447,11 @@ export default {
         // Not implemented yet
         exportThemes(dataToSave = null){
 
-            let data = {}
+            let data = {};
 
             // Property is the same name as the main string variable 
-            data[this.localStorageVarNames.savedThemes] =  [];
+            data[this.localStorageVarNames.savedTheme] = JSON.parse(localStorage.getItem(this.localStorageVarNames.savedTheme));
+            data[this.localStorageVarNames.customThemes] = JSON.parse(localStorage.getItem(this.localStorageVarNames.customThemes));
 
             // If parameter contained data, merge
             if(dataToSave) return {...dataToSave, ...data};

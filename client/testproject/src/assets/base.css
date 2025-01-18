@@ -21,7 +21,7 @@
 
   --WindowBorder-Radius: 15px;
   --WindowBorder-Thickness: 5px;
-  --box-shadow: 0 0 0.75em rgb(0, 0, 0);
+  --box-shadow: 0 0 2px #C9CBA3;
 
   --ThemeA-Hover: #5e2a33;
   --ThemeA-Select:  #4b1e26;
@@ -36,6 +36,8 @@
 
   --Theme-c-dark-1: var(--vt-c-white);
   --Theme-c-dark-2: var(--vt-c-white-mute);
+
+  --font-Colour: var(--vt-c-white-mute);
 
   --cursor: "default";
 }

@@ -182,7 +182,9 @@ export default {
                 iconStorage: "iconStorage",
                 
                 userSettings: "userSettings",
-                importedIcons: "importedIcons",
+
+                savedTheme: 'savedTheme',
+                customThemes: 'customThemes',
             },
 
             // Confirmation.
@@ -305,8 +307,9 @@ export default {
             const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
             const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
 
-            const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons));
             const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
+            
+            const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons));
             
             if(layoutData  === null) { console.log("No Layout Data!");  return; }
             if(displayData === null) { console.log("No Display Data!"); return;}
