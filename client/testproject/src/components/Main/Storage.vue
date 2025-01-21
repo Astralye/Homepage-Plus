@@ -147,6 +147,7 @@ import Modal from './Modal.vue';
 import { containerData } from '../../Data/containerData.js'
 import { layout } from '../../Data/layoutData.js';
 import { iconData, iconStorage } from '../../Data/iconData.js';
+import { themeStorage } from '../../Data/themeStorage';
 
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
@@ -170,6 +171,7 @@ export default {
             iconImageStorage,
             containerData,
             editVariables,
+            themeStorage,
             iconStorage,
             iconData,
             layout,
@@ -182,9 +184,8 @@ export default {
                 iconStorage: "iconStorage",
                 
                 userSettings: "userSettings",
-
                 savedTheme: 'savedTheme',
-                customThemes: 'customThemes',
+                importSVGs: 'importSVGs',
             },
 
             // Confirmation.
@@ -224,7 +225,7 @@ export default {
             localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
             localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
 
-            localStorage.setItem(this.localStorageVarNames.importedIcons,  JSON.stringify(Array.from(iconImageStorage.importedSVGs.entries())));
+            localStorage.setItem(this.localStorageVarNames.importSVGs,     JSON.stringify(Array.from(iconImageStorage.importedSVGs.entries())));
             localStorage.setItem(this.localStorageVarNames.userSettings,   JSON.stringify(editVariables.userSettings));
         },
 
@@ -260,15 +261,17 @@ export default {
             if(this.toggleOffModal) { editVariables.setDeleteModal(false);}
 
             // Reset data
-            containerData.resetData();
             layout.resetData();
             iconData.resetData();
             iconStorage.resetData();
+            themeStorage.resetLocalStorage();
+            containerData.resetData();
             iconImageStorage.resetImports();
 
             this.setValues();
             this.resetFlag();
             // Reset selected
+            
             editVariables.enableResetSelect();
 
             this.popuptext = "Layout Deleted!";
@@ -308,25 +311,24 @@ export default {
             const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
 
             const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
-            
-            const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons));
-            
-            if(layoutData  === null) { console.log("No Layout Data!");  return; }
-            if(displayData === null) { console.log("No Display Data!"); return;}
-            if(dataIcon === null)    { console.log("No Icon Data!");    return;}
-            if(storageData === null) { console.log("No Icon Storage Data!");    return;}
-            
-            if(importIcons === null) { console.log("No icon Data!");}
-            if(userData === null)    { console.log("No Settings Data!");    return;}
+            const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importSVGs));
+            const theme = themeStorage.savedThemeObj;
 
-            layout.initializeData(layoutData);
-            containerData.intializeData(displayData); 
-            iconData.initializeData(dataIcon);
-            iconStorage.initDataFromStorage(storageData); // Change later
-            
-            iconImageStorage.setImportedSVGs(importIcons);
-            editVariables.loadUserSettings(userData);
-            
+            // Run the respective function if contain the data within local storage
+
+            if(layoutData  !== null) layout.initializeData(layoutData);
+            if(displayData !== null) containerData.intializeData(displayData); 
+            if(dataIcon !== null)    iconData.initializeData(dataIcon);
+
+            if(storageData !== null) iconStorage.initDataFromStorage(storageData);
+
+            if(importIcons !== null) iconImageStorage.setImportedSVGs(importIcons);
+
+            if(userData !== null)    editVariables.loadUserSettings(userData);
+
+            if(theme !== null)       themeStorage.initData();
+
+
             editVariables.enableRenderFinalNode();
         },
     }

@@ -29,16 +29,17 @@
             </div>
             <div class="list-container">
 
+                
                 <TransitionGroup name="list">
 
-                    <div v-for="(item, index) in testArray" :key="index"
+                    <div v-for="(item, index) in themeStorage.storedThemes" :key="index"
                         class="theme-display"
                         :class="{
-                            'selected'  : isSelected(item.name),
-                            'unselected': !isSelected(item.name),
+                            'selected'  :  themeStorage.isSelected(item.name),
+                            'unselected': !themeStorage.isSelected(item.name),
                         }"
-                        @click="changeSelected(item.name)"> 
-                        
+                        @click="themeStorage.changeSelected(item.name)"> 
+
                         <div class="icon-center">
                             {{  item.name }}
                         </div>
@@ -73,7 +74,7 @@
                         <SingleButton
                             class="flex"
                             m_IconString="Add"
-                            @click="addTheme"
+                            @click="themeStorage.addTheme()"
                         />
                     </div>
                 </div>
@@ -81,7 +82,7 @@
             
             <div class="theme-buttons">
                 <SingleButton
-                    @click="deleteTheme"
+                    @click="themeStorage.deleteTheme()"
                     m_IconString="Delete"
                     :enabled="!isBaseTheme"
                     >
@@ -89,7 +90,7 @@
                 </SingleButton>
 
                 <SingleButton
-                    @click="saveTheme"
+                    @click="themeStorage.save()"
                     m_IconString="Save"
                 >
                 Save
@@ -103,6 +104,7 @@
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import FileUpload from '../Input Components/FileUpload.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     components:{
@@ -112,7 +114,8 @@ export default {
     },
     data(){
         return{
-            
+            themeStorage,
+
             testArray:[
                 {
                     name: "Default",
@@ -145,120 +148,14 @@ export default {
     },
     beforeUnmount(){
         // Set theme
-        this.resetTheme();
+        themeStorage.resetTheme();
     },
     methods:{
-        
-        
-        // Set back to base theme
-        resetTheme(){
-            
-            this.m_SelectedTheme = "Default"; // Whatever is in storage
-            this.changeSelected(this.m_SelectedTheme);
-        },
-
-        // from name
-        getObject(name){
-            for(let i = 0; i < this.testArray.length; i++){
-                if(name == this.testArray[i].name) return this.testArray[i];
-            }
-
-            return null;
-        },
-
-        changeSelected(name){
-            this.m_SelectedTheme = name;
-
-            let object = this.getObject(name);
-            if(!object) return; // no data
-
-            document.documentElement.style.setProperty("--ThemeA-Primary",   object.primary);
-            document.documentElement.style.setProperty("--ThemeA-Secondary", object.secondary);
-            document.documentElement.style.setProperty("--ThemeA-Accent",    object.tertiary);
-
-            // Adjust text colour
-            document.documentElement.style.setProperty("--Theme-c-dark-2",    this.getContrastYIQ(object.secondary));
-            document.documentElement.style.setProperty("--box-shadow", `0 0 2px ${object.tertiary}`);
-            
-        
-        },
-
-        isSelected(name){
-            return (this.m_SelectedTheme === name);
-        },
-
-    // Objects and colours
-    // ---------------------------------------------------------------------------------------------
-
-        // Determine text colour based 
-        getContrastYIQ(hexcolor){
-            var r = parseInt(hexcolor.substring(1,3),16);
-            var g = parseInt(hexcolor.substring(3,5),16);
-            var b = parseInt(hexcolor.substring(5,7),16);
-            var yiq = ((r*299)+(g*587)+(b*114))/1000;
-            return (yiq >= 128) ? 'black' : 'white';
-        },
-
-        themeConstructor(inputName, inputPrim, inputSec, inputTert){
-            return {
-                name:      inputName,
-                primary:   inputPrim,
-                secondary: inputSec,
-                tertiary:  inputTert,
-            }
-        },
-
-        addTheme(){
-
-            let name = "test";
-            let prim = "#abcabc";
-            let sec =  "#abc000";
-            let tert = "#ff12fb";
-
-            this.testArray.push(this.themeConstructor(name, prim, sec, tert));
-        },
-        
-        // From array, not local storage.
-        deleteTheme(){
-            for(let i = 0; i < this.testArray.length; i++){
-                if(this.m_SelectedTheme == this.testArray[i].name){
-                    this.testArray.splice(i, 1);
-                    this.resetTheme();
-                    return;
-                } 
-            }
-        },
-
-    // Storage
-    // ----------------------------------------------------------------------------------------------
-
-    
-        // From local storage
-        saveTheme(){
-
-
-            // Selected Theme
-            localStorage.setItem("savedTheme",  JSON.stringify(this.getObject(this.m_SelectedTheme)));
-
-            let size = this.testArray.length;
-
-            // Any new themes added
-            // length would be 4+
-            if(size <= 3) return; 
-            
-            let newObjects = this.testArray.slice(3, size);
-
-            localStorage.setItem("customThemes",  JSON.stringify(newObjects));
-        },
-
-        loadTheme(){
-            this.m_SelectedTheme = JSON.parse(localStorage.getItem("savedTheme"));
-        },
 
     },
     computed:{
         isBaseTheme(){
-            if(!this.m_SelectedTheme) return true;
+            if(!this.m_SelectedTheme) return true; // no data
             return ((this.m_SelectedTheme === "Default" || 
                     this.m_SelectedTheme === "Light" || 
                     this.m_SelectedTheme === "Dark"))
