@@ -42,6 +42,11 @@
                     :class="{ 'icon-Selection' : isSelectedIcon(index), 
                                 'grid-item' : !isSelectedIcon(index),
                                 'mouse-pointer': renderIcon(index)}"
+                    :style="{
+                        'border-color': themeStorage.getIconColourOpacity(
+                            isSelectedIcon(index) ? 0.8 : 0.15     
+                        )
+                    }"
 
                     @mouseup="checkDropIcon(index)"
                     @click="(editVariables.isIconSelector) ? setSelectData(index, true) : null"
@@ -273,6 +278,11 @@
                                     
                                     <div class="saved-icons icon-wrapper"
                                         :class="{ 'icon-Selection' : selectedIconMenu(index), 'grid-item' : !selectedIconMenu(index) }"
+                                        :style="{
+                                            'border-color': themeStorage.getIconColourOpacity(
+                                                selectedIconMenu(index) ? 0.8 : 0.15   
+                                            )
+                                        }"
                                         >
                                         <SVGHandler v-if="iconImageStorage.isValidIndex(index)"
                                             width="100%"
@@ -433,31 +443,30 @@
 </template>
 
 <script>
-import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
-import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
-import IconHandler from '../Main/IconHandler.vue';
-import TabWrapper from '../Window Components/TabWrapper.vue';
-import RangeSlider from '../Input Components/RangeSlider.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
 import OptionSelect from '../Input Components/OptionSelect.vue';
+import RangeSlider from '../Input Components/RangeSlider.vue';
+import TabWrapper from '../Window Components/TabWrapper.vue';
+import TextInput from '../Input Components/TextInput.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
 import RadioBtn from '../Input Components/RadioBtn.vue';
+import ToolTip from '../Window Components/ToolTip.vue';
+import IconHandler from '../Main/IconHandler.vue';
 
+import FileUpload from '../Input Components/FileUpload.vue';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import IconDragHandler from '../Main/IconDragHandler.vue';
 import Window from '../Window Components/Window.vue';
 
-import { iconImageStorage } from '../../Data/iconImages';
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
-import { mouseData } from '../../Data/mouseData';
-import { windowHandler } from '../../Data/userWindow';
 import { editVariables } from '../../Data/SettingVariables';
-
-import IconDragHandler from '../Main/IconDragHandler.vue';
-import SVGHandler from '../Input Components/SVGHandler.vue';
+import { iconImageStorage } from '../../Data/iconImages';
+import { windowHandler } from '../../Data/userWindow';
 import { dragAndDrop } from '../../Data/dragDrop';
-import FileUpload from '../Input Components/FileUpload.vue';
-
+import { mouseData } from '../../Data/mouseData';
+import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     components: {
@@ -482,6 +491,7 @@ export default {
             iconImageStorage,
             editVariables,
             windowHandler,
+            themeStorage,
             dragAndDrop,
             iconStorage,
             iconSelect,
@@ -816,7 +826,7 @@ export default {
 }
 
 .icon-Selection{
-    border: 3px solid rgba(255, 255, 255, 0.8);
+    border: 3px solid;
     border-radius: 10px;
     
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
@@ -826,7 +836,7 @@ export default {
 }
 
 .grid-item{
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 3px solid;
     border-radius: 10px;
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */

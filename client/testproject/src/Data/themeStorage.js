@@ -34,12 +34,6 @@ export class ThemeStorage {
                     secondary: "#14213d",
                     tertiary:  "#fca311",
                 },
-                // {
-                //     name: "abc",
-                //     primary: "#F0C1E1",
-                //     secondary: "#CB9DF0",
-                //     tertiary: "#FFF9BF",
-                // },
             ],
     
             importThemes: [],
@@ -49,6 +43,9 @@ export class ThemeStorage {
                 secondary: "#472d30",
                 tertiary:  "#C9CBA3",
             },
+
+            // For non-user modifiable
+            iconColour: "#0000000",
         }
     }
 
@@ -69,9 +66,6 @@ export class ThemeStorage {
 
         localStorage.setItem(this.data.localStorageVar.saved,    JSON.stringify(this.data.selectedtheme));
         localStorage.setItem(this.data.localStorageVar.imports,  JSON.stringify(this.data.importThemes));
-
-
-        console.log("resetlocal");
 
         this.changeSelected(this.data.selectedtheme);
     }
@@ -139,9 +133,7 @@ export class ThemeStorage {
         return null;
     }
 
-    isSelected(name){
-        console.log(this.data.selectedtheme)
-        return (this.data.selectedtheme === name); }
+    isSelected(name){ return (this.data.selectedtheme === name); }
 
     // Determine text colour based 
     getContrastYIQ(hexcolor){
@@ -154,7 +146,6 @@ export class ThemeStorage {
 
     clickChange(name){
         this.data.selectedtheme = name;
-
         this.changeSelected(name);
     }
 
@@ -170,7 +161,23 @@ export class ThemeStorage {
         // Adjust text colour
         document.documentElement.style.setProperty("--Theme-c-dark-2",    this.getContrastYIQ(object.secondary));
         document.documentElement.style.setProperty("--box-shadow", `0 0 2px ${object.tertiary}`);
+
+        // Make the value not black and white but changable via user or default different colour
+
+        // high contrast values like icon or texts
+        this.data.iconColour = this.getContrastYIQ(object.secondary);
     }
+    
+    // Pass in float, between 0 and 1
+    getIconColourOpacity(floatVal){ 
+
+        let object = this.getObject(this.data.selectedtheme);
+        if(!object) return; // no data
+
+        // Would need to use an rgba value instead    
+        return (this.getContrastYIQ(object.secondary) === "black") ? `rgba(0, 0, 0, ${floatVal})` : `rgba(255, 255, 255, ${floatVal})`;
+    }
+
 
 // Objects and colours
 // ---------------------------------------------------------------------------------------------
@@ -218,6 +225,8 @@ export class ThemeStorage {
 
     get savedTheme(){ return this.data.localStorageVar.saved; }
     get imports()   { return this.data.localStorageVar.imports; }
+
+    get highContrastColour(){ return this.data.iconColour; }
 }
 
 const themeStorageInstance = new ThemeStorage;

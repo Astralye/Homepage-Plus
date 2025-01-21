@@ -18,6 +18,10 @@
             @change="$emit('onChange', check)"
             :checked="checkValue"
             :disabled="!enabled"
+            :style="{
+                'color' : themeStorage.iconColour,
+                'border-color' : themeStorage.iconColour
+            }"
         >
         <p> {{ text }} </p>
         </label>
@@ -25,6 +29,7 @@
 </template>
 
 <script>
+import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     props: {
@@ -35,6 +40,7 @@ export default {
             default: true,
         },
     },
+    data(){ return{ themeStorage, } }, 
     emits: [ 'onChange'],
 }
 </script>
@@ -57,7 +63,7 @@ export default {
     appearance: none;
     width: 20px;
     height: 20px;
-    border: 2px solid #ffffff;
+    border: 2px solid;
     border-radius: 5px;
     background-color: transparent;
     display: inline-block;
@@ -85,7 +91,6 @@ export default {
 
 .cyberpunk-checkbox-label {
     font-size: 16px;
-    color: #fff;
     user-select: none;
     display: flex;
     align-items: center;

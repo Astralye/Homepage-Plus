@@ -10,6 +10,7 @@ import { iconImageStorage } from './Data/iconImages'
 import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
 import { contextMenu } from './Data/multiSelect'
+import { themeStorage } from './Data/themeStorage'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
 import Multidrag from './components/Main/Multidrag.vue'
@@ -46,6 +47,7 @@ export default{
             iconImageStorage,
             editVariables,
             windowHandler,
+            themeStorage,
 
             contextMenu,
 
@@ -100,7 +102,7 @@ export default{
                     height="3em"
                     width="3em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Pencil')"
                 />
             </IconButton>
@@ -112,7 +114,7 @@ export default{
                     height="3em"
                     width="3em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Gear')"
                 />
             </IconButton>
@@ -133,7 +135,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Pencil')"
                     />
                 </template>
@@ -163,7 +165,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Gear')"
                     />
                 </template>
@@ -187,7 +189,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Row_Column')"
                     />
                 </template>
@@ -210,7 +212,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Shelf')"
                     />
                 </template>
@@ -232,7 +234,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Block_TR_Tilt')"
                     />
                 </template>
@@ -255,7 +257,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
                     />
                 </template>
@@ -277,7 +279,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Paint_Bucket')"
                     />
                 </template>

@@ -20,7 +20,7 @@
                     height="4em"
                     width="4em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Save')"
                 />
             </button>
@@ -32,7 +32,7 @@
                     height="4em"
                     width="4em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Delete')"
             />
             </button>
@@ -44,7 +44,7 @@
                     height="4em"
                     width="4em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Cross')"
             />
             </button>
@@ -143,20 +143,19 @@
 </template>
 
 <script>
-import Modal from './Modal.vue';
+import { iconData, iconStorage } from '../../Data/iconData.js';
 import { containerData } from '../../Data/containerData.js'
 import { layout } from '../../Data/layoutData.js';
-import { iconData, iconStorage } from '../../Data/iconData.js';
 import { themeStorage } from '../../Data/themeStorage';
 
-import SVGHandler from '../Input Components/SVGHandler.vue';
+import { editVariables } from '../../Data/SettingVariables';
 import { iconImageStorage } from '../../Data/iconImages';
 
-import { editVariables } from '../../Data/SettingVariables';
-
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
-import Checkbox from '../Input Components/Checkbox.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
+import Modal from './Modal.vue';
 
 export default {
     components:{

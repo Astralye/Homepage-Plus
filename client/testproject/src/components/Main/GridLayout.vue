@@ -16,7 +16,13 @@
                 :class="{ 'icon' : renderIcon(index),
                 'icon-Selection' : isSelectedIcon(index),
                 'unselect-icon'  : !isSelectedIcon(index)}"
-            >
+                :style="{
+                    'border-color': themeStorage.getIconColourOpacity(
+                        isSelectedIcon(index) ? 0.8 : 0.15     
+                    )
+                }"
+                >
+
             
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
@@ -58,24 +64,25 @@
 
 <script>
 
-import { iconImageStorage } from '../../Data/iconImages';
-import { GridModificationClass } from '../Functions/gridModification.js';
-import { containerData } from '../../Data/containerData';
-import { iconData, iconSelect } from '../../Data/iconData.js';
-import { mouseData } from '../../Data/mouseData.js';
+import { GridModificationClass } from '../Functions/gridModification';
 import { editVariables } from '../../Data/SettingVariables';
-import { dragAndDrop } from '../../Data/dragDrop';
+import { iconData, iconSelect } from '../../Data/iconData';
+import { containerData } from '../../Data/containerData';
+import { iconImageStorage } from '../../Data/iconImages';
 import { multiSelect } from '../../Data/multiSelect';
+import { dragAndDrop } from '../../Data/dragDrop';
+import { mouseData } from '../../Data/mouseData';
+import { themeStorage } from '../../Data/themeStorage';
 
-import IconHandler from './IconHandler.vue';
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import IconDragHandler from './IconDragHandler.vue';
+import IconHandler from './IconHandler.vue';
 
 export default {
     components:{
+        IconDragHandler,
         IconHandler,
         SVGHandler,
-        IconDragHandler,
     },
     props:{
         component_ID: {
@@ -94,6 +101,7 @@ export default {
             GridModificationClass,
             iconImageStorage,
             editVariables,
+            themeStorage,
             dragAndDrop,
             multiSelect,
             iconSelect,
@@ -519,8 +527,11 @@ export default {
     transition-delay: 125ms;
 }
 
+/* 
+    rgba(255, 255, 255, 0.15);
+*/
 .unselect-icon{
-    border: 3px solid rgba(255, 255, 255, 0.15);
+    border: 3px solid; 
     border-radius: 10px;
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
@@ -539,8 +550,11 @@ export default {
     align-items: center;
 }
 
+/*
+    rgba(255, 255, 255, 0.8);
+*/
 .icon-Selection{
-    border: 3px solid rgba(255, 255, 255, 0.8);
+    border: 3px solid; 
     border-radius: 10px;
     
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */

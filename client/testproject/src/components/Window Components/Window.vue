@@ -6,6 +6,7 @@ import { mouseData } from '../../Data/mouseData';
 
 import { editVariables } from '../../Data/SettingVariables';
 import { windowHandler } from '../../Data/userWindow';
+import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     components:  {
@@ -27,7 +28,8 @@ export default {
             iconImageStorage,
             windowHandler,
             editVariables,
-
+            themeStorage,
+            
             windowHover: false,
 
             positions: {
@@ -135,7 +137,7 @@ export default {
             mouseData.disableMouseUp();
             mouseData.disableTracking();
         }
-    }
+    },
 }
 </script>
 
@@ -148,7 +150,8 @@ export default {
         ref="draggableContainer" 
         class="window"
 
-        :style="(isInsideThreshold) ? { 'z-index' : m_zIndex,
+        :style="(isInsideThreshold) ? { 
+              'z-index' : m_zIndex,
                   'top' : m_top,
                   'left': m_left,
         } : null">
@@ -188,7 +191,7 @@ export default {
                             width="3em"
                             :path_Value="iconImageStorage.getPathData('Cross')"
                             view_Box="0 -960 960 960"
-                            fill_Colour="#CCCCCC"
+                            :fill_Colour="themeStorage.highContrastColour"
                         />
                     </template>
 
@@ -199,7 +202,7 @@ export default {
                             width="3em"
                             :path_Value="iconImageStorage.getPathData('Arrow-Left')"
                             view_Box="0 -960 960 960"
-                            fill_Colour="#CCCCCC"
+                            :fill_Colour="themeStorage.highContrastColour"
                         />
                     </template>
 
