@@ -43,7 +43,12 @@ export class ThemeStorage {
             ],
     
             importThemes: [],
-            selectedtheme: "Default"
+            selectedtheme: {
+                name: "Default",
+                primary:   "#723d46",
+                secondary: "#472d30",
+                tertiary:  "#C9CBA3",
+            },
         }
     }
 
@@ -55,21 +60,38 @@ export class ThemeStorage {
         this.resetData();
 
         // If no value, set to default
-        this.data.selectedtheme = (this.data.selectedtheme) ? this.data.selectedtheme : "Default";
+        this.data.selectedtheme = (this.data.selectedtheme) ? this.data.selectedtheme : {
+            name: "Default",
+            primary:   "#723d46",
+            secondary: "#472d30",
+            tertiary:  "#C9CBA3",
+        },
 
         localStorage.setItem(this.data.localStorageVar.saved,    JSON.stringify(this.data.selectedtheme));
         localStorage.setItem(this.data.localStorageVar.imports,  JSON.stringify(this.data.importThemes));
+
+
+        console.log("resetlocal");
 
         this.changeSelected(this.data.selectedtheme);
     }
 
     // Get both import themes and selected themes
     initData(){
+        
+        console.log("init");
         this.data.displayArray = this.data.displayArray.concat(this.importThemeObj); // add to display themes
 
         this.data.importThemes = this.importThemeObj; // in the event of adding more themes
-        this.data.selectedtheme = this.savedThemeObj.name; // import selected Theme
-    
+        
+        // import selected Theme
+        this.data.selectedtheme = (this.savedThemeObj.name) ? this.savedThemeObj.name : {
+            name: "Default",
+            primary:   "#723d46",
+            secondary: "#472d30",
+            tertiary:  "#C9CBA3",
+        };
+
         this.resetTheme();
     }
 
@@ -100,6 +122,14 @@ export class ThemeStorage {
 // object functions 
 // -------------------------------------------------------------------------------
 
+    setImportThemes(data){
+
+        this.data.displayArray = this.data.displayArray.concat(data.customThemes); // add to display themes
+        this.data.selectedtheme = data.savedTheme.name;
+    
+        this.changeSelected(data.savedTheme.name);
+    }
+
     // from name
     getObject(name){
         for(let i = 0; i < this.data.displayArray.length; i++){
@@ -109,7 +139,9 @@ export class ThemeStorage {
         return null;
     }
 
-    isSelected(name){ return (this.data.selectedtheme === name); }
+    isSelected(name){
+        console.log(this.data.selectedtheme)
+        return (this.data.selectedtheme === name); }
 
     // Determine text colour based 
     getContrastYIQ(hexcolor){
@@ -120,9 +152,13 @@ export class ThemeStorage {
         return (yiq >= 128) ? 'black' : 'white';
     }
 
+    clickChange(name){
+        this.data.selectedtheme = name;
+
+        this.changeSelected(name);
+    }
 
     changeSelected(name){
-        this.data.selectedtheme = name;
 
         let object = this.getObject(name);
         if(!object) return; // no data
@@ -149,7 +185,12 @@ export class ThemeStorage {
     }
 
     // Reset to the value stored in localstorage
-    resetTheme(){ this.changeSelected(this.savedThemeObj.name); }
+    resetTheme(){
+        if(!this.savedThemeObj) return;
+        
+        this.data.selectedtheme = this.savedThemeObj.name;
+        this.changeSelected(this.savedThemeObj.name);
+    }
     
     addTheme(){
 
@@ -164,7 +205,7 @@ export class ThemeStorage {
     // From array, not local storage.
     deleteTheme(){
         for(let i = 0; i < this.data.displayArray.length; i++){
-            if(this.data.selectedtheme.name == this.data.displayArray[i].name){
+            if(this.data.selectedtheme == this.data.displayArray[i].name){
                 this.data.displayArray.splice(i, 1);
                 this.resetTheme();
                 return;

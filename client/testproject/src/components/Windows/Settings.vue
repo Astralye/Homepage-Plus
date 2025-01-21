@@ -251,7 +251,7 @@
                         <br>
                         Any resources, I have used goes here.
                         <br>
-                        Version v1.3.0
+                        Version v1.4.0
                         
                         <div class="flex-container">
                             <div class="button-bottom-right">
@@ -268,7 +268,6 @@
 
 <!-- 
     Import modal
-
 -->
 
 <Transition name="fade">
@@ -319,11 +318,34 @@
                     <br>
                 </template>
                 
-                <div v-if="importHasDataProperty(localStorageVarNames.savedThemes)">
+                <div v-if="importHasDataProperty(localStorageVarNames.savedTheme)">
                     <h3>
                         Themes
                     </h3>
-                    
+
+                    <div v-for="(item, index) in m_ImportData.customThemes" :key="index">
+
+                        {{  item.name }}
+                        
+                        <div class="colour-display flex">
+                            <div class="colour-item left-colour"
+                            :style="{
+                                'background-color': item.primary
+                            }"/>
+        
+                            <div class="colour-item"
+                            :style="{
+                                'background-color': item.secondary
+                            }"/>
+        
+                            <div class="colour-item right-colour"
+                            :style="{
+                                'background-color': item.tertiary
+                            }"/>
+                        </div>
+                    </div>
+
+                    <br>
                 </div>
                 
                 <!-- Show a list of the things importing -->
@@ -373,6 +395,7 @@ import { editVariables } from '../../Data/SettingVariables';
 import { layout } from '../../Data/layoutData';
 import { containerData } from '../../Data/containerData';
 import { iconData } from '../../Data/iconData';
+import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     components:{
@@ -389,6 +412,7 @@ export default {
         return{
             iconImageStorage,
             editVariables,
+            themeStorage,
 
             vmodelValues: [
                 { id: "Windows" , selected: false },
@@ -543,7 +567,7 @@ export default {
             // }
             
             this.m_ImportData = data;
-            // console.log(this.m_ImportData.importedIcons);
+            // console.log(this.m_ImportData);
             this.enableModal();
         },
 
@@ -566,9 +590,9 @@ export default {
         importThemes(data){
 
             // Check if has data
-            if(!data.hasOwnProperty(`${this.localStorageVarNames.themes}`)) return;
-
-            // Not implemented themes
+            if(!data.hasOwnProperty(`${this.localStorageVarNames.customThemes}`)) return;
+            
+            themeStorage.setImportThemes(data);
         },
 
         importStoredIcons(data){
@@ -617,6 +641,35 @@ export default {
 </script>
 
 <style scoped>
+
+.colour-display{
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    
+    height: 2em;
+    justify-content: space-evenly;
+}
+
+.flex{
+    display: flex;
+}
+
+.left-colour{
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    
+}
+
+.right-colour{
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.colour-item{
+    height: 100%;
+    width: 100%;
+}
+
 
 .iconDisplay{
     display: flex;

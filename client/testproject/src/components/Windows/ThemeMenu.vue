@@ -38,7 +38,7 @@
                             'selected'  :  themeStorage.isSelected(item.name),
                             'unselected': !themeStorage.isSelected(item.name),
                         }"
-                        @click="themeStorage.changeSelected(item.name)"> 
+                        @click="themeStorage.clickChange(item.name)"> 
 
                         <div class="icon-center">
                             {{  item.name }}
