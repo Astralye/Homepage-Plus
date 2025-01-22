@@ -134,6 +134,7 @@
                                     <!-- Colour -->
                                     <div class="modification-button">
                                         <ColourPicker
+                                            :isDisplayIcon="true"
                                             :loaded_Data="m_SelectedObject.iconColour"
                                             @setColour="(hex) => setColourData(hex)"
                                             :enabled="isCurrentlySelected"
@@ -815,6 +816,10 @@ export default {
 .opacity-full{
     transition: all 125ms ease-in-out;
     transition-delay: 125ms;
+}
+
+.full-width{
+    width: 100%;
 }
 
 /* 

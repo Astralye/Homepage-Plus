@@ -2,7 +2,7 @@
 
     <!-- Button to open window -->
     <SingleButton
-        class="full-width"
+        :class="{'full-width' : isDisplayIcon}"
         @click="windowHandler.toggleWindow('colour picker')"
         m_IconString="Colour_Palette"
         :enabled="enabled">
@@ -150,6 +150,10 @@ export default {
         enabled: {
             type: Boolean,
             default: true,
+        },
+        isDisplayIcon:{
+            type: Boolean,
+            default: false,
         }
     },
     emits: [ 'setColour'] ,
@@ -367,7 +371,6 @@ export default {
     }
 }
 </script>
-<!-- width: v-bind("windowWidth"); -->
 
 <style scoped>
 
