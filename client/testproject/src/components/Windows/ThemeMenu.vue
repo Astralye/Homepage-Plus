@@ -38,27 +38,63 @@
                             'selected'  :  themeStorage.isSelected(item.name),
                             'unselected': !themeStorage.isSelected(item.name),
                         }"
-                        @click="themeStorage.clickChange(item.name)"> 
+                        @click="themeStorage.clickChange(item.name); changeTheme(item)"> 
 
                         <div class="icon-center">
-                            {{  item.name }}
+                            <template v-if="item.alias.length === 0">
+                                Theme {{ index }}
+                            </template>
+                            <template v-else>
+                                {{  item.alias }}
+                            </template>
                         </div>
                         
                         <div class="colour-display flex">
+
+
                             <div class="colour-item left-colour"
-                            :style="{
-                                'background-color': item.primary
-                            }"/>
+                                :style="{ 'background-color': item.primary }"
+                                @click="themeStorage.clickChange(item.name); changeType(item, 'primary'); ">
+
+                                <Transition name="fade">
+                                    <div v-show="isSelected('primary') && themeStorage.isSelected(item.name)" 
+                                        class="left-colour"
+                                        :class="{ 'colourType' :  isSelected('primary'),
+                                                  'unsel-col'  : !isSelected('primary') }"
+                                        :style="{ 'border-color': themeStorage.getContrastYIQ(item.primary) }"
+                                    />
+                                </Transition>
+                            </div>
+
         
                             <div class="colour-item"
-                            :style="{
-                                'background-color': item.secondary
-                            }"/>
+                                :style="{ 'background-color': item.secondary }"
+                                @click="themeStorage.clickChange(item.name); changeType(item, 'secondary');">
+
+                                <transition name="fade">
+                                    <div v-show="isSelected('secondary') && themeStorage.isSelected(item.name)"
+                                        :class="{ 'colourType' : isSelected('secondary'),
+                                                  'unsel-col' : !isSelected('secondary') }"
+                                        :style="{ 'border-color': themeStorage.getContrastYIQ(item.secondary) }"
+                                    />
+                                </transition>
+
+                            </div>
         
                             <div class="colour-item right-colour"
-                            :style="{
-                                'background-color': item.tertiary
-                            }"/>
+                                :style="{ 'background-color': item.tertiary }"
+                                @click="themeStorage.clickChange(item.name); changeType(item, 'tertiary')">
+
+                                <transition name="fade">
+                                    <div v-show="isSelected('tertiary') && themeStorage.isSelected(item.name)"
+                                         class="right-colour"
+                                        :class="{ 'colourType' :  isSelected('tertiary'),
+                                                  'unsel-col'  : !isSelected('tertiary')}"
+                                        :style="{ 'border-color': themeStorage.getContrastYIQ(item.secondary) }"
+                                    />
+                                </transition>
+                            </div>
+
                         </div>
                     </div>
                 </TransitionGroup>
@@ -79,21 +115,35 @@
                     </div>
                 </div>
             </div>
+
+            <br>
+            <h3>
+                Theme Name
+            </h3>
+            <TextInput
+                :enabled="!isBaseTheme"
+                v-model="m_SelectedTheme.alias"/>
             
             <div class="theme-buttons">
                 <SingleButton
                     @click="themeStorage.deleteTheme()"
                     m_IconString="Delete"
                     :enabled="!isBaseTheme"
-                    >
-                Delete
+                >
+                    Delete
                 </SingleButton>
+            
+                <ColourPicker
+                    @setColour="(hex) => themeStorage.setRGBValues(m_SelectedTheme, typeSelected, hex)"
+                    :enabled="!isBaseTheme"
+                    :loaded_Data="m_SelectedTheme[typeSelected]"
+                    />
 
                 <SingleButton
                     @click="themeStorage.save()"
                     m_IconString="Save"
                 >
-                Save
+                    Save
                 </SingleButton>
             </div>
         </template>
@@ -104,47 +154,32 @@
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import FileUpload from '../Input Components/FileUpload.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import ColourPicker from '../Input Components/ColourPicker.vue';
+import TextInput from '../Input Components/TextInput.vue';
+
 import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     components:{
         WindowContainerDivider,
+        ColourPicker,
         SingleButton,
         FileUpload,
+        TextInput,
     },
     data(){
         return{
             themeStorage,
 
-            testArray:[
-                {
-                    name: "Default",
-                    primary:   "#723d46",
-                    secondary: "#472d30",
-                    tertiary:  "#C9CBA3",
-                },
-                {
-                    name: "Light",
-                    primary:   "#EFF3EA",
-                    secondary: "#EFF3EA",
-                    tertiary:  "#123fab",
-                },
-                {
-                    name: "Dark",
-                    primary:   "#000000",
-                    secondary: "#14213d",
-                    tertiary:  "#fca311",
-                },
-                {
-                    name: "abc",
-                    primary: "#F0C1E1",
-                    secondary: "#CB9DF0",
-                    tertiary: "#FFF9BF",
-                },
-            ],
+            typeSelected: 0, // primary, secondary or teriary
+            m_SelectedThemeName: "",
 
-            m_SelectedTheme: "Default",
+            m_SelectedTheme: {},
         }
+    },
+    created(){
+        // this.m_SelectedThemeName = 
+
     },
     beforeUnmount(){
         // Set theme
@@ -152,13 +187,22 @@ export default {
     },
     methods:{
 
+        changeTheme(item){
+            this.m_SelectedTheme = item;
+        },
+
+        changeType(item, type){
+            this.changeTheme(item);
+            this.typeSelected = type;
+        },
+        isSelected(val){return (this.typeSelected === val)},
     },
     computed:{
         isBaseTheme(){
-            if(!this.m_SelectedTheme) return true; // no data
-            return ((this.m_SelectedTheme === "Default" || 
-                    this.m_SelectedTheme === "Light" || 
-                    this.m_SelectedTheme === "Dark"))
+            if(!themeStorage.selectedTheme) return true; // no data
+            return ((themeStorage.selectedTheme === "Default" || 
+                     themeStorage.selectedTheme === "Light" || 
+                     themeStorage.selectedTheme === "Dark"))
         }
     }
 }
@@ -196,6 +240,22 @@ export default {
 .right-colour{
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
+}
+
+.colourType{
+    border: 2px solid;
+
+    height: 100%;
+    transition: opacity 150ms ease-in-out;
+}
+
+.unsel-col{
+    border: 2px solid;
+    opacity: 0;
+
+    height: 100%;
+    transition: opacity 150ms ease-in-out;
+
 }
 
 .colour-item{
