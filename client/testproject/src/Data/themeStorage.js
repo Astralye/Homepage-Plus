@@ -37,15 +37,10 @@ export class ThemeStorage {
             ],
     
             importThemes: [],
-            selectedtheme: {
-                name: "Default",
-                primary:   "#723d46",
-                secondary: "#472d30",
-                tertiary:  "#C9CBA3",
-            },
+            selectedtheme: "Default",
 
             // For non-user modifiable
-            iconColour: "#0000000",
+            iconColour: "white",
         }
     }
 
@@ -57,12 +52,7 @@ export class ThemeStorage {
         this.resetData();
 
         // If no value, set to default
-        this.data.selectedtheme = (this.data.selectedtheme) ? this.data.selectedtheme : {
-            name: "Default",
-            primary:   "#723d46",
-            secondary: "#472d30",
-            tertiary:  "#C9CBA3",
-        },
+        this.data.selectedtheme = (this.data.selectedtheme) ? this.data.selectedtheme : "Default";
 
         localStorage.setItem(this.data.localStorageVar.saved,    JSON.stringify(this.data.selectedtheme));
         localStorage.setItem(this.data.localStorageVar.imports,  JSON.stringify(this.data.importThemes));
@@ -79,12 +69,7 @@ export class ThemeStorage {
         this.data.importThemes = this.importThemeObj; // in the event of adding more themes
         
         // import selected Theme
-        this.data.selectedtheme = (this.savedThemeObj.name) ? this.savedThemeObj.name : {
-            name: "Default",
-            primary:   "#723d46",
-            secondary: "#472d30",
-            tertiary:  "#C9CBA3",
-        };
+        this.data.selectedtheme = (this.savedThemeObj.name) ? this.savedThemeObj.name : "Default";
 
         this.resetTheme();
     }
@@ -152,6 +137,7 @@ export class ThemeStorage {
     changeSelected(name){
 
         let object = this.getObject(name);
+        console.log(object, "change")
         if(!object) return; // no data
 
         document.documentElement.style.setProperty("--ThemeA-Primary",   object.primary);
@@ -166,13 +152,16 @@ export class ThemeStorage {
 
         // high contrast values like icon or texts
         this.data.iconColour = this.getContrastYIQ(object.secondary);
+        console.log(this.data.iconColour, object.secondary);
     }
     
     // Pass in float, between 0 and 1
     getIconColourOpacity(floatVal){ 
-
+        
         let object = this.getObject(this.data.selectedtheme);
+        // console.log(this.data.selectedtheme)
         if(!object) return; // no data
+
 
         // Would need to use an rgba value instead    
         return (this.getContrastYIQ(object.secondary) === "black") ? `rgba(0, 0, 0, ${floatVal})` : `rgba(255, 255, 255, ${floatVal})`;
