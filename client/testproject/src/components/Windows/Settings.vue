@@ -141,22 +141,6 @@
                 <WindowContainerDivider>
                     <template #header>
                         <h3>
-                            Themes
-                        </h3>
-                    </template>
-
-                    <template #content>
-                        Some kind of theme selector.
-
-                        Maybe opens a list.
-                    </template>
-
-                </WindowContainerDivider>
-
-
-                <WindowContainerDivider>
-                    <template #header>
-                        <h3>
                             Text
                         </h3>
                     </template>
@@ -325,7 +309,7 @@
 
                     <div v-for="(item, index) in m_ImportData.customThemes" :key="index">
 
-                        {{  item.name }}
+                        {{  item.alias }}
                         
                         <div class="colour-display flex">
                             <div class="colour-item left-colour"
