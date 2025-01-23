@@ -4,13 +4,11 @@
             'grid-template-columns': `repeat(auto-fit, minmax(${gridItemWidth}px, 1fr))`,
             'grid-template-rows':    `repeat(auto-fit, minmax(${gridItemWidth}px, 1fr))`,
         }"
-
-
-
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
         @mouseenter="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
         >
+        
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
@@ -508,13 +506,14 @@ export default {
 
         // global resizing
         resizeGrids(){
-            
             let containerRef = this.$refs["container"];
             if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
 
             let dims = containerRef.getBoundingClientRect();
 
-            let dimension = GridModificationClass.calculateGridDimension(dims.width, dims.height, editVariables.appearanceGrid.globalGridItemSize );
+            let size = (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : 125;
+
+            let dimension = GridModificationClass.calculateGridDimension(dims.width, dims.height, size );
             this.setRowColData(dimension.rows, dimension.columns);
         },
 
@@ -527,7 +526,7 @@ export default {
     },
     computed:{
         gridItemWidth(){
-            return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : '125px';
+            return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : 125;
         }
     },
     watch:{
@@ -541,6 +540,11 @@ export default {
             if(val){
                 this.initBounds();
             }
+        },
+
+        // Recalculate grids when it is applied
+        'editVariables.appearanceGrid.isApplyGlobal'(){
+            this.resizeGrids();
         },
 
         // Watch changes in grid size.
@@ -624,14 +628,6 @@ export default {
     height: 100%;
     
     display: grid;
-}
-
-.box{
-    width: 100px;
-    height: auto;
-    aspect-ratio: 1;
-
-    background-color: white;
 }
 
 </style>
