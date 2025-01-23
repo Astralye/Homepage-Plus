@@ -58,7 +58,7 @@ export default{
                 "Containers",
                 "Link Maker",
                 
-                "Themes",
+                "Appearance",
                 "Widgets",
             ],
 
@@ -270,8 +270,8 @@ export default{
         <!-- Themes -->
         <Transition name="fade">
             <Window
-                v-if="windowHandler.getEditValue('Themes')"
-                title="Themes"
+                v-if="windowHandler.getEditValue('Appearance')"
+                title="Appearance"
                 :width="400">
                 <template v-slot:window-icon>
                     <SVGHandler

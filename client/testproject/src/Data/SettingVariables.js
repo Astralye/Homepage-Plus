@@ -34,6 +34,55 @@ export class EditVariables{
                 delete: true,
                 cancel: true,
             },
+        },
+
+        userAppearanceSettings:{
+            grids:{
+                isApplyGlobal: true,
+                isDisableIconLabels: false,
+                globalIconSize: "4em",
+                globalGridItemSize: "8em",
+            },
+            list:{
+                isApplyGlobal: true,
+                isDisableIcons: false,
+                globalPadding: "1em",
+                globalitemHeight: "1em",
+            },
+
+            font:{
+                type: "arial",
+                size: "12px",
+                enableTextBackground: false,
+                isOverrideAutoColour: true,
+
+                colour: "black",
+            },
+
+            icons:{
+                isApplyGlobal: true,
+                iconColour: "#000000",
+                isUseTertiary: true,
+            },
+
+            containerHeader:{
+                isApplyGlobal: true,
+                font:{
+                    type: "arial",
+                    size: "12px",                    
+                    isOverrideAutoColour: true,
+
+                    colour: "white",
+                },
+            },
+
+            containerAll:{
+                isApplyGlobal: true,
+                isDisplayContainerBorder: false,
+
+                borderThickness: "2px",
+                borderRadius: "5px",
+            }
         }
     }}
 

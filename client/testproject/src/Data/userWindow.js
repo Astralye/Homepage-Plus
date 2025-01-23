@@ -15,7 +15,7 @@ class WindowHandler{
             { name: "colour picker", toggle: false },
             
             { name: "widgets",    toggle: false },
-            { name: "themes",     toggle: false },
+            { name: "appearance",     toggle: false },
         ],
 
         windowStack: []
