@@ -4,7 +4,6 @@
     <WindowContainerDivider>
 
         <template #content>
-
             <TabWrapper
                 :default_Tab="0"
                 :tab_Buttons="m_ThemeTabButttons"
@@ -148,7 +147,7 @@
                         @setColour="(hex) => themeStorage.setRGBValues(m_SelectedTheme, typeSelected, hex)"
                         :enabled="!isBaseTheme"
                         :loaded_Data="m_SelectedTheme[typeSelected]"
-                        />
+                    />
     
                     <SingleButton
                         @click="themeStorage.save()"
@@ -174,29 +173,45 @@
                 </h2>
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Grid_applyGlobal(val)"
+                    :checkValue="editVariables.appearanceGrid.isApplyGlobal"
                     text="Apply global settings"
                 />
                 <!-- This will apply these settings to every grid -->
                 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Grid_showIconLabel(val)"
+                    :checkValue="editVariables.appearanceGrid.isDisableIconLabels"
+                    :enabled="editVariables.appearanceGrid.isApplyGlobal"
                     text="Display Icon Labels"
                 />
 
                 Global icon size: in px
 
-                <RangeSlider></RangeSlider>
+                {{ editVariables.appearanceGrid.globalIconSize }}
+
+                <RangeSlider
+                    :enabled="editVariables.appearanceGrid.isApplyGlobal"
+                    :no_Items="m_GlobalListPadding.length"                    
+                    :caption_Data="m_GlobalListPadding"
+                    v-model="editVariables.values.userAppearanceSettings.grids.globalIconSize"
+                />
 
                 Grid item size: in px
-                <RangeSlider></RangeSlider>
+
+                {{ editVariables.appearanceGrid.globalGridItemSize }}
+
+                <RangeSlider
+                    :enabled="editVariables.appearanceGrid.isApplyGlobal"
+                    :no_Items="m_GlobalGridItemSize.length"                    
+                    :caption_Data="m_GlobalGridItemSize"
+                    v-model="editVariables.values.userAppearanceSettings.grids.globalGridItemSize"
+                />
 
 
                 <SingleButton
-                    @click="console.log('resetCheckbox')">
-                    Reset grids
+                    @click="editVariables.resetAppearance_Grid()">
+                    Reset grid settings
                 </SingleButton>
                 <br>
 
@@ -209,27 +224,40 @@
                 </h2>
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_List_applyGlobal(val)"
+                    :checkValue="editVariables.appearanceList.isApplyGlobal"
                     text="Apply global settings"
                 />
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_List_showIcons(val)"
+                    :checkValue="editVariables.appearanceList.isDisableIconLabels"
+                    :enabled="editVariables.appearanceList.isApplyGlobal"
                     text="Display Icons"
                 />
-
-                Padding between content
-                <RangeSlider> </RangeSlider>
+                
+                List item height size: in px
+                {{ editVariables.values.userAppearanceSettings.list.globalitemHeight }}
+                <RangeSlider
+                    :enabled="editVariables.appearanceList.isApplyGlobal"
+                    :no_Items="m_GlobalListHeight.length"                    
+                    :caption_Data="m_GlobalListHeight"
+                    v-model="editVariables.values.userAppearanceSettings.list.globalitemHeight"
+                />
 
                 <br>
-                List item height size: in px
-                <RangeSlider></RangeSlider>
+                Padding between content
+                {{ editVariables.values.userAppearanceSettings.list.globalPadding }}
+                <RangeSlider
+                    :enabled="editVariables.appearanceList.isApplyGlobal"
+                    :no_Items="m_GlobalListHeight.length"                    
+                    :caption_Data="m_Padding"
+                    v-model="editVariables.values.userAppearanceSettings.list.globalPadding"
+                />
 
                 <SingleButton
-                    @click="console.log('resetCheckbox')">
-                    Reset grids
+                    @click="editVariables.resetAppearance_List()">
+                    Reset list Settings
                 </SingleButton>
 
             </template>
@@ -250,7 +278,11 @@
                     Font
                 </h2>
 
-                <!-- Maybe make this more generalizable later -->
+                <!-- 
+                    TODO
+                    Maybe make this more generalizable later 
+                    For now, we leave it until we need to make it work    
+                -->
                 <select name="font" id="font">
                     <option value="abc">arial</option>
 
@@ -269,11 +301,19 @@
                 </h3>
 
                 in px
-                <RangeSlider></RangeSlider>
+
+                {{ editVariables.values.userAppearanceSettings.font.size }}
+
+                <RangeSlider
+                    :enabled="editVariables.appearanceFont.isApplyGlobal"
+                    :no_Items="m_GlobalFontSize.length"                    
+                    :caption_Data="m_GlobalFontSize"
+                    v-model="editVariables.values.userAppearanceSettings.font.size"
+                />
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Font_textBackground(val)"
+                    :checkValue="editVariables.appearanceFont.enableTextBackground"
                     text="Display Text Background"
                 />
                 <br>
@@ -288,14 +328,19 @@
                 </h3>
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Font_overrideAuto(val)"
+                    :checkValue="editVariables.appearanceFont.isOverrideAutoColour"
                     text="Override auto high contrast font"
                 />
                 *Font colour is calculated based on contrast of the secondary colour.
                 On theme change, this will not update and may make the text unreadable. 
 
-                <ColourPicker> </ColourPicker>
+                <ColourPicker
+                    @setColour="(hex) => editVariables.setAppearance_Font_colour(hex)"
+                    :enabled="editVariables.appearanceFont.isOverrideAutoColour"
+                    :loaded_Data="editVariables.appearanceFont.colour"
+                />
+
                 <br>
 
                 <h3>
@@ -305,7 +350,7 @@
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
                 <SingleButton
-                    @click="console.log('resetFont')">
+                    @click="editVariables.resetAppearance_Font()">
                     Reset Font
                 </SingleButton>
             </template>
@@ -321,8 +366,8 @@
                 </h2>
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Icon_applyGlobal(val)"
+                    :checkValue="editVariables.appearanceIcon.isApplyGlobal"
                     text="Apply global settings"
                 />
                 <br>
@@ -333,24 +378,22 @@
                 </h3>
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Icon_useTertiary(val)"
+                    :checkValue="editVariables.appearanceIcon.isUseTertiary"
                     text="Use Tertiary colour"
                 />
 
                 in px
-                <ColourPicker></ColourPicker>
+
+                <ColourPicker
+                    @setColour="(hex) => editVariables.setAppearance_Icon_colour(hex)"
+                    :enabled="!editVariables.appearanceIcon.isUseTertiary"
+                    :loaded_Data="editVariables.appearanceFont.colour"
+                />
                 <br>
 
-
-                <h3>
-                    Icon sizes
-                </h3>
-                in px
-                <RangeSlider></RangeSlider>
-
                 <SingleButton
-                    @click="console.log('resetCheckbox')">
+                    @click="editVariables.resetAppearance_Icon()">
                     Reset grids
                 </SingleButton>
             </template>
@@ -365,8 +408,8 @@
                 </h2>
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Header_applyGlobal(val)"
+                    :checkValue="editVariables.appearanceHeader.isApplyGlobal"
                     text="Apply global settings"
                 />
 
@@ -389,45 +432,89 @@
                 <h3>
                     Font size
                 </h3>
-                <RangeSlider> </RangeSlider>
+
+                {{  editVariables.values.userAppearanceSettings.containerHeader.font.size }}
+
+                <RangeSlider
+                    :enabled="editVariables.appearanceHeader.isApplyGlobal"
+                    :no_Items="m_GlobalContHeader.length"                    
+                    :caption_Data="m_GlobalContHeader"
+                    v-model="editVariables.values.userAppearanceSettings.containerHeader.font.size"
+                />
 
                 <h3>
                     Font colour
                 </h3>
 
-                <ColourPicker></ColourPicker>
+                <Checkbox
+                    @onChange="val => editVariables.setAppearance_Header_overrideAuto(val)"
+                    :enabled="editVariables.appearanceHeader.isApplyGlobal"
+                    :checkValue="editVariables.appearanceHeader.font.isOverrideAutoColour"
+                    text="Use Tertiary colour"
+                />
+
+                <ColourPicker
+                    @setColour="(hex) => editVariables.setAppearance_Header_colour(hex)"
+                    :enabled="!editVariables.appearanceHeader.font.isOverrideAutoColour && editVariables.appearanceHeader.isApplyGlobal"
+                    :loaded_Data="editVariables.appearanceHeader.font.colour"
+                />
 
                 <br>
                 Applied changes:
+
                 <h2>
                     I am a header!
                 </h2>
 
                 <SingleButton
-                    @click="console.log('resetHeader')">
+                    @click="editVariables.resetAppearance_Header()">
                     Reset Header
                 </SingleButton>
+
+
 
                 <h2>
                     Container
                 </h2>
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Cont_applyGlobal(val)"
+                    :checkValue="editVariables.appearanceCont.isApplyGlobal"
                     text="Apply global settings"
                 />
 
                 <Checkbox
-                    @onChange=""
-                    :checkValue="false"
+                    @onChange="val => editVariables.setAppearance_Cont_showBorder(val)"
+                    :checkValue="editVariables.appearanceCont.isDisplayContainerBorder"
+                    :enabled="editVariables.appearanceCont.isApplyGlobal"
                     text="Display Container borders"
                 />
 
                 <h3>
-                    Border thickness
+                    Border
                 </h3>
-                <RangeSlider> </RangeSlider>
 
+                Thickness
+
+                {{  editVariables.values.userAppearanceSettings.containerAll.borderThickness }}
+
+                <RangeSlider
+                    :enabled="editVariables.appearanceCont.isApplyGlobal && editVariables.appearanceCont.isDisplayContainerBorder"
+                    :no_Items="m_GlobalContBorderThickness.length"                    
+                    :caption_Data="m_GlobalContBorderThickness"
+                    v-model="editVariables.values.userAppearanceSettings.containerAll.borderThickness"
+                />
+                <br>
+
+                Radius
+
+                {{  editVariables.values.userAppearanceSettings.containerAll.borderRadius }}
+
+                <RangeSlider
+                    :enabled="editVariables.appearanceCont.isApplyGlobal && editVariables.appearanceCont.isDisplayContainerBorder"
+                    :no_Items="m_GlobalContBorderRadius.length"                    
+                    :caption_Data="m_GlobalContBorderRadius"
+                    v-model="editVariables.values.userAppearanceSettings.containerAll.borderRadius"
+                />
             </template>
 
             </TabWrapper>
@@ -449,6 +536,8 @@ import RangeSlider from '../Input Components/RangeSlider.vue';
 
 import { themeStorage } from '../../Data/themeStorage';
 
+import { editVariables } from '../../Data/SettingVariables';
+
 export default {
     components:{
         WindowContainerDivider,
@@ -462,6 +551,7 @@ export default {
     },
     data(){
         return{
+            editVariables,
             themeStorage,
 
             typeSelected: 0, // primary, secondary or teriary
@@ -469,13 +559,29 @@ export default {
 
             m_SelectedTheme: {},
 
+            // Tabs
             m_ThemeTabButttons: [
                 { text: 'Themes', icon_Image: "Dotted_Square" },
                 { text: 'Grids, Lists', icon_Image: "Dotted_Square"},
                 { text: 'Text', icon_Image: "Dotted_Square"},
                 { text: 'Icons', icon_Image: "Dotted_Square"},
                 { text: 'Container', icon_Image: "Dotted_Square"},
-            ]
+            ],
+
+            // Range Sliders
+            m_GlobalIconSize: [ "12px", "16px", "20px", "25px"],
+            m_GlobalGridItemSize: [ "12px", "16px", "20px", "25px"],
+            
+            m_GlobalListHeight: ["a", "b", "c", "d"],
+            m_GlobalListPadding: ["1", "2", "3", "4"],
+
+            m_GlobalFontSize: ["10px" , "12px" , "14px" , "16px"],
+            
+            m_GlobalContHeader: ["20px", "24px", "32px", "38px"],
+
+            m_GlobalContBorderThickness: ["1px", "2px", "3px", "4px"],
+            m_GlobalContBorderRadius: ["0px", "4px", "8px", "12px"],
+            
         }
     },
     beforeUnmount(){
