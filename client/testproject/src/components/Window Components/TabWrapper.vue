@@ -24,6 +24,16 @@
     </div>
 </template>
 
+<!-- 
+
+    For each template, requires an ID in the parent to be used
+
+    <template #Tab-{{no.}}>
+    ...
+
+-->
+
+
 <script>
 import SingleButton from '../Input Components/SingleButton.vue';
 
