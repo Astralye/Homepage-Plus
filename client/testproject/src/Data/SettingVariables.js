@@ -92,9 +92,9 @@ export class EditVariables{
     resetAppearance_Grid(){
         this.values.userAppearanceSettings.grids = {
             isApplyGlobal: true,
-            isDisableIconLabels: false,
-            globalIconSize: "4em",
-            globalGridItemSize: "8em",
+            isDisableIconLabels: true,
+            globalIconSize: "75px",
+            globalGridItemSize: 125,
         };
     }
     resetAppearance_List(){

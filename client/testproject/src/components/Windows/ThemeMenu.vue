@@ -188,12 +188,12 @@
 
                 Global icon size: in px
 
-                {{ editVariables.appearanceGrid.globalIconSize }}
+                {{ editVariables.appearanceGrid.m_GlobalIconSize }}
 
                 <RangeSlider
                     :enabled="editVariables.appearanceGrid.isApplyGlobal"
-                    :no_Items="m_GlobalListPadding.length"                    
-                    :caption_Data="m_GlobalListPadding"
+                    :no_Items="m_GlobalIconSize.length"                    
+                    :caption_Data="m_GlobalIconSize"
                     v-model="editVariables.values.userAppearanceSettings.grids.globalIconSize"
                 />
 
@@ -251,7 +251,7 @@
                 <RangeSlider
                     :enabled="editVariables.appearanceList.isApplyGlobal"
                     :no_Items="m_GlobalListHeight.length"                    
-                    :caption_Data="m_Padding"
+                    :caption_Data="m_GlobalListHeight"
                     v-model="editVariables.values.userAppearanceSettings.list.globalPadding"
                 />
 
@@ -569,8 +569,8 @@ export default {
             ],
 
             // Range Sliders
-            m_GlobalIconSize: [ "12px", "16px", "20px", "25px"],
-            m_GlobalGridItemSize: [ "12px", "16px", "20px", "25px"],
+            m_GlobalIconSize: [ "40px", "50px", "75px", "100px", "120px"], // Maybe this could be relative to the size of the grid item
+            m_GlobalGridItemSize: [ 75, 100, 125, 150], // Must be a number
             
             m_GlobalListHeight: ["a", "b", "c", "d"],
             m_GlobalListPadding: ["1", "2", "3", "4"],

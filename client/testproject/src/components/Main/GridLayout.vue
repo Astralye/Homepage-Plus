@@ -1,5 +1,12 @@
 <template>
     <div class="grid-wrapper border-box"
+        :style="{
+            'grid-template-columns': `repeat(auto-fit, minmax(${gridItemWidth}px, 1fr))`,
+            'grid-template-rows':    `repeat(auto-fit, minmax(${gridItemWidth}px, 1fr))`,
+        }"
+
+
+
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
         @mouseenter="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
@@ -17,13 +24,11 @@
                 'icon-Selection' : isSelectedIcon(index),
                 'unselect-icon'  : !isSelectedIcon(index)}"
                 :style="{
-                    'border-color': themeStorage.getIconColourOpacity(
-                        isSelectedIcon(index) ? 0.8 : 0.15     
-                    )
+                    'border-color': themeStorage.getIconColourOpacity( isSelectedIcon(index) ? 0.8 : 0.15 ),
+                    'width' : `${gridItemWidth}px`
                 }"
                 >
 
-            
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
                     <IconHandler v-show="renderIcon(index)"
@@ -32,7 +37,9 @@
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
-                        :toggle_Container_Text="m_containerData.gridData.displayText"
+                        :toggle_Container_Text="m_containerData.gridData.displayText && 
+                                                !(editVariables.appearanceGrid.isApplyGlobal && !editVariables.appearanceGrid.isDisableIconLabels)"
+                        :override_Size="(editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalIconSize : null"
                         @mousedown.left="(editVariables.isEnabled) ? selectionDrag($event, index) : null"
                     />
                 </Transition>
@@ -69,10 +76,10 @@ import { editVariables } from '../../Data/SettingVariables';
 import { iconData, iconSelect } from '../../Data/iconData';
 import { containerData } from '../../Data/containerData';
 import { iconImageStorage } from '../../Data/iconImages';
+import { themeStorage } from '../../Data/themeStorage';
 import { multiSelect } from '../../Data/multiSelect';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { mouseData } from '../../Data/mouseData';
-import { themeStorage } from '../../Data/themeStorage';
 
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import IconDragHandler from './IconDragHandler.vue';
@@ -479,6 +486,7 @@ export default {
             
             Watches for changes in element sizes to automatically recalculate the dimensions of the grids.
         */
+
         gridResizer(){
             let containerRef = this.$refs["container"];
             if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
@@ -487,18 +495,40 @@ export default {
                 let width  = dimensions[0].contentRect.width;
                 let height = dimensions[0].contentRect.height;
 
-                let dimension = GridModificationClass.calculateGridDimension(width, height, containerData.getIconSize(this.component_ID));
+                let size = (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : containerData.getIconSize(this.component_ID);
+
+                console.log(size);
+
+                let dimension = GridModificationClass.calculateGridDimension(width, height, size);
                 this.setRowColData(dimension.rows, dimension.columns);
             });
 
             this.m_Observer.observe(containerRef);
         },
 
+        // global resizing
+        resizeGrids(){
+            
+            let containerRef = this.$refs["container"];
+            if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
+
+            let dims = containerRef.getBoundingClientRect();
+
+            let dimension = GridModificationClass.calculateGridDimension(dims.width, dims.height, editVariables.appearanceGrid.globalGridItemSize );
+            this.setRowColData(dimension.rows, dimension.columns);
+        },
+
+
         // Dimension is stored as 'R , C'
         setRowColData(rows, columns){
             this.m_GridDimensions.Rows    = rows
             this.m_GridDimensions.Columns = columns
         },
+    },
+    computed:{
+        gridItemWidth(){
+            return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : '125px';
+        }
     },
     watch:{
         'editVariables.resetFlag'(val, oldVal){
@@ -511,6 +541,15 @@ export default {
             if(val){
                 this.initBounds();
             }
+        },
+
+        // Watch changes in grid size.
+        'editVariables.appearanceGrid.globalGridItemSize':{
+            handler(){
+                if(!editVariables.appearanceGrid.isApplyGlobal) return;
+                this.resizeGrids();
+            },
+            deep: true,
         }
     }
 }
@@ -573,7 +612,6 @@ export default {
     right: 50%;
     transform: translate(50%,-50%);
 
-    width: 125px;
     aspect-ratio: 1;
 }
 
@@ -586,8 +624,6 @@ export default {
     height: 100%;
     
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    grid-template-rows:    repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .box{

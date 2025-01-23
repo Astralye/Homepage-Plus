@@ -4,7 +4,6 @@
 
 <template>
     <div class="center noselect">
-
         <div class="center fit-content">
 
             <SVGHandler
@@ -52,6 +51,10 @@ export default {
         toggle_Container_Text:{
             type: Boolean,
             default: true,
+        },
+        override_Size:{
+            type: String,
+            default: null
         }
     },
     data(){
@@ -79,9 +82,19 @@ export default {
         this.init();
     },
     methods: {
+
+        initSize(){
+            // If contains value, set the size to override
+            
+            if(!this.icon_data){ return; }
+
+            this.iconData.size    = (this.override_Size) ? this.override_Size : this.icon_data.iconSize;
+        },
+
         init(){
             if(!this.icon_data){ return; }
-            this.iconData.size    = this.icon_data.iconSize;
+            
+            this.initSize();
             this.iconData.image   = iconImageStorage.getPathData(this.icon_data.iconImage);
             this.iconData.colour  = this.icon_data.iconColour;
             this.iconData.text_Size = this.icon_data.iconStringSize;
@@ -113,6 +126,9 @@ export default {
         'icon_data':{
             handler(val){ this.init(); },
             deep: true            
+        },
+        'override_Size'(){
+            this.initSize();
         }
     },
     computed: {
