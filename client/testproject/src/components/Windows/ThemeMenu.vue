@@ -591,7 +591,7 @@ export default {
     padding-left: 0.5em;
     padding-right: 0.5em;
     
-    height: 3.5em;
+    height: 2.5em;
     justify-content: space-evenly;
 }
 

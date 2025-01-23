@@ -272,7 +272,7 @@ export default{
             <Window
                 v-if="windowHandler.getEditValue('Appearance')"
                 title="Appearance"
-                :width="400">
+                :width="450">
                 <template v-slot:window-icon>
                     <SVGHandler
                         class="icon-center"
