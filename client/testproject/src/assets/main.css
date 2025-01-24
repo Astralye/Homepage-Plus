@@ -5,6 +5,10 @@
   base.css was for variable initalization.
 */
 
+.help-tip{
+  font-size: 12px;
+}
+
 .prevent-overflow{
   overflow: hidden;
 }
