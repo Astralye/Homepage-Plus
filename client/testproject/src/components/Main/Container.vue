@@ -106,7 +106,6 @@ import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
 import { editVariables } from '../../Data/SettingVariables.js';
 import { multiSelect } from '../../Data/multiSelect.js';
-import { iconSelect } from '../../Data/iconData.js';
 
 import ListLayout from './ListLayout.vue';
 import Gridlayout from './GridLayout.vue'
@@ -153,7 +152,6 @@ export default {
             editVariables,
             containerData,
             multiSelect,
-            iconSelect,
             mouseData,
             layout,
 
