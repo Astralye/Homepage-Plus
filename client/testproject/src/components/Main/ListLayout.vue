@@ -13,7 +13,7 @@
     <!-- Container wrapper -->
     <div
         class="list-container no-pointer-event"
-        @click="checkReset($event)"
+        @click.self="checkReset($event)"
         @mouseup="checkDrop(); dragAndDrop.resetTimer();"
         @mouseenter="dragAndDrop.enabled ? mouseEnterList() : null"
         @mouseleave="mouseLeaveList()"
@@ -73,13 +73,12 @@
 </template>
 
 <script>
-
-import { containerData } from '../../Data/containerData';
-import { iconData, iconSelect } from '../../Data/iconData';
 import { editVariables } from '../../Data/SettingVariables';
+import { iconData, iconSelect } from '../../Data/iconData';
+import { containerData } from '../../Data/containerData';
+import { multiSelect } from '../../Data/multiSelect';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
-import { multiSelect } from '../../Data/multiSelect';
 import { mouseData } from '../../Data/mouseData';
 
 import { toRaw } from 'vue';
@@ -394,7 +393,7 @@ export default {
         isSelectedIcon(index){
 
             let icon = this.m_GroupData[index];
-            if(!icon || iconSelect.length === 0) return false;
+            if(!icon) return false;
 
             return iconSelect.isContainSelectedData(icon.iconID, this.m_containerData.ID);
         },
@@ -436,9 +435,7 @@ export default {
             if(multiSelect.isHoldingCtrl){
                 multiSelect.toggleIndexCollision(index);
 
-                (multiSelect.isIndexSelected(index)) ?
-                    iconSelect.addNewData(iconID, this.m_containerData.ID):
-                    iconSelect.removeData(iconID, this.m_containerData.ID);
+                (multiSelect.isIndexSelected(index)) ? iconSelect.addNewData(iconID, this.m_containerData.ID): iconSelect.removeData(iconID, this.m_containerData.ID);
 
                 return;
             }
