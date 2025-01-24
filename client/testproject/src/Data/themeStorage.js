@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { editVariables } from './SettingVariables';
 
 // Requires the ability to save and delete the local storage.
 // Better to have a shared object
@@ -149,6 +150,15 @@ export class ThemeStorage {
         this.changeSelected(name);
     }
 
+    resetColour(){
+        this.changeSelected(this.selectedTheme);
+        // this.updateTextColour(this.getContrastYIQ(this.selectedTheme));
+    }
+
+    updateTextColour(colour){
+        document.documentElement.style.setProperty("--Theme-c-dark-2", colour );
+    }
+
     changeSelected(name){
 
         let object = this.getObject(name);
@@ -158,11 +168,13 @@ export class ThemeStorage {
         document.documentElement.style.setProperty("--ThemeA-Secondary", object.secondary);
         document.documentElement.style.setProperty("--ThemeA-Accent",    object.tertiary);
 
-        // Adjust text colour
-        document.documentElement.style.setProperty("--Theme-c-dark-2",    this.getContrastYIQ(object.secondary));
-        document.documentElement.style.setProperty("--box-shadow", `0 0 2px ${object.tertiary}`);
+        // Adjust text colour on theme change
+        // Only when there isnt override
+        if(!editVariables.appearanceFont.isOverrideAutoColour){
+            this.updateTextColour(this.getContrastYIQ(object.secondary));
+        }
 
-        // Make the value not black and white but changable via user or default different colour
+        document.documentElement.style.setProperty("--box-shadow", `0 0 2px ${object.tertiary}`);
 
         // high contrast values like icon or texts
         this.data.iconColour = this.getContrastYIQ(object.secondary);

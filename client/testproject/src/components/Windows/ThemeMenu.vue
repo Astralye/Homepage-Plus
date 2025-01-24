@@ -183,7 +183,7 @@
                     @onChange="val => editVariables.setAppearance_Grid_showIconLabel(val)"
                     :checkValue="editVariables.appearanceGrid.isDisableIconLabels"
                     :enabled="editVariables.appearanceGrid.isApplyGlobal"
-                    text="Display Icon Labels"
+                    text="Display icon labels"
                 />
 
                 <br>
@@ -232,7 +232,7 @@
                     @onChange="val => editVariables.setAppearance_List_showIcons(val)"
                     :checkValue="!editVariables.appearanceList.isDisableIconLabels"
                     :enabled="editVariables.appearanceList.isApplyGlobal"
-                    text="Display Icons"
+                    text="Display icons"
                 />
 
                 <Checkbox
@@ -304,13 +304,21 @@
             Font size
             SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS        
         -->
-                <h3>
-                    Font size
-                </h3>
 
-                in px
+                <Checkbox
+                    @onChange="val => editVariables.setAppearance_Font_applyGlobal(val)"
+                    :checkValue="editVariables.appearanceFont.isApplyGlobal"
+                    text="Apply global settings"
+                />
 
-                {{ editVariables.values.userAppearanceSettings.font.size }}
+                <Checkbox
+                    @onChange="val => editVariables.setAppearance_Font_textBackground(val)"
+                    :checkValue="editVariables.appearanceFont.enableTextBackground"
+                    text="Display text Background"
+                />
+                <br>
+
+                Content font size: {{ editVariables.values.userAppearanceSettings.font.size }}
 
                 <RangeSlider
                     :enabled="editVariables.appearanceFont.isApplyGlobal"
@@ -319,11 +327,11 @@
                     v-model="editVariables.values.userAppearanceSettings.font.size"
                 />
 
-                <Checkbox
-                    @onChange="val => editVariables.setAppearance_Font_textBackground(val)"
-                    :checkValue="editVariables.appearanceFont.enableTextBackground"
-                    text="Display Text Background"
-                />
+                <p class="help-tip">
+                    This will apply only to content on the main page
+                </p>
+
+
                 <br>
 
         <!-- 
@@ -338,16 +346,19 @@
                 <Checkbox
                     @onChange="val => editVariables.setAppearance_Font_overrideAuto(val)"
                     :checkValue="editVariables.appearanceFont.isOverrideAutoColour"
-                    text="Override auto high contrast font"
+                    text="Override auto high contrast text"
                 />
-                *Font colour is calculated based on contrast of the secondary colour.
-                On theme change, this will not update and may make the text unreadable. 
-
+                
                 <ColourPicker
-                    @setColour="(hex) => editVariables.setAppearance_Font_colour(hex)"
+                    @setColour="(hex) => {editVariables.setAppearance_Font_colour(hex); changeCol();}"
                     :enabled="editVariables.appearanceFont.isOverrideAutoColour"
                     :loaded_Data="editVariables.appearanceFont.colour"
                 />
+                <p class="help-tip">
+                    Colour is calculated based on contrast of the secondary colour.
+                    <br>
+                    On theme change, this will not update and may make the text unreadable. 
+                </p>
 
                 <br>
 
@@ -355,7 +366,12 @@
                     Sample text
                 </h3>
 
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                <div
+                    :style="{
+                        'font-size' : editVariables.values.userAppearanceSettings.font.size
+                    }">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                </div>
 
                 <SingleButton
                     @click="editVariables.resetAppearance_Font()">
@@ -437,11 +453,7 @@
                     <option value="jkl">comic sans</option>
                 </select>
 
-                <h3>
-                    Font size
-                </h3>
-
-                {{  editVariables.values.userAppearanceSettings.containerHeader.font.size }}
+                Font size: {{  editVariables.values.userAppearanceSettings.containerHeader.font.size }}
 
                 <RangeSlider
                     :enabled="editVariables.appearanceHeader.isApplyGlobal"
@@ -583,7 +595,7 @@ export default {
             m_GlobalListHeight: [ "auto", "50px", "65px", "75px"],
             m_GlobalListPadding: ["0.25em", "0.5em", "0.75em", "1em", "1.5em", "2em"],
 
-            m_GlobalFontSize: ["10px" , "12px" , "14px" , "16px"],
+            m_GlobalFontSize: ["10px" , "12px" , "14px" , "16px", "18px", "20px"],
             
             m_GlobalContHeader: ["20px", "24px", "32px", "38px"],
 
@@ -597,6 +609,10 @@ export default {
         themeStorage.resetTheme();
     },
     methods:{
+
+        changeCol(){
+            document.documentElement.style.setProperty("--Theme-c-dark-2", editVariables.appearanceFont.colour);
+        },
 
         changeTheme(item){
             this.m_SelectedTheme = item;
@@ -614,6 +630,12 @@ export default {
             return ((themeStorage.selectedTheme === "Default" || 
                      themeStorage.selectedTheme === "Light" || 
                      themeStorage.selectedTheme === "Dark"))
+        }
+    },
+    watch:{
+        'editVariables.appearanceFont.isOverrideAutoColour'(val){
+            
+            (val) ? this.changeCol() : themeStorage.resetColour();
         }
     }
 }

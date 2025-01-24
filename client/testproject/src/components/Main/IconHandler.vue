@@ -22,7 +22,7 @@
                 <div class="fit-content text-padding">
                     <p class="text"
                         :style="{
-                            'font-size' : iconData.text_Size
+                            'font-size' : (editVariables.appearanceFont.isApplyGlobal) ? editVariables.appearanceFont.size : iconData.text_Size
                         }">
                         {{ iconData.text }}
                     </p>

@@ -66,6 +66,7 @@ export class EditVariables{
     // setAppearance_List_globalItemHeight(val) { this.values.userAppearanceSettings.list.globalPadding = val; }
 
     // font setter
+    setAppearance_Font_applyGlobal(val)    { this.values.userAppearanceSettings.font.isApplyGlobal = val; }
     setAppearance_Font_type(val)           { this.values.userAppearanceSettings.font.type = val; }
     // setAppearance_Font_size(val)           { this.values.userAppearanceSettings.font.size = val; }
     setAppearance_Font_textBackground(val) { this.values.userAppearanceSettings.font.enableTextBackground = val; }
@@ -110,8 +111,9 @@ export class EditVariables{
     }
     resetAppearance_Font(){
         this.values.userAppearanceSettings.font ={
+            isApplyGlobal: true,
             type: "arial",
-            size: "12px",
+            size: "16px",
             enableTextBackground: false,
             isOverrideAutoColour: false,
 

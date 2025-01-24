@@ -59,7 +59,7 @@
                             'center-text' : (isCenter && m_containerData.ListData.displayIcon && !(editVariables.appearanceList.isApplyGlobal && !editVariables.appearanceList.isDisableIcons)),
                         }"
                         :style="{
-                            'font-size' : item.iconStringSize,
+                            'font-size' : (editVariables.appearanceFont.isApplyGlobal) ? editVariables.appearanceFont.size : item.iconStringSize,
                             'text-align': layoutCSSDirection,
                         }">
                         {{ item.iconString }}
