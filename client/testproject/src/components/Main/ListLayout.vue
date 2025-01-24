@@ -30,12 +30,18 @@
                     :class="{ 'icon-Selection' : isSelectedIcon(index),
                               'unselect-icon'  : !isSelectedIcon(index)
                     }"
+                    :style="{
+                        'height': editVariables.appearanceList.globalitemHeight,
+                        'margin-top' : editVariables.appearanceList.globalPadding,
+                        'margin-bottom': editVariables.appearanceList.globalPadding
+                    }"
                     @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
                     @mousedown.left="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
                 >   
                     <!-- Icon if any -->
-                    <div v-if="m_containerData.ListData.displayIcon"
-                        class="icon-spacing"
+                    <div v-if="m_containerData.ListData.displayIcon &&
+                            !(editVariables.appearanceList.isApplyGlobal && !editVariables.appearanceList.isDisableIcons)"
+                        class="icon-spacing icon-center"
                         >
                         <SVGHandler
                             width="2em"
@@ -50,7 +56,7 @@
                     <div
                         class="base-text-wrapper"
                         :class="{
-                            'center-text' : (isCenter && m_containerData.ListData.displayIcon),
+                            'center-text' : (isCenter && m_containerData.ListData.displayIcon && !(editVariables.appearanceList.isApplyGlobal && !editVariables.appearanceList.isDisableIcons)),
                         }"
                         :style="{
                             'font-size' : item.iconStringSize,
@@ -61,7 +67,7 @@
 
                 </div>
 
-                <hr v-if="!isLastPosition(index)">
+                <hr v-if="!isLastPosition(index) && !(editVariables.appearanceList.isApplyGlobal && !editVariables.appearanceList.globalDisplayListDivider) ">
             </div>
         </TransitionGroup>
     </div>
@@ -514,7 +520,7 @@ export default {
 .list-move, /* apply transition to moving elements */
 .list-enter-active,
 .list-leave-active {
-  transition: all 0.5s ease;
+  transition: all 300ms ease;
 }
 
 .list-enter-from,
@@ -582,24 +588,23 @@ export default {
 
 .base-text-wrapper{
     width: 100%;
+    height: auto;
 
-    overflow: hidden;
     transition: font-size ease 200ms;
+
 
     margin-top: auto;
     margin-bottom: auto; 
+    
+    transition: all 300ms ease;
 }
 
 .center-text{
+    height: auto;
     
-    position: absolute;
-    margin-left: 0.5em;
-    padding-right: 0.5em;
-    height: 2em;
+    transition: all 300ms ease;
 
     justify-content: center;
-    align-items: center;
-    display: flex;
     flex-direction: column;
     
 }
@@ -614,7 +619,9 @@ export default {
     
     width: auto;
     margin: 0.5em;
-    padding: 0.5em;
+    padding: 0.25em 0.5em;
+
+    transition: all 300ms ease;
 }
 
 .list-container{

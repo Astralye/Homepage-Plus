@@ -57,8 +57,10 @@ export class EditVariables{
     setAppearance_Grid_gridSize(val)       { this.values.userAppearanceSettings.grids.globalGridItemSize = val; }
 
     // List setter
-    setAppearance_List_applyGlobal(val)      { this.values.userAppearanceSettings.list.isApplyGlobal = val; }
-    setAppearance_List_showIcons(val)        { this.values.userAppearanceSettings.list.isDisableIcons = val; }
+    setAppearance_List_applyGlobal(val)    { this.values.userAppearanceSettings.list.isApplyGlobal = val; }
+    setAppearance_List_showIcons(val)      { this.values.userAppearanceSettings.list.isDisableIcons = val; }
+    setAppearance_List_displayDivider(val) { this.values.userAppearanceSettings.list.globalDisplayListDivider = val;}
+    
     // Set by vmodel
     // setAppearance_List_globalPadding(val)    { this.values.userAppearanceSettings.list.globalitemHeight = val; }
     // setAppearance_List_globalItemHeight(val) { this.values.userAppearanceSettings.list.globalPadding = val; }
@@ -100,8 +102,9 @@ export class EditVariables{
     resetAppearance_List(){
         this.values.userAppearanceSettings.list = {
             isApplyGlobal: true,
-            isDisableIcons: false,
-            globalitemHeight: "1em",
+            isDisableIcons: true,
+            globalDisplayListDivider: true,
+            globalitemHeight: "auto",
             globalPadding: "1em",
         };
     }

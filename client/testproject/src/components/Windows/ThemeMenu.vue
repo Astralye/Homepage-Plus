@@ -186,9 +186,9 @@
                     text="Display Icon Labels"
                 />
 
-                Global icon size: in px
+                <br>
 
-                {{ editVariables.appearanceGrid.m_GlobalIconSize }}
+                Global icon size: {{ editVariables.appearanceGrid.globalIconSize }}
 
                 <RangeSlider
                     :enabled="editVariables.appearanceGrid.isApplyGlobal"
@@ -197,9 +197,9 @@
                     v-model="editVariables.values.userAppearanceSettings.grids.globalIconSize"
                 />
 
-                Grid item size: in px
+                <br>
 
-                {{ editVariables.appearanceGrid.globalGridItemSize }}
+                Grid item size: {{ editVariables.appearanceGrid.globalGridItemSize }}px
 
                 <RangeSlider
                     :enabled="editVariables.appearanceGrid.isApplyGlobal"
@@ -207,7 +207,6 @@
                     :caption_Data="m_GlobalGridItemSize"
                     v-model="editVariables.values.userAppearanceSettings.grids.globalGridItemSize"
                 />
-
 
                 <SingleButton
                     @click="editVariables.resetAppearance_Grid()">
@@ -231,13 +230,22 @@
 
                 <Checkbox
                     @onChange="val => editVariables.setAppearance_List_showIcons(val)"
-                    :checkValue="editVariables.appearanceList.isDisableIconLabels"
+                    :checkValue="!editVariables.appearanceList.isDisableIconLabels"
                     :enabled="editVariables.appearanceList.isApplyGlobal"
                     text="Display Icons"
                 />
-                
-                List item height size: in px
-                {{ editVariables.values.userAppearanceSettings.list.globalitemHeight }}
+
+                <Checkbox
+                    @onChange="val => editVariables.setAppearance_List_displayDivider(val)"
+                    :checkValue="!editVariables.appearanceFont.globalDisplayListDivider"
+                    :enabled="editVariables.appearanceList.isApplyGlobal"
+                    text="Display list divider"
+                />
+
+                <br>
+
+                List item height: {{ editVariables.appearanceList.globalitemHeight }}
+
                 <RangeSlider
                     :enabled="editVariables.appearanceList.isApplyGlobal"
                     :no_Items="m_GlobalListHeight.length"                    
@@ -246,12 +254,12 @@
                 />
 
                 <br>
-                Padding between content
-                {{ editVariables.values.userAppearanceSettings.list.globalPadding }}
+
+                Margin between content: {{ editVariables.values.userAppearanceSettings.list.globalPadding }}
                 <RangeSlider
                     :enabled="editVariables.appearanceList.isApplyGlobal"
-                    :no_Items="m_GlobalListHeight.length"                    
-                    :caption_Data="m_GlobalListHeight"
+                    :no_Items="m_GlobalListPadding.length"                    
+                    :caption_Data="m_GlobalListPadding"
                     v-model="editVariables.values.userAppearanceSettings.list.globalPadding"
                 />
 
@@ -572,8 +580,8 @@ export default {
             m_GlobalIconSize: [ "40px", "50px", "75px", "100px", "120px"], // Maybe this could be relative to the size of the grid item
             m_GlobalGridItemSize: [ 75, 100, 125, 150], // Must be a number
             
-            m_GlobalListHeight: ["a", "b", "c", "d"],
-            m_GlobalListPadding: ["1", "2", "3", "4"],
+            m_GlobalListHeight: [ "auto", "50px", "65px", "75px"],
+            m_GlobalListPadding: ["0.25em", "0.5em", "0.75em", "1em", "1.5em", "2em"],
 
             m_GlobalFontSize: ["10px" , "12px" , "14px" , "16px"],
             
