@@ -616,6 +616,8 @@ export default {
     right: 50%;
     transform: translate(50%,-50%);
 
+    transition: width 300ms ease-out;
+
     aspect-ratio: 1;
 }
 
