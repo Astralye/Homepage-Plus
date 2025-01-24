@@ -47,7 +47,11 @@
                     <!-- Container header -->
                     <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
                         ref="header"> 
-                        <div class="container-header">
+                        <div class="container-header"
+                            :style="{
+                                'font-size' : (editVariables.appearanceHeader.isApplyGlobal) ? editVariables.appearanceHeader.font.size : '24px',
+                            }"
+                        >
                             {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
                         </div>
                         <hr>
@@ -62,9 +66,7 @@
                     <!-- Container Grid -->
                     <template v-else>
                         <div>
-                            <ListLayout
-                                
-                                :component_ID="m_LayoutData.id"/>
+                            <ListLayout :component_ID="m_LayoutData.id"/>
                         </div>
                     </template>
                      
@@ -109,6 +111,7 @@ import { multiSelect } from '../../Data/multiSelect.js';
 
 import ListLayout from './ListLayout.vue';
 import Gridlayout from './GridLayout.vue'
+import { themeStorage } from '../../Data/themeStorage.js';
 
 export default {
     name: "recursive-container",
@@ -550,6 +553,11 @@ export default {
             Horizontal -> Extra at the end
         */
         m_DisplayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
+
+        headerColour(){
+            if(!editVariables.appearanceHeader.isApplyGlobal){ themeStorage.getResettedColour(); return; }
+            return (editVariables.appearanceHeader.font.isOverrideAutoColour) ? editVariables.appearanceHeader.font.colour : editVariables.appearanceFont.colour;
+        }
     },
 
 
@@ -657,6 +665,9 @@ hr{
     
     font-size: 24px;
     font-weight: bold;
+    
+    transition: font-size ease 200ms;
+    color: var(--Header-colour);
 }
 
 .height-full{

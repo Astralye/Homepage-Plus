@@ -37,6 +37,8 @@
   --Theme-c-dark-1: var(--vt-c-white);
   --Theme-c-dark-2: var(--vt-c-white-mute);
 
+  --Header-colour: black;
+
   --font-Colour: var(--vt-c-white-mute);
 
   --cursor: "default";

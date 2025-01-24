@@ -133,10 +133,10 @@ export class EditVariables{
             isApplyGlobal: true,
             font:{
                 type: "arial",
-                size: "12px",                    
-                isOverrideAutoColour: true,
+                size: "24px",                    
+                isOverrideAutoColour: false,
     
-                colour: "#ffffff",
+                colour: "#000000",
             }
         };
     }

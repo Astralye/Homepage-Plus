@@ -350,7 +350,7 @@
                 />
                 
                 <ColourPicker
-                    @setColour="(hex) => {editVariables.setAppearance_Font_colour(hex); changeCol();}"
+                    @setColour="(hex) => {editVariables.setAppearance_Font_colour(hex); appearanceFontChange();}"
                     :enabled="editVariables.appearanceFont.isOverrideAutoColour"
                     :loaded_Data="editVariables.appearanceFont.colour"
                 />
@@ -408,7 +408,7 @@
                 />
 
                 <ColourPicker
-                    @setColour="(hex) => editVariables.setAppearance_Icon_colour(hex)"
+                    @setColour="(hex) => { editVariables.setAppearance_Icon_colour(hex);}"
                     :enabled="!editVariables.appearanceIcon.isUseTertiary"
                     :loaded_Data="editVariables.appearanceFont.colour"
                 />
@@ -451,7 +451,9 @@
                     <option value="jkl">comic sans</option>
                 </select>
 
-                Font size: {{  editVariables.values.userAppearanceSettings.containerHeader.font.size }}
+                <br>
+
+                Font size: {{  editVariables.appearanceHeader.font.size }}
 
                 <RangeSlider
                     :enabled="editVariables.appearanceHeader.isApplyGlobal"
@@ -459,6 +461,8 @@
                     :caption_Data="m_GlobalContHeader"
                     v-model="editVariables.values.userAppearanceSettings.containerHeader.font.size"
                 />
+
+                <br>
 
                 <h3>
                     Font colour
@@ -468,28 +472,33 @@
                     @onChange="val => editVariables.setAppearance_Header_overrideAuto(val)"
                     :enabled="editVariables.appearanceHeader.isApplyGlobal"
                     :checkValue="editVariables.appearanceHeader.font.isOverrideAutoColour"
-                    text="Use Tertiary colour"
+                    text="Override auto high contrast"
                 />
+                <br>
 
                 <ColourPicker
-                    @setColour="(hex) => editVariables.setAppearance_Header_colour(hex)"
-                    :enabled="!editVariables.appearanceHeader.font.isOverrideAutoColour && editVariables.appearanceHeader.isApplyGlobal"
+                    @setColour="(hex) => {editVariables.setAppearance_Header_colour(hex); changeHeadCol(editVariables.appearanceHeader.font.colour)}"
+                    :enabled="editVariables.appearanceHeader.font.isOverrideAutoColour && editVariables.appearanceHeader.isApplyGlobal"
                     :loaded_Data="editVariables.appearanceHeader.font.colour"
                 />
 
                 <br>
                 Applied changes:
 
-                <h2>
+                <div class="header-colour" 
+                    :style="{
+                    'font-size' : (editVariables.appearanceHeader.isApplyGlobal) ? editVariables.appearanceHeader.font.size : '24px', 
+                }">
                     I am a header!
-                </h2>
+                </div>
 
+                <br>
                 <SingleButton
                     @click="editVariables.resetAppearance_Header()">
                     Reset Header
                 </SingleButton>
 
-
+                <br>
 
                 <h2>
                     Container
@@ -506,6 +515,8 @@
                     :enabled="editVariables.appearanceCont.isApplyGlobal"
                     text="Display Container borders"
                 />
+
+                <br>
 
                 <h3>
                     Border
@@ -595,7 +606,7 @@ export default {
 
             m_GlobalFontSize: ["10px" , "12px" , "14px" , "16px", "18px", "20px"],
             
-            m_GlobalContHeader: ["20px", "24px", "32px", "38px"],
+            m_GlobalContHeader: ["18px", "20px", "24px", "28px", "32px"],
 
             m_GlobalContBorderThickness: ["1px", "2px", "3px", "4px"],
             m_GlobalContBorderRadius: ["0px", "4px", "8px", "12px"],
@@ -608,8 +619,24 @@ export default {
     },
     methods:{
 
-        changeCol(){
-            document.documentElement.style.setProperty("--Theme-c-dark-2", editVariables.appearanceFont.colour);
+        // On text colour change
+        appearanceFontChange(){
+            
+            // Always change the text colour
+            this.changeTextCol(editVariables.appearanceFont.colour);
+
+            // If there is no header override, change that text too.
+            if(!editVariables.appearanceHeader.font.isOverrideAutoColour){
+                this.changeHeadCol(editVariables.appearanceFont.colour);
+            }
+        },
+
+        changeTextCol(colour){
+            document.documentElement.style.setProperty("--Theme-c-dark-2", colour);
+        },
+
+        changeHeadCol(colour){
+            document.documentElement.style.setProperty("--Header-colour", colour);
         },
 
         changeTheme(item){
@@ -628,12 +655,37 @@ export default {
             return ((themeStorage.selectedTheme === "Default" || 
                      themeStorage.selectedTheme === "Light" || 
                      themeStorage.selectedTheme === "Dark"))
-        }
+        },
     },
     watch:{
+
+        // On change of the override values
         'editVariables.appearanceFont.isOverrideAutoColour'(val){
-            
-            (val) ? this.changeCol() : themeStorage.resetColour();
+
+            // when the text font override is turned on
+            if(val) { this.appearanceFontChange(); return }
+
+            // Reset
+            themeStorage.resetColour();
+
+            // reapply header colour if header override.
+            if(editVariables.appearanceHeader.font.isOverrideAutoColour){
+                this.changeHeadCol(editVariables.appearanceHeader.font.colour); 
+            }
+        },
+        'editVariables.appearanceHeader.font.isOverrideAutoColour'(val){
+
+            // If header override is turned on
+            if(val){ this.changeHeadCol(editVariables.appearanceHeader.font.colour); return }
+                
+            // Reset
+            themeStorage.resetColour(); 
+
+            // If font override is on, apply colou
+            if(editVariables.appearanceFont.isOverrideAutoColour){
+                this.changeHeadCol(editVariables.appearanceFont.colour);
+            }
+
         }
     }
 }
@@ -687,6 +739,10 @@ export default {
     height: 100%;
     transition: opacity 150ms ease-in-out;
 
+}
+
+.header-colour{
+    color: var(--Header-colour);
 }
 
 .colour-item{

@@ -156,7 +156,10 @@ export class ThemeStorage {
 
     resetColour(){
         this.changeSelected(this.selectedTheme);
-        // this.updateTextColour(this.getContrastYIQ(this.selectedTheme));
+    }
+
+    updateTextHeaderColour(colour){
+        document.documentElement.style.setProperty("--Header-colour", colour );
     }
 
     updateTextColour(colour){
@@ -176,6 +179,11 @@ export class ThemeStorage {
         // Only when there isnt override
         if(!editVariables.appearanceFont.isOverrideAutoColour){
             this.updateTextColour(this.getContrastYIQ(object.secondary));
+        }
+
+        // If not override
+        if(!editVariables.appearanceHeader.font.isOverrideAutoColour){
+            this.updateTextHeaderColour(this.getContrastYIQ(object.secondary));
         }
 
         document.documentElement.style.setProperty("--box-shadow", `0 0 2px ${object.tertiary}`);
