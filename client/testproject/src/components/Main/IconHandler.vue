@@ -10,7 +10,7 @@
                 :height="iconData.size"
                 :width="iconData.size"
                 :path_Value="iconData.image"
-                :fill_Colour="iconData.colour"
+                :fill_Colour="colourIcon"
                 :view_Box="iconData.viewBox"
                 @dblclick="(editVariables.isEnabled) ? null : openLink()"
                 class="center"
@@ -37,6 +37,7 @@ import SVGHandler from '../Input Components/SVGHandler.vue';
 import { iconImageStorage } from '../../Data/iconImages';
 
 import { editVariables } from '../../Data/SettingVariables';
+import { themeStorage } from '../../Data/themeStorage';
 
 // This will be drag and drop.
 export default {
@@ -52,6 +53,8 @@ export default {
             type: Boolean,
             default: true,
         },
+
+        // Passed in as a prop to prevent other 
         override_Size:{
             type: String,
             default: null
@@ -61,6 +64,7 @@ export default {
         return{
             iconImageStorage,
             editVariables,
+            themeStorage,
 
             iconData: {
                 size: "10",
@@ -134,6 +138,20 @@ export default {
     computed: {
         hasEmptyText(){
             return (this.iconText.length === 0);
+        },
+
+        colourIcon(){
+            
+            // Use tertiary
+            if(editVariables.appearanceIcon.isApplyGlobal && editVariables.appearanceIcon.isUseTertiary){
+                return themeStorage.tertiary;
+            }
+            // Use colour
+            else if(editVariables.appearanceIcon.isApplyGlobal && !editVariables.appearanceIcon.isUseTertiary){
+                return editVariables.appearanceIcon.colour;
+            }
+            // Use icon own
+            return this.iconData.colour 
         }
     }
 }

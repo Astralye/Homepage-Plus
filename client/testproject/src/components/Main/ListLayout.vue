@@ -31,9 +31,10 @@
                               'unselect-icon'  : !isSelectedIcon(index)
                     }"
                     :style="{
+                        'border-color': themeStorage.getIconColourOpacity( isSelectedIcon(index) ? 0.8 : 0.15 ),
                         'height': editVariables.appearanceList.globalitemHeight,
                         'margin-top' : editVariables.appearanceList.globalPadding,
-                        'margin-bottom': editVariables.appearanceList.globalPadding
+                        'margin-bottom': editVariables.appearanceList.globalPadding,
                     }"
                     @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
                     @mousedown.left="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
@@ -48,7 +49,7 @@
                             height="2em"
                             :path_Value="iconImageStorage.getPathData(item.iconImage)"
                             :view_Box="iconImageStorage.getViewBox(item.iconImage)"
-                            :fill_Colour="item.iconColour"
+                            :fill_Colour="colourIcon(item)"
                         />
                     </div>
             
@@ -86,6 +87,7 @@ import { multiSelect } from '../../Data/multiSelect';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
+import { themeStorage } from '../../Data/themeStorage';
 
 import { toRaw } from 'vue';
 
@@ -111,6 +113,7 @@ export default {
             iconImageStorage,
             containerData,
             editVariables,
+            themeStorage,
             iconStorage,
             dragAndDrop,
             multiSelect,
@@ -395,6 +398,23 @@ export default {
 // Misc
 // ------------------------------------------------------------------------------------------------------------
 
+        // Colour
+        colourIcon(item){
+            
+            // Use tertiary
+            if(editVariables.appearanceIcon.isApplyGlobal && editVariables.appearanceIcon.isUseTertiary){
+                return themeStorage.tertiary;
+            }
+            // Use colour
+            else if(editVariables.appearanceIcon.isApplyGlobal && !editVariables.appearanceIcon.isUseTertiary){
+                return editVariables.appearanceIcon.colour;
+            }
+            // Use icon own
+            return item.colourIcon;
+        },
+        
+
+
         // Click selection for linkmaker
         isSelectedIcon(index){
 
@@ -490,7 +510,7 @@ export default {
         },
         isCenter(){
             return (this.layoutCSSDirection === "Center");
-        }
+        },
     },
     watch:{
         'editVariables.iconDragData.storedContainer'(val,oldVal){
@@ -563,7 +583,7 @@ export default {
 }
 
 .icon-Selection{
-    border: 3px solid rgba(255, 255, 255, 0.8);
+    border: 3px solid;
     border-radius: 10px;
     
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */

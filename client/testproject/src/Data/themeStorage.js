@@ -106,6 +106,10 @@ export class ThemeStorage {
 // object functions 
 // -------------------------------------------------------------------------------
 
+    get tertiary(){
+        return this.getObject(this.data.selectedTheme).tertiary;
+    }
+
     // For each colour
     setRGBValues(item, type, value){
 

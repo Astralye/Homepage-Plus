@@ -35,8 +35,7 @@
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
-                        :toggle_Container_Text="m_containerData.gridData.displayText && 
-                                                !(editVariables.appearanceGrid.isApplyGlobal && !editVariables.appearanceGrid.isDisableIconLabels)"
+                        :toggle_Container_Text="m_containerData.gridData.displayText && !(editVariables.appearanceGrid.isApplyGlobal && !editVariables.appearanceGrid.isDisableIconLabels)"
                         :override_Size="(editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalIconSize : null"
                         @mousedown.left="(editVariables.isEnabled) ? selectionDrag($event, index) : null"
                     />

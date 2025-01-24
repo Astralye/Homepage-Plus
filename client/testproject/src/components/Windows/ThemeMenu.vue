@@ -404,10 +404,8 @@
                 <Checkbox
                     @onChange="val => editVariables.setAppearance_Icon_useTertiary(val)"
                     :checkValue="editVariables.appearanceIcon.isUseTertiary"
-                    text="Use Tertiary colour"
+                    text="Use tertiary colour"
                 />
-
-                in px
 
                 <ColourPicker
                     @setColour="(hex) => editVariables.setAppearance_Icon_colour(hex)"
