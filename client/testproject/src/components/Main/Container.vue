@@ -5,15 +5,21 @@
         <div
             class="page-content-container height-full"
             ref="refContainer"
-            >
-            
+            >            
             <!-- Edit based container functions -->
             <div 
-            :class="{'edit-mode': editVariables.isEnabled, 
-                     'normal-mode' : !editVariables.isEnabled,
+            :class="{'edit-mode'   : (editVariables.isEnabled),
+                     'normal-mode' : (!editVariables.isEnabled && !m_LayoutData.border.isDisplay),
                     'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
-            'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
+            'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.isContainerSelectionValid),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
+            :style="{
+                'outline-color' : (m_LayoutData.border.isDisplay) ? themeStorage.tertiary : null,
+                'border-radius' : (m_LayoutData.border.isDisplay) ? m_LayoutData.border.radius : '10px',
+                'outline-width' : (m_LayoutData.border.isDisplay) ? m_LayoutData.border.thickness : '2px',
+                'outline-style' : (m_LayoutData.border.isDisplay) ? 'solid' : 'dashed',
+            }" 
+
             
             @mousedown.left="(m_isBase && multiSelect.isValidDrag) ? initMultiSelectDrag($event) : null"
             @mouseup.left="(m_isBase && multiSelect.isEnabled) ? exitMultiSelectDrag() : null"
@@ -43,7 +49,6 @@
                     @mouseover="m_isHover = editVariables.containerSelectionMode"
                     @mouseout="m_isHover=false"
                     >
-
                     <!-- Container header -->
                     <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
                         ref="header"> 
@@ -154,6 +159,7 @@ export default {
             // Objects
             editVariables,
             containerData,
+            themeStorage,
             multiSelect,
             mouseData,
             layout,
@@ -176,7 +182,13 @@ export default {
                 NoChildren: 0,
                 siblings: 0,
                 evenSplit: true,
-                unevenFRData: ""
+                unevenFRData: "",
+
+                border:{
+                    isDisplay: false,
+                    radius: "2px",
+                    thickness: "2px",
+                }
             },
 
             // component (HTML DOM) data NOT container
@@ -263,6 +275,11 @@ export default {
             this.m_LayoutData.siblings     = newData.siblings;
             this.m_LayoutData.evenSplit    = newData.evenSplit;
             this.m_LayoutData.unevenFRData = newData.unevenFRData;
+
+            // border
+            this.m_LayoutData.border.isDisplay = newData.border.isDisplay;
+            this.m_LayoutData.border.radius    = newData.border.radius;
+            this.m_LayoutData.border.thickness = newData.border.thickness;
         },
 
         // Loads the fractional data
@@ -699,15 +716,18 @@ hr{
     transition: background-color 200ms ease;
 }
 
+
 .normal-mode{
     border-radius: 10px;
-    outline: rgba(192, 192, 192, 0) dashed 2px;
+    outline: rgba(192, 192, 192, 0);
     transition: outline 100ms ease;
 }
 
 .edit-mode{
     border-radius: 10px;
-    outline: rgba(192, 192, 192, 1) dashed 2px;
+    outline: rgba(192, 192, 192, 1);
+    outline-width: 2px;
+    outline-style: dashed;
     transition: outline 100ms ease;
 }
 

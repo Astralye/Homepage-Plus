@@ -477,7 +477,7 @@
                 <br>
 
                 <ColourPicker
-                    @setColour="(hex) => {editVariables.setAppearance_Header_colour(hex); changeHeadCol(editVariables.appearanceHeader.font.colour)}"
+                    @setColour="(hex) => {editVariables.setAppearance_Header_colour(hex); editVariables.updateHeaderColour(editVariables.appearanceHeader.font.colour)}"
                     :enabled="editVariables.appearanceHeader.font.isOverrideAutoColour && editVariables.appearanceHeader.isApplyGlobal"
                     :loaded_Data="editVariables.appearanceHeader.font.colour"
                 />
@@ -503,8 +503,14 @@
                 <h2>
                     Container
                 </h2>
+
+                <ContainerSelection
+                    @updateSelected="val => loadData(val)"
+                    @reset="loadData(null)"
+                />
+
                 <Checkbox
-                    @onChange="val => editVariables.setAppearance_Cont_applyGlobal(val)"
+                    @onChange="val => {editVariables.setAppearance_Cont_applyGlobal(val); toggleContainerSelection(val)}"
                     :checkValue="editVariables.appearanceCont.isApplyGlobal"
                     text="Apply global settings"
                 />
@@ -516,7 +522,7 @@
                     text="Display Container borders"
                 />
 
-                <br>
+                <br> 
 
                 <h3>
                     Border
@@ -527,7 +533,7 @@
                 {{  editVariables.values.userAppearanceSettings.containerAll.borderThickness }}
 
                 <RangeSlider
-                    :enabled="editVariables.appearanceCont.isApplyGlobal && editVariables.appearanceCont.isDisplayContainerBorder"
+                    :enabled="editVariables.appearanceCont.isApplyGlobal && editVariables.appearanceCont.isDisplayContainerBorder && m_SelectedContainer"
                     :no_Items="m_GlobalContBorderThickness.length"                    
                     :caption_Data="m_GlobalContBorderThickness"
                     v-model="editVariables.values.userAppearanceSettings.containerAll.borderThickness"
@@ -539,7 +545,7 @@
                 {{  editVariables.values.userAppearanceSettings.containerAll.borderRadius }}
 
                 <RangeSlider
-                    :enabled="editVariables.appearanceCont.isApplyGlobal && editVariables.appearanceCont.isDisplayContainerBorder"
+                    :enabled="editVariables.appearanceCont.isApplyGlobal && editVariables.appearanceCont.isDisplayContainerBorder && m_SelectedContainer"
                     :no_Items="m_GlobalContBorderRadius.length"                    
                     :caption_Data="m_GlobalContBorderRadius"
                     v-model="editVariables.values.userAppearanceSettings.containerAll.borderRadius"
@@ -554,22 +560,23 @@
 
 <script>
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
-import FileUpload from '../Input Components/FileUpload.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
-import TextInput from '../Input Components/TextInput.vue';
-import TabWrapper from '../Window Components/TabWrapper.vue';
-import Checkbox from '../Input Components/Checkbox.vue';
-
 import RangeSlider from '../Input Components/RangeSlider.vue';
-
-import { themeStorage } from '../../Data/themeStorage';
+import TabWrapper from '../Window Components/TabWrapper.vue';
+import FileUpload from '../Input Components/FileUpload.vue';
+import TextInput from '../Input Components/TextInput.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
+import ContainerSelection from '../Window Components/ContainerSelection.vue';
 
 import { editVariables } from '../../Data/SettingVariables';
+import { themeStorage } from '../../Data/themeStorage';
+import { layout, LayoutDataClass } from '../../Data/layoutData';
 
 export default {
     components:{
         WindowContainerDivider,
+        ContainerSelection,
         ColourPicker,
         SingleButton,
         RangeSlider,
@@ -580,8 +587,10 @@ export default {
     },
     data(){
         return{
+            LayoutDataClass,
             editVariables,
             themeStorage,
+            layout,
 
             typeSelected: 0, // primary, secondary or teriary
             m_SelectedThemeName: "",
@@ -608,36 +617,72 @@ export default {
             
             m_GlobalContHeader: ["18px", "20px", "24px", "28px", "32px"],
 
-            m_GlobalContBorderThickness: ["1px", "2px", "3px", "4px"],
-            m_GlobalContBorderRadius: ["0px", "4px", "8px", "12px"],
+            m_GlobalContBorderThickness: ["1px", "2px", "3px", "4px" ,"5px" , "6px"],
+            m_GlobalContBorderRadius: ["0px", "4px", "12px", "20px", "25px"],
             
+            // Container selection
+
+			m_SelectedContainer: null,
         }
+    },
+    beforeMount(){
+        editVariables.enableAppearanceWindow();
+        editVariables.selectionContainerToggler();
     },
     beforeUnmount(){
         // Set theme
         themeStorage.resetTheme();
+        editVariables.disableAppearanceWindow();
+        editVariables.selectionContainerToggler();
     },
     methods:{
+
+        // For borders
+        updateContainer(val){
+
+            if(!this.m_SelectedContainer) return;
+
+            this.m_SelectedContainer.border.isDisplay = val.isDisplayContainerBorder;
+            this.m_SelectedContainer.border.radius    = val.borderRadius;
+            this.m_SelectedContainer.border.thickness = val.borderThickness;
+        },
+
+        toggleContainerSelection(val){
+            (val) ? editVariables.enableAppearanceWindow() : editVariables.disableAppearanceWindow();
+            editVariables.selectionContainerToggler();
+        },
+
+        // Container selection for 
+		loadData(id){
+
+            this.m_SelectedContainer = null;
+            
+            // Reset the values first and then re-apply
+            editVariables.resetAppearance_Cont();
+
+            // Resetted value
+			if(!id) return
+            this.m_SelectedContainer = LayoutDataClass.getLevelData(layout.allData, LayoutDataClass.getLevel(id), id);
+
+            console.log(this.m_SelectedContainer, id)
+
+            editVariables.setAppearance_Cont_showBorder(this.m_SelectedContainer.border.isDisplay);
+            editVariables.setAppearance_Cont_borderThickness(this.m_SelectedContainer.border.thickness);
+            editVariables.setAppearance_Cont_borderRadius(this.m_SelectedContainer.border.radius);
+		},
 
         // On text colour change
         appearanceFontChange(){
             
             // Always change the text colour
-            this.changeTextCol(editVariables.appearanceFont.colour);
+            editVariables.changeTextCol(editVariables.appearanceFont.colour);
 
             // If there is no header override, change that text too.
             if(!editVariables.appearanceHeader.font.isOverrideAutoColour){
-                this.changeHeadCol(editVariables.appearanceFont.colour);
+                editVariables.updateHeaderColour(editVariables.appearanceFont.colour);
             }
         },
 
-        changeTextCol(colour){
-            document.documentElement.style.setProperty("--Theme-c-dark-2", colour);
-        },
-
-        changeHeadCol(colour){
-            document.documentElement.style.setProperty("--Header-colour", colour);
-        },
 
         changeTheme(item){
             this.m_SelectedTheme = item;
@@ -670,22 +715,27 @@ export default {
 
             // reapply header colour if header override.
             if(editVariables.appearanceHeader.font.isOverrideAutoColour){
-                this.changeHeadCol(editVariables.appearanceHeader.font.colour); 
+                editVariables.updateHeaderColour(editVariables.appearanceHeader.font.colour); 
             }
         },
         'editVariables.appearanceHeader.font.isOverrideAutoColour'(val){
 
             // If header override is turned on
-            if(val){ this.changeHeadCol(editVariables.appearanceHeader.font.colour); return }
+            if(val){ editVariables.updateHeaderColour(editVariables.appearanceHeader.font.colour); return }
                 
             // Reset
             themeStorage.resetColour(); 
 
             // If font override is on, apply colou
             if(editVariables.appearanceFont.isOverrideAutoColour){
-                this.changeHeadCol(editVariables.appearanceFont.colour);
+                editVariables.updateHeaderColour(editVariables.appearanceFont.colour);
             }
-
+        },
+        'editVariables.appearanceCont': {
+            handler(val){
+                this.updateContainer(val);
+            },
+            deep: true,
         }
     }
 }

@@ -2,21 +2,7 @@ import { reactive } from 'vue'
 
 // 'export' ing the class allows use of static variables.
 export class LayoutDataClass{
-    constructor(){ this.data = {
-
-        // Container metadata
-        level: 0,
-        divisionType: "Vertical",
-        id: "0A",
-        NoChildren: 0,
-        siblings: 0,
-        evenSplit: true,
-        unevenFRData: "",
-    
-        // Child container
-        childContainers: [
-        ],
-    }}
+    constructor(){ this.resetData(); }
     get allData() { return this.data; }
 
     
@@ -105,18 +91,28 @@ export class LayoutDataClass{
             siblings: inp_siblings,
             evenSplit: true,
             unevenFRData: "",
-            childContainers: []
+            childContainers: [],
+
+            border:{
+                isDisplay: false,
+                radius: "4px",
+                thickness: "2px",
+            }
         };
     }
 
+    static getLevel(id){
+        return id.substring(0, id.length - 2);
+    }
+    
     // Sibling identifier, A,B,C,D
-    static getSiblingNumber(id, ){
+    static getSiblingNumber(id){
         let LastValue = id.substring(id.length - 1).toLowerCase();
         return LastValue.charCodeAt(0) - 97;
     };
 
     static getParentObj(containerData){
-        let parentID = containerData.id.substring(0, containerData.id.length - 2);
+        let parentID = LayoutDataClass.getLevel(containerData.id);
         return LayoutDataClass.getLevelData(layout.allData, containerData.level - 1, parentID);
     }
 
@@ -154,6 +150,10 @@ export class LayoutDataClass{
 // Instance methods
 // --------------------------------------------------------------------------------------------------------------------------
 
+    getIsDisplayBorder(id){ 
+        // return LayoutDataClass.getLevelData(layout.allData, containerData.level - 1, parentID);
+    }
+
     // Load data from localStorage
     initializeData(importData){ 
         if(!importData) return;
@@ -170,7 +170,13 @@ export class LayoutDataClass{
             siblings: 0,
             evenSplit: "true",
             unevenFRData: "",
-            childContainers: []
+            childContainers: [],
+
+            border:{
+                isDisplay: false,
+                radius: "4px",
+                thickness: "2px",
+            }
         };
     };
 

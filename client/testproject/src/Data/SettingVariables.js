@@ -18,6 +18,7 @@ export class EditVariables{
 
         activeLayoutWindow:    false,
         activeContainerWindow: false,
+        activeAppearanceWindow: false,
 
         isRenderFinalNode: false, // Renders the final node due to tree structure
         containerSelectionMode: false,
@@ -47,7 +48,7 @@ export class EditVariables{
     
         this.resetAppearance_Icon()
         this.resetAppearance_Header()
-        this.resetAppearance_Cont();
+        this.resetAppearance_Cont()
 }
     
     // Grids setter
@@ -146,7 +147,7 @@ export class EditVariables{
             isDisplayContainerBorder: false,
     
             borderThickness: "2px",
-            borderRadius: "5px",
+            borderRadius: "4px",
         };
     }
 
@@ -186,6 +187,9 @@ export class EditVariables{
     enableContainerWindow() { this.values.activeContainerWindow = true; }
     disableContainerWindow(){ this.values.activeContainerWindow = false; }
 
+    enableAppearanceWindow() { this.values.activeAppearanceWindow = true; }
+    disableAppearanceWindow(){ this.values.activeAppearanceWindow = false; }
+
     enableRecalculation() { this.values.recalculateLayout = true; }
     disableRecalculation(){ this.values.recalculateLayout = false; }
 
@@ -202,7 +206,7 @@ export class EditVariables{
     disableResetFlag(){ this.values.resetFlag = false; }
 
     selectionContainerToggler(){
-        this.activeContainerSelection = (this.values.activeLayoutWindow || this.values.activeContainerWindow);
+        this.values.activeContainerSelection = (this.values.activeLayoutWindow || this.values.activeContainerWindow || this.values.activeAppearanceWindow);
     }
 
 // Setters
@@ -222,7 +226,33 @@ export class EditVariables{
     setCancelModal(val){ this.values.userSettings.modalToggle.cancel = val; }
     setStateContextMenu(val){ this.values.userSettings.enabledSiteContextMenu = val; }
 
-    loadUserSettings(val){ this.values.userSettings = val;}
+    loadUserSettings(val) { this.values.userSettings = val;}
+    
+    loadUserAppearance(data){
+        this.values.userAppearanceSettings.grids = data.grids;
+        this.values.userAppearanceSettings.list = data.list;
+        this.values.userAppearanceSettings.font = data.font;
+        this.values.userAppearanceSettings.icons = data.icons;
+        this.values.userAppearanceSettings.containerHeader = data.containerHeader;
+        this.values.userAppearanceSettings.containerAll = data.containerAll;
+
+        this.updateTextColour(data.font.colour);
+
+        if(data.font.isOverrideAutoColour){
+            this.updateHeaderColour(data.font.colour);
+        }
+        if(data.containerHeader.font.isOverrideAutoColour){
+            this.updateHeaderColour(data.containerHeader.font.colour);
+        }
+    }
+
+    updateHeaderColour(colour){
+        document.documentElement.style.setProperty("--Header-colour", colour);
+    }
+
+    updateTextColour(colour){
+        document.documentElement.style.setProperty("--Theme-c-dark-2", colour);
+    }
 
 // Getters
     get isEnabled() { return this.values.enabled; }
@@ -240,12 +270,14 @@ export class EditVariables{
     get resetFlag() { return this.values.resetFlag; }
 
     // User modifiers
-    get userSettings(){ return this.values.userSettings; }
+    get userSettings()  { return this.values.userSettings; }
+    get userAppearanceSettings(){ return this.values.userAppearanceSettings; }
 
     get isShowDeleteModal(){ return this.values.userSettings.modalToggle.delete; }
     get isShowCancelModal(){ return this.values.userSettings.modalToggle.cancel; }
 
     get isEnabledSiteContextMenu(){ return this.values.userSettings.enabledSiteContextMenu; }
+    get isContainerSelectionValid(){ return this.values.activeContainerSelection; }
 
 }
 

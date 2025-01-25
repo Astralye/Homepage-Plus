@@ -123,6 +123,7 @@ export default {
             return (this.m_SelectedID) ? this.m_SelectedID : "Not selected"
         },
         displayLevel(){
+            if(this.m_SelectedLevel === 0) return this.m_SelectedLevel;
             return (this.m_SelectedLevel) ? this.m_SelectedLevel : "Not selected"
         },
         isDeleteButtonActive(){
