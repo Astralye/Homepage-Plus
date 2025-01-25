@@ -185,6 +185,7 @@ export default {
                 userSettings: "userSettings",
                 savedTheme: 'savedTheme',
                 importSVGs: 'importSVGs',
+                userAppearanceSettings: 'userAppearanceSettings',
             },
 
             // Confirmation.
@@ -221,11 +222,12 @@ export default {
         setValues(){
             localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
             localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
-            localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
             localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
+            localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
 
             localStorage.setItem(this.localStorageVarNames.importSVGs,     JSON.stringify(Array.from(iconImageStorage.importedSVGs.entries())));
             localStorage.setItem(this.localStorageVarNames.userSettings,   JSON.stringify(editVariables.userSettings));
+            localStorage.setItem(this.localStorageVarNames.userAppearanceSettings,   JSON.stringify(editVariables.userAppearanceSettings));
         },
 
         saveLayout(){
@@ -263,8 +265,8 @@ export default {
             layout.resetData();
             iconData.resetData();
             iconStorage.resetData();
-            themeStorage.resetLocalStorage();
             containerData.resetData();
+            themeStorage.resetLocalStorage();
             iconImageStorage.resetImports();
 
             this.setValues();
@@ -311,7 +313,9 @@ export default {
 
             const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
             const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importSVGs));
-            const theme = themeStorage.savedThemeObj;
+            const theme = localStorage.getItem(this.localStorageVarNames.savedTheme);
+
+            const appearanceData = JSON.parse(localStorage.getItem(this.localStorageVarNames.userAppearanceSettings));
 
             // Run the respective function if contain the data within local storage
 
@@ -326,6 +330,8 @@ export default {
             if(userData !== null)    editVariables.loadUserSettings(userData);
 
             if(theme !== null)       themeStorage.initData();
+
+            if(appearanceData !== null)  editVariables.loadUserAppearance(appearanceData);
 
 
             editVariables.enableRenderFinalNode();
