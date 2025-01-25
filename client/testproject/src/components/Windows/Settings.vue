@@ -51,7 +51,14 @@
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportImportedIcons()">
+                                @click="exportAppearance()">
+                                Appearance
+                            </SingleButton>
+
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="exportimportSVGs()">
                                 Imported Icons
                             </SingleButton> 
 
@@ -201,14 +208,14 @@
             
             <template #content>
 
-                <template v-if="importHasDataProperty(localStorageVarNames.importedIcons)">
+                <template v-if="importHasDataProperty(localStorageVarNames.importSVGs)">
 
-                    <div v-if="importHasDataProperty(localStorageVarNames.importedIcons)">
+                    <div v-if="importHasDataProperty(localStorageVarNames.importSVGs)">
                         <h3> 
                             Icons
                         </h3>
                         <div class="flex iconDisplay">
-                            <div v-for="(item, index) in m_ImportData.importedIcons" :key="index">
+                            <div v-for="(item, index) in m_ImportData.importSVGs" :key="index">
                                 <SVGHandler
                                     :height="getSize"
                                     :width="getSize"
@@ -346,10 +353,11 @@ export default {
                 iconData: "iconData",
                 
                 iconStorage: "iconStorage",
-                importedIcons: "importedIcons",
+                importSVGs: "importSVGs",
 
                 savedTheme: 'savedTheme',
                 customThemes: 'customThemes',
+                userAppearanceSettings: 'userAppearanceSettings',
             },
 
             isModalDisplay: false,
@@ -380,9 +388,22 @@ export default {
 
             dataToSave = this.exportLayout(dataToSave);
             dataToSave = this.exportThemes(dataToSave);
-            dataToSave = this.exportImportedIcons(dataToSave);
+            dataToSave = this.exportimportSVGs(dataToSave);
+            dataToSave = this.exportAppearance(dataToSave);
 
             this.downloadData(dataToSave);
+        },
+
+        exportAppearance(dataToSave = null){
+            let data = {};
+
+            // Property is the same name as the main string variable 
+            data[this.localStorageVarNames.userAppearanceSettings] = JSON.parse(localStorage.getItem(this.localStorageVarNames.userAppearanceSettings));
+            
+            // If parameter contained data, merge
+            if(dataToSave) return {...dataToSave, ...data};
+
+            this.downloadData(data); 
         },
 
         // Not implemented yet
@@ -400,12 +421,15 @@ export default {
             this.downloadData(data); 
         },
 
-        exportImportedIcons(dataToSave = null){
+        exportimportSVGs(dataToSave = null){
 
             let data = {};
+            
+            console.log(localStorage.getItem(this.localStorageVarNames.importSVGs), "a");
+            console.log(localStorage.getItem('importSVGs'), "b");
 
             // Property is the same name as the main string variable 
-            data[this.localStorageVarNames.importedIcons] = JSON.parse(localStorage.getItem(this.localStorageVarNames.importedIcons));
+            data[this.localStorageVarNames.importSVGs] = JSON.parse(localStorage.getItem(this.localStorageVarNames.importSVGs));
              
             // If parameter contained data, merge
             if(dataToSave) return {...dataToSave, ...data};
@@ -515,9 +539,9 @@ export default {
         importStoredIcons(data){
             
             // Check if has property first
-            if(!data.hasOwnProperty(`${this.localStorageVarNames.importedIcons}`)) return;
+            if(!data.hasOwnProperty(`${this.localStorageVarNames.importSVGs}`)) return;
 
-            iconImageStorage.setImportedSVGs(data.importedIcons);
+            iconImageStorage.setImportedSVGs(data.importSVGs);
         },
 
         importLayout(data){
@@ -545,7 +569,7 @@ export default {
         // Changes import icon size depending on number shown.
         getSize(){
             
-            let size = this.m_ImportData.importedIcons.length;
+            let size = this.m_ImportData.importSVGs.length;
 
             if(size <= 5) return "5em";
             if(size <= 10) return "4em";

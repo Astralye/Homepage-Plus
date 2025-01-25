@@ -41,14 +41,7 @@ export class EditVariables{
         // To avoid repetition, it is set via the resetters
     };
 
-        // Resetters
-        this.resetAppearance_Grid()
-        this.resetAppearance_List()
-        this.resetAppearance_Font()
-    
-        this.resetAppearance_Icon()
-        this.resetAppearance_Header()
-        this.resetAppearance_Cont()
+    this.resetAppearance();
 }
     
     // Grids setter
@@ -92,6 +85,16 @@ export class EditVariables{
     setAppearance_Cont_borderThickness(val) { this.values.userAppearanceSettings.containerAll.borderThickness = val; }
     setAppearance_Cont_borderRadius(val)    { this.values.userAppearanceSettings.containerAll.borderRadius = val; }
 
+    resetAppearance(){
+        this.resetAppearance_Grid()
+        this.resetAppearance_List()
+        this.resetAppearance_Font()
+    
+        this.resetAppearance_Icon()
+        this.resetAppearance_Header()
+        this.resetAppearance_Cont()
+    }
+
     // Resetters
     resetAppearance_Grid(){
         this.values.userAppearanceSettings.grids = {
@@ -118,7 +121,7 @@ export class EditVariables{
             enableTextBackground: false,
             isOverrideAutoColour: false,
 
-            colour: "black",
+            colour: "white",
         };
     }
 
@@ -236,9 +239,9 @@ export class EditVariables{
         this.values.userAppearanceSettings.containerHeader = data.containerHeader;
         this.values.userAppearanceSettings.containerAll = data.containerAll;
 
-        this.updateTextColour(data.font.colour);
-
+        
         if(data.font.isOverrideAutoColour){
+            this.updateTextColour(data.font.colour);
             this.updateHeaderColour(data.font.colour);
         }
         if(data.containerHeader.font.isOverrideAutoColour){

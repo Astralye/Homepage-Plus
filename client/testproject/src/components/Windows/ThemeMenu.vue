@@ -675,7 +675,7 @@ export default {
         appearanceFontChange(){
             
             // Always change the text colour
-            editVariables.changeTextCol(editVariables.appearanceFont.colour);
+            editVariables.updateTextColour(editVariables.appearanceFont.colour);
 
             // If there is no header override, change that text too.
             if(!editVariables.appearanceHeader.font.isOverrideAutoColour){

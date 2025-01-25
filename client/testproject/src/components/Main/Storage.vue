@@ -268,6 +268,7 @@ export default {
             containerData.resetData();
             themeStorage.resetLocalStorage();
             iconImageStorage.resetImports();
+            editVariables.resetAppearance();
 
             this.setValues();
             this.resetFlag();
