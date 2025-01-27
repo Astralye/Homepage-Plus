@@ -150,7 +150,7 @@
                     />
     
                     <SingleButton
-                        @click="themeStorage.save()"
+                        @click="profileHandler.saveTheme()"
                         m_IconString="Save"
                     >
                         Save
@@ -572,6 +572,7 @@ import ContainerSelection from '../Window Components/ContainerSelection.vue';
 import { editVariables } from '../../Data/SettingVariables';
 import { themeStorage } from '../../Data/themeStorage';
 import { layout, LayoutDataClass } from '../../Data/layoutData';
+import { profileHandler } from '../../Data/profileHandler';
 
 export default {
     components:{
@@ -588,6 +589,7 @@ export default {
     data(){
         return{
             LayoutDataClass,
+            profileHandler,
             editVariables,
             themeStorage,
             layout,

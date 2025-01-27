@@ -10,12 +10,7 @@ export class ThemeStorage {
     resetData(){
         
         this.data = {
-            // use string var to avoid potential mistypes
-            localStorageVar: {
-                saved: "savedTheme",
-                imports: "customThemes"
-            },
-    
+            
             displayArray: [
                 {
                     name: "Default",
@@ -51,16 +46,13 @@ export class ThemeStorage {
 // local storage
 // ----------------------------------------------------------------------------------------
 
-    // For deletion, -> reset data, set local storage, update the theme
+    // For deletion, -> reset data, update the theme
     resetLocalStorage(){
         this.resetData();
 
         // If no value, set to default
         this.data.selectedTheme = (this.data.selectedTheme) ? this.data.selectedTheme : "Default";
-
-        localStorage.setItem(this.data.localStorageVar.saved,    JSON.stringify(this.data.selectedTheme));
-        localStorage.setItem(this.data.localStorageVar.imports,  JSON.stringify(this.data.importThemes));
-
+        
         this.changeSelected(this.data.selectedTheme);
     }
 
@@ -73,34 +65,19 @@ export class ThemeStorage {
         
         // import selected Theme
         this.data.selectedTheme = (this.storageSavedTheme) ? this.storageSavedTheme : "Default";
-        
-        console.log(this.data.selectedTheme, "init");
 
         this.resetTheme();
     }
 
-    // Assuming iconSize is a square
-    save(){
-        // Selected Theme
-        localStorage.setItem(this.data.localStorageVar.saved,  JSON.stringify(this.data.selectedTheme));
-
-        let size = this.data.displayArray.length;
-
-        // Any new themes added
-        // length would be 4+
-        if(size <= 3) return; 
-        
-        let newObjects = this.data.displayArray.slice(3, size);
-        localStorage.setItem(this.data.localStorageVar.imports,  JSON.stringify(newObjects));
-        
-    }
+    // They do not modify the values
+    // Can remain in here rather than profileHandler.js
 
     get storageSavedTheme(){
-        return JSON.parse(localStorage.getItem(this.data.localStorageVar.saved));
+        return JSON.parse(localStorage.getItem("savedTheme"));
     }
 
     get importThemeObj(){
-        return JSON.parse(localStorage.getItem(this.data.localStorageVar.imports));
+        return JSON.parse(localStorage.getItem("customThemes"));
     }
 
 // object functions 
@@ -266,9 +243,6 @@ export class ThemeStorage {
     
     get storedThemes(){ return this.data.displayArray; }
     get importThemes(){ return this.data.importThemes; }
-
-    get savedTheme(){ return this.data.localStorageVar.saved; }
-    get imports()   { return this.data.localStorageVar.imports; }
 
     get highContrastColour(){ return this.data.iconColour; }
     get selectedTheme(){ return this.data.selectedTheme; }

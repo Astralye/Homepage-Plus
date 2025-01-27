@@ -151,6 +151,8 @@ import { themeStorage } from '../../Data/themeStorage';
 import { editVariables } from '../../Data/SettingVariables';
 import { iconImageStorage } from '../../Data/iconImages';
 
+import { profileHandler } from '../../Data/profileHandler.js';
+
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
 import SVGHandler from '../Input Components/SVGHandler.vue';
@@ -176,17 +178,6 @@ export default {
             layout,
 
             iconSize: "5em",
-            localStorageVarNames: {
-                layoutDataName: "layoutData",
-                displayData: "containerDisplayData",
-                iconData: "iconData",
-                iconStorage: "iconStorage",
-                
-                userSettings: "userSettings",
-                savedTheme: 'savedTheme',
-                importSVGs: 'importSVGs',
-                userAppearanceSettings: 'userAppearanceSettings',
-            },
 
             // Confirmation.
             modalType: null,
@@ -201,7 +192,7 @@ export default {
         }
     },
     created(){
-        this.loadData();
+        profileHandler.loadData();
     },
     methods: {
 
@@ -218,20 +209,9 @@ export default {
                 this.isDisplayPopup = false;
             },this.popupTimer);
         },
-        // Sets localstorage values
-        setValues(){
-            localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
-            localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
-            localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
-            localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
-
-            localStorage.setItem(this.localStorageVarNames.importSVGs,     JSON.stringify(Array.from(iconImageStorage.importedSVGs.entries())));
-            localStorage.setItem(this.localStorageVarNames.userSettings,   JSON.stringify(editVariables.userSettings));
-            localStorage.setItem(this.localStorageVarNames.userAppearanceSettings,   JSON.stringify(editVariables.userAppearanceSettings));
-        },
 
         saveLayout(){
-            this.setValues();
+            profileHandler.setValues();
             this.enableButtonTimer();
             this.popuptext = "Layout Saved!";
         },
@@ -262,30 +242,11 @@ export default {
             if(this.toggleOffModal) { editVariables.setDeleteModal(false);}
 
             // Reset data
-            layout.resetData();
-            iconData.resetData();
-            iconStorage.resetData();
-            containerData.resetData();
-            themeStorage.resetLocalStorage();
-            iconImageStorage.resetImports();
-            editVariables.resetAppearance();
-
-            this.setValues();
-            this.resetFlag();
-            // Reset selected
-            
-            editVariables.enableResetSelect();
+            profileHandler.resetData();
+            profileHandler.resetFlag();
 
             this.popuptext = "Layout Deleted!";
             this.enableButtonTimer();
-        },
-
-        // It is enabled for 1 tick to trigger the watchers
-        resetFlag(){
-            editVariables.enableResetFlag();
-            this.$nextTick(() =>{
-                editVariables.disableResetFlag();
-            });
         },
 
         // Load from localstorage
@@ -295,47 +256,11 @@ export default {
             // turns off modal for next time
             if(this.toggleOffModal) { editVariables.setCancelModal(false);}
 
-            this.loadData();
-            this.resetFlag();
-            
-            // Reset selected
-            editVariables.enableResetSelect();
-
+            profileHandler.loadData(); // reload the saved data
+            profileHandler.resetFlag();
 
             this.popuptext = "Cancelled!";
             this.enableButtonTimer();
-        },
-
-        loadData(){
-            const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
-            const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
-            const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
-            const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
-
-            const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
-            const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importSVGs));
-            const theme = localStorage.getItem(this.localStorageVarNames.savedTheme);
-
-            const appearanceData = JSON.parse(localStorage.getItem(this.localStorageVarNames.userAppearanceSettings));
-
-            // Run the respective function if contain the data within local storage
-
-            if(layoutData  !== null) layout.initializeData(layoutData);
-            if(displayData !== null) containerData.intializeData(displayData); 
-            if(dataIcon !== null)    iconData.initializeData(dataIcon);
-
-            if(storageData !== null) iconStorage.initDataFromStorage(storageData);
-
-            if(importIcons !== null) iconImageStorage.setImportedSVGs(importIcons);
-
-            if(userData !== null)    editVariables.loadUserSettings(userData);
-
-            if(theme !== null)       themeStorage.initData();
-
-            if(appearanceData !== null)  editVariables.loadUserAppearance(appearanceData);
-
-
-            editVariables.enableRenderFinalNode();
         },
     }
 }
