@@ -18,6 +18,9 @@ class ProfileHandler{
             These objects would be used after the profile object has been
             taken
         */
+       
+        this.storageObject = "storageObject",
+
         this.localStorageVarNames = {
             layoutDataName: "layoutData",
             displayData: "containerDisplayData",
@@ -29,56 +32,77 @@ class ProfileHandler{
             importSVGs: 'importSVGs',
             userAppearanceSettings: 'userAppearanceSettings',
 
-            imports: "customThemes"
+            themeImports: "themeImports"
         }
     }
-
-    /*
-        Data stored will be an: Array
-        Storing profile: Objects
-
-        Each object will store the properties
-    */
-
 
     // On creation
     // Ideally this should only run once.
     newData(){
 
-        // Currently an object.
-        // Data to be stored.
-        this.data = [
-            {
-                defaultProfile: {
-                    test: "abc"
-                }
+        /*
+            Currently an object.
+            Data to be stored.
+
+            Since it requires the actual object data, it will be null when resetted
+            but needs to be initialized.
+        */
+        this.data = {
+            
+            // The storage of all the data
+            storedProfiles: {
+                    defaultProfile: {
+                        layout: null, // How the page is displayed
+                        container: null, // Data for each container
+                        iconStorage: null, // Where icons are located
+            
+                        iconData: null,
+                        importSVGs: null,
+                        userSettings: null,
+                        userAppearanceSettings: null, 
+            
+                        savedTheme: null,
+                        themeImports: null,
+                    },
             },
 
-        ]
+            // Know which profile to load and save to.
+            selectedProfile: "defaultProfile",
+        }
+    }
+
+    // All but the default profile
+    initLoadProfiles(data){
+        if(!data) return;
+        // Need a way to remove the default profile before adding?
+        // Or maybe it doesnt matter because I am overriding
+
+        this.data.storedProfiles = data;
     }
 
 // localStorage
 
-
-    saveDataToLocalStorage(){
-
-    }
+    // Save the entire object
+    saveDataToLocalStorage(){ localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
 
 // Themes
 
+
+
     // Assuming iconSize is a square
     saveTheme(){
-        // Selected Theme
-        localStorage.setItem(this.localStorageVarNames.savedTheme,    JSON.stringify(themeStorage.selectedTheme));
 
-        let size = themeStorage.storedThemes.length;
-
-        // Any new themes added
-        // length would be 4+
-        if(size <= 3) return; 
+        // Get the profile first
+        // Save to the profile
+        // Then set the data
         
-        let newObjects = themeStorage.storedThemes.slice(3, size);
-        localStorage.setItem(this.localStorageVarNames.imports,  JSON.stringify(newObjects));
+        let profile = this.getProfileData(this.selectedProfile);
+        if(!profile) return 0; // no data
+        
+        this.setThemes(profile);
+
+        // any changes in data are saved to localStorage
+        this.saveDataToLocalStorage();
     }
 
 /*
@@ -88,15 +112,6 @@ class ProfileHandler{
 
     should also rename them.
 */
-
-    // It is enabled for 1 tick to trigger the watchers
-    resetFlag(){
-        editVariables.enableResetFlag();
-        this.$nextTick(() => editVariables.disableResetFlag() ); 
-
-        // Reset selected
-        editVariables.enableResetSelect();
-    }
 
     // Runs all the resetters for the objects
     resetData(){
@@ -111,102 +126,171 @@ class ProfileHandler{
         
         profileHandler.setValues(); // Re-sets all the values in the array
     }
+    
+    // Load data from local storage to this.data 
+    // Return value is used to confirm saving values
+    initProfileData(){
+        const allProfileData = this.localStorageProfileData;
 
-    setValues(){
-        localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
-        localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
-        localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
-        localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
+        if(!allProfileData) return 0;
+    
+        this.setSelectedProfile(allProfileData.selectedProfile); // Set selected profile 
+        this.initLoadProfiles(allProfileData.storedProfiles);    // Set all profiles 
 
-        localStorage.setItem(this.localStorageVarNames.importSVGs,     JSON.stringify(Array.from(iconImageStorage.importedSVGs.entries())));
-        localStorage.setItem(this.localStorageVarNames.userSettings,   JSON.stringify(editVariables.userSettings));
-        
-        // Appearance settings
-        localStorage.setItem(this.localStorageVarNames.userAppearanceSettings,   JSON.stringify(editVariables.userAppearanceSettings));
-
-        // Themes
-        localStorage.setItem(this.data.localStorageVar.savedTheme,    JSON.stringify(themeStorage.selectedTheme));
-        localStorage.setItem(this.data.localStorageVar.imports,       JSON.stringify(themeStorage.importThemes));
-
+        return 1;
     }
 
-    // Currently this stores the data 
-    loadData(){
+    setThemes(profile){
+        // Assuming profile has already been typed checked
 
-        const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
-        const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
-        const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
-        const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
+        profile.savedTheme = themeStorage.selectedTheme;
 
-        const userData    = JSON.parse(localStorage.getItem(this.localStorageVarNames.userSettings));
-        const importIcons = JSON.parse(localStorage.getItem(this.localStorageVarNames.importSVGs));
-        const theme = localStorage.getItem(this.localStorageVarNames.savedTheme);
+        let size = themeStorage.storedThemes.length;
 
-        const appearanceData = JSON.parse(localStorage.getItem(this.localStorageVarNames.userAppearanceSettings));
+        // Any new themes added
+        // length would be 4+
+        if(size <= 3) return; 
+        
+        let newObjects = themeStorage.storedThemes.slice(3, size);
+
+        profile.themeImports = newObjects;
+    }
+
+    // Uses the stored selected profile to set the values
+    // Return value is used to confirm saving values
+    setProfileData(){
+        
+        let profile = this.getProfileData(this.selectedProfile);
+        if(!profile) return 0; // no data
+        
+        // Set all the data
+        profile.layout = layout.allData; // How the page is displayed
+        profile.container = containerData.allData; // Data for each container
+        profile.iconStorage = iconStorage.allData; // Where icons are located
+        profile.iconData = iconData.allData;
+        profile.importSVGs = Array.from(iconImageStorage.importedSVGs.entries());
+        profile.userSettings = editVariables.userSettings;
+        profile.userAppearanceSettings = editVariables.userAppearanceSettings;
+
+        this.setThemes(profile);
+
+        return 1;
+    }
+
+
+    /*
+        The values all need to move to the object.
+        The object within the array will then be saved
+        We need to know the name of the object before manipulating it
+    */
+    setValues(){
+
+        if(!this.setProfileData()) return // Check for data
+
+        this.saveDataToLocalStorage();
+    }
+
+    // load from localStorage
+    loadProfileData(){
+
+
+        // Needs to pass the data from the localStorage and then load it to the initializers
+        // Needs the profile data first
+        
+        // If no data in localStorage
+        if(!this.initProfileData()){
+            this.setValues(); // Create data first.
+            return;
+        }
+        
+        let profile = this.getProfileData(this.selectedProfile);
+        if(!profile) return; // no data
 
         // Run the respective function if contain the data within local storage
 
-        if(layoutData  !== null) layout.initializeData(layoutData);
-        if(displayData !== null) containerData.intializeData(displayData); 
-        if(dataIcon !== null)    iconData.initializeData(dataIcon);
+        if(profile.layout  !== null) layout.initializeData(profile.layout);
+        if(profile.container !== null) containerData.intializeData(profile.container); 
+        if(profile.iconData !== null)    iconData.initializeData(profile.iconData);
 
-        if(storageData !== null) iconStorage.initDataFromStorage(storageData);
+        if(profile.iconStorage !== null) iconStorage.initDataFromStorage(profile.iconStorage);
 
-        if(importIcons !== null) iconImageStorage.setImportedSVGs(importIcons);
+        if(profile.importSVGs !== null) iconImageStorage.setImportedSVGs(profile.importSVGs);
 
-        if(userData !== null)    editVariables.loadUserSettings(userData);
+        if(profile.userSettings !== null)    editVariables.loadUserSettings(profile.userSettings);
 
-        if(theme !== null)       themeStorage.initData();
+        if(profile.themeStorage !== null)    themeStorage.initData();
 
-        if(appearanceData !== null)  editVariables.loadUserAppearance(appearanceData);
-
+        if(profile.userAppearanceSettings !== null)  editVariables.loadUserAppearance(profile.userAppearanceSettings);
 
         editVariables.enableRenderFinalNode();
     }
 
+    get localStorageProfileData(){ 
+        
+        let storedObj = localStorage.getItem(this.storageObject);
+        if(!storedObj) return null;
+
+        return JSON.parse(storedObj); }
+
 // Basic functions
 
     // By name
-    getProfile(name){
+    getProfileData(name){
         if(!name) return;
 
-        for(let i = 0; i < this.data.length; i++){
-            if(this.data[i][name]){ // if the name exist, return
-                return this.data[i];
-            }
-        }
-
-        // none found
-        return null;
+        let data = this.data.storedProfiles[name];
+        return data; // If not found, should return null
     }
 
     // By name
     deleteProfile(name){
         
-        if(!name) return;
+        if(!name) return; // no value parameter
 
-        for(let i = 0; i < this.data.length; i++){
-            if(this.data[i][name]){ // if the name exist, return
-                this.data[i].splice(index, 1); // 2nd parameter means remove one item only
-            }
-        }
+        let data = this.data.storedProfiles[name];
+        if(!data) return; // no data
+
+        delete this.data.storedProfiles[name];
+
+        // for(let i = 0; i < this.data.storedProfiles.length; i++){
+        //     // If found, remove
+        //     if(this.data.storedProfiles[i][name]) {
+        //         this.data.storedProfiles[i].splice(index, 1)
+        //         return;
+        //     }
+        // }
     }
     
     // By name
-    addProfile(data){
+    addProfile(name, data){
         if(!data) return;
-        this.data.push(data);
+
+        // Need to check if name already exists
+
+        this.data.storedProfiles[name] = data;
     }
 
     // Rename the object key
     renameProfile(oldName, newName){
-        for(let i = 0; i < this.data.length; i++){
-            if(this.data[i][oldName]){ // if the name exist, return
-                delete Object.assign(this.data, {[newName]: this.data[oldName] })[oldName];
-            }
-        }
+
+        if(!oldName || !newName) return; // no value parameter
+
+        let data = this.data.storedProfiles[oldName];
+        if(!data) return; // no data
+
+        delete Object.assign(this.data.storedProfiles, {[newName]: this.data.storedProfiles[oldName] })[oldName];
+        
+        
+        // for(let i = 0; i < this.data.storedProfiles.length; i++){
+        //     if(this.data.storedProfiles[i][oldName]){ // if the name exist, return
+        //         delete Object.assign(this.data, {[newName]: this.data[oldName] })[oldName];
+        //     }
+        // }
     }
     
+    setSelectedProfile(val){ this.data.selectedProfile = val; }
+
+    get selectedProfile(){ return this.data.selectedProfile; }
 }
 
 const profileHandlerInstance = new ProfileHandler;

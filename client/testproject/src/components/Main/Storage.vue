@@ -192,7 +192,7 @@ export default {
         }
     },
     created(){
-        profileHandler.loadData();
+        profileHandler.loadProfileData();
     },
     methods: {
 
@@ -212,6 +212,7 @@ export default {
 
         saveLayout(){
             profileHandler.setValues();
+
             this.enableButtonTimer();
             this.popuptext = "Layout Saved!";
         },
@@ -234,6 +235,15 @@ export default {
             this.toggleOffModal = false;
         },
 
+        // It is enabled for 1 tick to trigger the watchers
+        resetFlag(){
+            editVariables.enableResetFlag();
+            this.$nextTick(() => editVariables.disableResetFlag() ); 
+
+            // Reset selected
+            editVariables.enableResetSelect();
+        },
+
         // These functions should be call other functions from different areas and process them 
         deleteLayout(){
             this.disableModal();
@@ -243,7 +253,7 @@ export default {
 
             // Reset data
             profileHandler.resetData();
-            profileHandler.resetFlag();
+            this.resetFlag();
 
             this.popuptext = "Layout Deleted!";
             this.enableButtonTimer();
@@ -256,8 +266,8 @@ export default {
             // turns off modal for next time
             if(this.toggleOffModal) { editVariables.setCancelModal(false);}
 
-            profileHandler.loadData(); // reload the saved data
-            profileHandler.resetFlag();
+            profileHandler.loadProfileData(); // reload the saved data
+            this.resetFlag();
 
             this.popuptext = "Cancelled!";
             this.enableButtonTimer();

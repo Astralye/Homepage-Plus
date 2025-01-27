@@ -58,12 +58,13 @@ export class ThemeStorage {
 
     // Get both import themes and selected themes
     initData(){
-        
+
         this.data.displayArray = this.data.displayArray.concat(this.importThemeObj); // add to display themes
 
+        // import selected Theme
         this.data.importThemes = this.importThemeObj; // in the event of adding more themes
         
-        // import selected Theme
+        // Check if it exists before setting it
         this.data.selectedTheme = (this.storageSavedTheme) ? this.storageSavedTheme : "Default";
 
         this.resetTheme();
@@ -72,12 +73,22 @@ export class ThemeStorage {
     // They do not modify the values
     // Can remain in here rather than profileHandler.js
 
+    storageObject(name){
+        if(!name) return;
+        return JSON.parse(localStorage.getItem("storageObject"))['storedProfiles'][name];
+    }
+
     get storageSavedTheme(){
-        return JSON.parse(localStorage.getItem("savedTheme"));
+
+        // Change later
+        let defaultVal = "defaultProfile"
+        return this.storageObject(defaultVal)['savedTheme'];
     }
 
     get importThemeObj(){
-        return JSON.parse(localStorage.getItem("customThemes"));
+
+        let defaultVal = "defaultProfile"
+        return this.storageObject(defaultVal)['themeImports'];
     }
 
 // object functions 
