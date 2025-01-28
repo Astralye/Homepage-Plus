@@ -77,9 +77,7 @@ class ProfileHandler{
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     // Save the entire object
-    saveDataToLocalStorage() {
-        console.log(this.data)
-        localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
+    saveDataToLocalStorage() { localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
     getDataFromLocalStorage(){ localStorage.getItem(this.storageObject);}
     get allData(){ return this.data; }
 
@@ -158,7 +156,6 @@ class ProfileHandler{
     setProfileData(){
         
         let profile = this.getProfileData(this.data.selectedProfile);
-        console.log("setProfileData", profile, this.data.selectedProfile);
         if(!profile) return 0; // no data
         
         // Set all the data
@@ -183,6 +180,7 @@ class ProfileHandler{
     */
     setValues(){
 
+
         if(!this.setProfileData()) return // Check for data
 
         this.saveDataToLocalStorage();
@@ -201,9 +199,7 @@ class ProfileHandler{
         }
 
         let profile = this.getProfileData(this.data.selectedProfile);
-        console.log(profile)
         if(!profile) return; // no data
-
 
         // Run the respective function if contain the data within local storage
 
@@ -580,7 +576,11 @@ class ProfileHandler{
 
     isSelectedProfile(key){ return (this.data.selectedProfile == key); }
 
-    setSelectedProfile(val){ this.data.selectedProfile = val; }
+    setSelectedProfile(val){ 
+        
+        // Needs validation
+        this.data.selectedProfile = val;
+    }
 
     get selectedProfile(){ return this.data.selectedProfile; }
     get noProfiles()     { return Object.keys(this.data.storedProfiles).length}

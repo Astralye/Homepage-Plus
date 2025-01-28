@@ -51,6 +51,21 @@ class ContainerDataClass{
       }
       return null;
   };
+  
+  // Given profile data
+
+  getObjectFromIDData(data, objectID) {  return data[this.getIndexFromIDData(data,objectID)]; };
+  // // getObjectFromIndex(index) { return this.data[index]; };
+  getIndexFromIDData(data, inputID){
+      if(inputID === null) { return null;}
+      
+      for(let i = 0; i < data.length; i++){
+        if(data[i].ID === inputID) { return i;}
+      }
+      return null;
+  };
+
+
 
   // Misc functions
 

@@ -3,7 +3,7 @@
 -->
 
 <template>
-    <div class="center noselect">
+    <div class="noselect">
         <div class="center fit-content">
 
             <SVGHandler
@@ -22,7 +22,7 @@
                 <div class="fit-content text-padding">
                     <p class="text"
                         :style="{
-                            'font-size' : (editVariables.appearanceFont.isApplyGlobal) ? editVariables.appearanceFont.size : iconData.text_Size
+                            'font-size' : textSize
                         }">
                         {{ iconData.text }}
                     </p>
@@ -45,6 +45,17 @@ export default {
         SVGHandler
     },
     props:{
+        /*
+            profileDisplayName, used for displaying the profile in Profiles.vue tab.
+
+            ensures only displaying is visible, prevent normal container functions to work.
+            This will also make sure to override all global data, and only apply values passed in via profile
+        */
+        profileDisplayName:{ 
+            type: String,
+            default: null,
+        },
+
         icon_data: {
             type: Object,
             default: null,
@@ -138,6 +149,15 @@ export default {
     computed: {
         hasEmptyText(){
             return (this.iconText.length === 0);
+        },
+
+        // Boolean flag to redirect code from normal function to only display
+        isProfileDisplay(){ return (this.profileDisplayName)  },
+
+        textSize(){
+
+            if(this.isProfileDisplay) return "4px";
+            return  (editVariables.appearanceFont.isApplyGlobal) ? editVariables.appearanceFont.size : iconData.text_Size
         },
 
         colourIcon(){

@@ -201,6 +201,18 @@ class IconData{
 // ----------------------------------------------------------------------------------------------------------------
 // Getters
 
+    // For Profile
+    getGroupFromData(data, inputID){
+        for(let i = 0; i < data.length; i++){
+            if(data[i].containerID === inputID){ return data[i].iconDataArray; }
+        }
+
+        // If from profile we shouldnt go past here.
+
+        // console.warn(`Error (iconData.js): '${inputID}' does not exist`);
+        return (this.isFromStorage(inputID)) ? iconStorage.allData : null;
+    }
+
     // Get group based on ID.
     getGroup(inputID){
         for(let i = 0; i < this.data.length; i++){

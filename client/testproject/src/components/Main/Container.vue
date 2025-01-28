@@ -1,4 +1,5 @@
 <template>
+
     <!-- Container wrapper -->
     <div class="height-full">
         <!-- Container -->
@@ -14,6 +15,7 @@
             'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.isContainerSelectionValid),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
             :style="{
+                'padding' : gridPadding,
                 'outline-color' : (m_LayoutData.border.isDisplay) ? themeStorage.tertiary : null,
                 'border-radius' : (m_LayoutData.border.isDisplay) ? m_LayoutData.border.radius : '10px',
                 'outline-width' : (m_LayoutData.border.isDisplay) ? m_LayoutData.border.thickness : '2px',
@@ -30,16 +32,20 @@
 
             >
 
+
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
+
+                    <!-- The display variable will propagate to all the component children -->
                     <Container 
                         v-for="n in m_LayoutData.NoChildren" 
+                        :profileDisplayName="profileDisplayName" 
                         :nest_level="nest_level+1"
                         :parent_ID="m_LayoutData.id"
                         :child_Instance="n-1"
                         :render_divider="true"
                         @drag="p_updateColumnRow"
-                        />
+                    />
                 </template>
 
                 <!-- If no children, display the grid layout -->
@@ -48,39 +54,45 @@
                     @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null"
                     @mouseover="m_isHover = editVariables.containerSelectionMode"
                     @mouseout="m_isHover=false"
-                    >
-                    <!-- Container header -->
-                    <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
-                        ref="header"> 
-                        <div class="container-header"
-                            :style="{
-                                'font-size' : (editVariables.appearanceHeader.isApplyGlobal) ? editVariables.appearanceHeader.font.size : '24px',
-                            }"
-                        >
-                            {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
-                        </div>
-                        <hr>
-                    </div>
+                >
+    <!-- Deletion of the data causes this to bug out really bad -->
 
-                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
-                        <Gridlayout
-                            :component_ID="m_LayoutData.id"
-                            :update_Grid_Flag="m_updateGrid"
-                        />
-                    </template>
-                    <!-- Container Grid -->
-                    <template v-else>
-                        <div>
-                            <ListLayout :component_ID="m_LayoutData.id"/>
+                    <!-- Container header -->
+                        <div v-if="containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).containerHeader.toggle"
+                            ref="header"> 
+                            <div class="container-header"
+                                :style="{
+                                    'font-size' : containerFontSize,
+                                    'padding' : containerPadding,
+                                }"
+                            >
+                                {{ containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).containerHeader.text }}                        
+                            </div>
+                            <hr :class="{
+                                'extend-length' : isProfileDisplay
+                            }">
                         </div>
-                    </template>
-                     
+    
+                        <template v-if="containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).layoutType === 'Grid'">
+                            <Gridlayout
+                                :profileDisplayName="profileDisplayName" 
+                                :component_ID="m_LayoutData.id"
+                                :update_Grid_Flag="m_updateGrid"
+                            />
+                        </template>
+
+                        <!-- <template v-else>
+                            <div>
+                                <ListLayout :component_ID="m_LayoutData.id"/>
+                            </div>
+                            </template> -->
+
                 </div>
             </div>
         </div>
         
         <!-- Divider -->
-        <template v-if="render_divider">
+        <template v-if="render_divider && !isProfileDisplay">
             <div v-if="editVariables.isEnabled && m_DisplayDivider"
             :class="{
                 'page-drag-Horizontal': ( !m_isVertical),
@@ -106,17 +118,18 @@
 </template>
 
 <script>
-import { containerData } from '../../Data/containerData.js'
-import { layout, LayoutDataClass } from '../../Data/layoutData.js';
-import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
+import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { editVariables } from '../../Data/SettingVariables.js';
+import { containerData } from '../../Data/containerData.js'
+import { themeStorage } from '../../Data/themeStorage.js';
 import { multiSelect } from '../../Data/multiSelect.js';
+import { mouseData } from '../../Data/mouseData.js';
+import { profileHandler } from '../../Data/profileHandler.js';
 
 import ListLayout from './ListLayout.vue';
 import Gridlayout from './GridLayout.vue'
-import { themeStorage } from '../../Data/themeStorage.js';
 
 export default {
     name: "recursive-container",
@@ -124,7 +137,19 @@ export default {
         Gridlayout,
         ListLayout,
     },
-    props: {
+    props: {    
+        /*
+            profileDisplayName, used for displaying the profile in Profiles.vue tab.
+
+            ensures only displaying is visible, prevent normal container functions to work.
+            This will also make sure to override all global data, and only apply values passed in via profile
+        */
+        
+        profileDisplayName:{ 
+            type: String,
+            default: null,
+        },
+
         nest_level: {
             type: Number,
             default: 0,
@@ -157,6 +182,7 @@ export default {
             LayoutDataClass,
 
             // Objects
+            profileHandler,
             editVariables,
             containerData,
             themeStorage,
@@ -166,7 +192,6 @@ export default {
 
             // Data
 
-            
             /*
                 Each component stores data of the container.
                 This data determines how it is rendered
@@ -221,12 +246,14 @@ export default {
 
             m_updateGrid: false,
             m_headerOffset: "0px",
+
         }
     },
 
     // Initializer
     // Sets variables from props
     created(){
+
         this.updateContainerData();
         this.recalculateThreshold();
         this.setContainerConfigData();
@@ -246,10 +273,13 @@ export default {
 // General Container Functions
 // --------------------------------------------------------------------------------------------------------
 
-        // Applies any changed data to the container
         updateContainerData(){
             let tmpID = (this.nest_level === 0) ? layout.allData.id : this.parent_ID.concat(LayoutDataClass.generateID(this.nest_level, this.child_Instance));
-            let tmpContainer = LayoutDataClass.getLevelData(layout.allData, this.nest_level, tmpID);
+            
+            // Changes search location if profile display 
+            var dataSearchObj = (this.isProfileDisplay) ? profileHandler.getProfileData(this.profileDisplayName).layoutData : layout.allData;
+            
+            let tmpContainer = LayoutDataClass.getLevelData(dataSearchObj, this.nest_level, tmpID);
 
             if(tmpContainer === null){
                 this.printLayoutInfo();
@@ -266,6 +296,8 @@ export default {
             }
         },
         
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
         // Set container component data.
         setDataValues(newData){
             this.m_LayoutData.level        = newData.level;
@@ -312,6 +344,8 @@ export default {
 
         // On Unmount, remove it
         removeGlobalData(){
+            if(this.isProfileDisplay) return; // do not delete data of profile object
+
             containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
         },
 
@@ -577,6 +611,39 @@ export default {
         }
     },
 
+    computed:{
+
+        /*
+            Most of these are css values,
+
+            1. for profile display
+
+            2. Normal use / modified values
+
+            -> 6px = 1em
+               2px = 0.5em
+               1px = 0.25em;
+        */
+
+        containerSearchObj(){ return (this.profileDisplayName) ? profileHandler.getProfileData(this.profileDisplayName).containerDisplayData : containerData.allData; },
+
+        gridPadding(){ return (this.profileDisplayName) ? '6px' : '1em'; },
+
+        containerPadding(){ return (this.profileDisplayName) ? '3px 7px 1px 7px' : '0.75em 1.25em 0.25em 1.25em';},
+
+        containerFontSize(){
+         
+            // If on profile display
+            if(this.profileDisplayName){ return "8px"; }
+
+            // Else, be the set font size or default value
+            return (editVariables.appearanceHeader.isApplyGlobal) ? editVariables.appearanceHeader.font.size : '24px';
+        },
+
+        // Boolean flag to redirect code from normal function to only display
+        isProfileDisplay(){ return (this.profileDisplayName)  },
+
+    },
 
 // Watchers
 // --------------------------------------------------------------------------------------------------------------
@@ -614,7 +681,7 @@ export default {
         'm_LayoutData.divisionType'(){ this.p_storeParentID(); },
         // When the values in the container data change
         'layout':{
-            handler(val, oldval){
+            handler(){
                 this.updateContainerData();
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
@@ -677,8 +744,6 @@ hr{
 .container-header{
     height: min-content;
     width: 100%;
-
-    padding: 0.75em 1.25em 0.25em 1.25em;
     
     font-size: 24px;
     font-weight: bold;
@@ -696,7 +761,6 @@ hr{
     grid-template-columns: v-bind("m_columnData");
     grid-template-rows: v-bind("m_rowData");
     grid-gap: 0.5em;
-    padding: 1em;
     
     max-width: 100%;
     max-height: 100%;
@@ -716,6 +780,9 @@ hr{
     transition: background-color 200ms ease;
 }
 
+.extend-length{
+    margin: 0em 5px;
+}
 
 .normal-mode{
     border-radius: 10px;

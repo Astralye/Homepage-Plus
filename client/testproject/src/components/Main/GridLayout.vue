@@ -12,32 +12,34 @@
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
-            @mouseup="checkDropIcon(index)"
-            @click="kbShortcut($event); setSelectedIcon(index, true, true)"
+            @mouseup="(!this.isProfileDisplay) ? checkDropIcon(index) : null"
+            @click="iconClick($event, index)"
             >
             <!-- Generalized grid item -->
-            <div class="grid-item"
+            <div class="grid-item icon-selector"
                 ref="gridPosition"
                 :class="{ 'icon' : renderIcon(index),
-                'icon-Selection' : isSelectedIcon(index),
-                'unselect-icon'  : !isSelectedIcon(index)}"
-                :style="{
-                    'border-color': themeStorage.getIconColourOpacity( isSelectedIcon(index) ? 0.8 : 0.15 ),
-                    'width' : `${gridItemWidth}px`
+                        'pointer': renderIcon(index) && !isProfileDisplay
                 }"
-                >
+                :style="{
+                    'border-color': themeStorage.getIconColourOpacity( (isSelectedIcon(index) && !isProfileDisplay) ? 0.8 : 0.15 ),
+                    'border-width': gridItemThickness,
+                    'border-radius': gridItemRadius,
+                    'width' : `${gridItemWidth}px`,
+                }">
 
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
                     <IconHandler v-show="renderIcon(index)"
                         :key="getIconData(index)"
+                        :profileDisplayName="profileDisplayName"
                         class="icon"
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
                         :toggle_Container_Text="m_containerData.gridData.displayText && !(editVariables.appearanceGrid.isApplyGlobal && !editVariables.appearanceGrid.isDisableIconLabels)"
-                        :override_Size="(editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalIconSize : null"
-                        @mousedown.left="(editVariables.isEnabled) ? selectionDrag($event, index) : null"
+                        :override_Size="iconOverrideSize"
+                        @mousedown.left="iconDrag($event, index)"
                     />
                 </Transition>
 
@@ -78,6 +80,8 @@ import { multiSelect } from '../../Data/multiSelect';
 import { dragAndDrop } from '../../Data/dragDrop';
 import { mouseData } from '../../Data/mouseData';
 
+import { profileHandler } from '../../Data/profileHandler';
+
 import SVGHandler from '../Input Components/SVGHandler.vue';
 import IconDragHandler from './IconDragHandler.vue';
 import IconHandler from './IconHandler.vue';
@@ -89,6 +93,17 @@ export default {
         SVGHandler,
     },
     props:{
+        /*
+            profileDisplayName, used for displaying the profile in Profiles.vue tab.
+
+            ensures only displaying is visible, prevent normal container functions to work.
+            This will also make sure to override all global data, and only apply values passed in via profile
+        */
+        profileDisplayName:{ 
+            type: String,
+            default: null,
+        },
+
         component_ID: {
             type: String,
             default: "",
@@ -104,6 +119,7 @@ export default {
             // Imported Data
             GridModificationClass,
             iconImageStorage,
+            profileHandler,
             editVariables,
             themeStorage,
             dragAndDrop,
@@ -140,9 +156,16 @@ export default {
         
         initGrid(){
 
+            if(this.isProfileDisplay){
+                console.log("here");
+                this.m_containerData = containerData.getObjectFromIDData(profileHandler.getProfileData(this.profileDisplayName).containerDisplayData, this.component_ID);
+                this.m_GroupData = iconData.getGroupFromData(profileHandler.getProfileData(this.profileDisplayName).iconData, this.m_containerData.ID);
+                return;
+            }
+
             this.m_containerData = containerData.getObjectFromID(this.component_ID);
             this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
-
+            
             if(this.m_GroupData === null){ 
                 iconData.createGroup(this.m_containerData.ID);
                 this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
@@ -356,6 +379,22 @@ export default {
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+        // disable mouse button functionality if profile display
+
+        iconClick(event, index){           
+            // Prevent click events on display
+            if(this.isProfileDisplay) return;
+
+            this.kbShortcut(event);
+            this.setSelectedIcon(index, true, true)
+        },
+
+        iconDrag(event, index){            
+            if(editVariables.isEnabled && !this.isProfileDisplay){
+                this.selectionDrag(event, index)
+            } 
+        },
+
         // Click selection for linkmaker
         isSelectedIcon(index){
             if(!this.getIconData(index) || iconSelect.length === 0 ){ return false; } // No data
@@ -492,9 +531,9 @@ export default {
                 let width  = dimensions[0].contentRect.width;
                 let height = dimensions[0].contentRect.height;
 
-                let size = (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : containerData.getIconSize(this.component_ID);
+                let size = this.gridItemWidth;
 
-                console.log(size);
+                console.log(size, "size");
 
                 let dimension = GridModificationClass.calculateGridDimension(width, height, size);
                 this.setRowColData(dimension.rows, dimension.columns);
@@ -508,9 +547,11 @@ export default {
             let containerRef = this.$refs["container"];
             if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
 
+            console.log("reszie")
+
             let dims = containerRef.getBoundingClientRect();
 
-            let size = (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : 125;
+            let size = this.gridItemWidth;
 
             let dimension = GridModificationClass.calculateGridDimension(dims.width, dims.height, size );
             this.setRowColData(dimension.rows, dimension.columns);
@@ -524,18 +565,44 @@ export default {
         },
     },
     computed:{
+        
+        // Boolean flag to redirect code from normal function to only display
+        isProfileDisplay(){ return (this.profileDisplayName)  },
+
+        gridItemThickness(){ return (this.isProfileDisplay) ? '2px' : '3px'; },
+        gridItemRadius(){ return (this.isProfileDisplay) ? "5px" : "10px"; }, 
+
+        iconOverrideSize(){
+
+            // Need to calculate this size
+            if(this.isProfileDisplay) return 20;
+
+
+            return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalIconSize : null;
+        },
+
+        
         gridItemWidth(){
+
+            if(this.isProfileDisplay){
+
+                // do some math conversions to get the correct size
+
+                // Static for now
+                return (editVariables.appearanceGrid.isApplyGlobal) ? 35 : 35; 
+            }
+
             return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : 125;
         }
     },
     watch:{
-        'editVariables.resetFlag'(val, oldVal){
+        'editVariables.resetFlag'(val){
             if(val){
                 this.initGrid();
             }
         },
         // Check if started multiselect drag
-        'multiSelect.isEnabled'(val, oldVal){
+        'multiSelect.isEnabled'(val){
             if(val){
                 this.initBounds();
             }
@@ -560,6 +627,10 @@ export default {
 
 <style scoped>
 
+.pointer{
+    cursor: pointer;
+}
+
 .opacity-none{
     opacity: 0;
 }
@@ -572,9 +643,8 @@ export default {
 /* 
     rgba(255, 255, 255, 0.15);
 */
-.unselect-icon{
-    border: 3px solid; 
-    border-radius: 10px;
+.icon-selector{
+    border-style: solid; 
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
        -moz-transition: border-color 0.15s linear; /* FF3.7+ */
@@ -583,28 +653,13 @@ export default {
 }
 
 .icon{
-    cursor: pointer;
-
     display: flex;
     flex-direction: column;
     
     justify-content: center;
     align-items: center;
-}
-
-/*
-    rgba(255, 255, 255, 0.8);
-*/
-.icon-Selection{
-    border: 3px solid; 
-    border-radius: 10px;
     
-    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
-       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
-         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
-            transition: border-color 0.15s linear;
 }
-
 .grid-item{
     margin: auto;
     box-sizing: border-box;

@@ -27,19 +27,17 @@
                                 </h3>
                             </div>
 
-                            <!-- Preview display -->
+                            <!--
+                                Preview display 
+                                Get the aspect ratio of the current screen.
+                                For now, static size.    
+                            -->
                             <div class="preview-display">
-                                <!-- Instead of passing all the data down, I can just pass the data parentIDs,
-                                    that way, I can just use the profile display to determine what it is-->
-                                
-                                <!--
-                                    This becomes buggy on close of the window
-                                -->
-                                <!-- <Container
+                                <Container
                                     :nest_level="0"
-                                    :profileDisplayName="key"/> -->
+                                    :profileDisplayName="key"
+                                />
                             </div>
-                            <!-- {{ value }} -->
                         
                         </div>
 
@@ -126,7 +124,7 @@ export default {
         }
     },
     beforeMount(){
-        console.log(profileHandler.storedProfiles);
+        console.log("start");
     },
     methods:{
 
@@ -140,22 +138,16 @@ export default {
         
         addProfile(){
             console.log('add')
-            // Temp
-            
-            // Do some initiializing of data first
+
             let name = `Profile ${profileHandler.noProfiles}`;
 
             profileHandler.addProfile(name);
-
-
-
-            console.log(profileHandler)
-
         },
 
         //
         deleteProfile(){            
             profileHandler.deleteProfile(profileHandler.selectedProfile);
+            profileHandler.setSelectedProfile('defaultProfile') // temporary
         },
 
         // Modify profile
@@ -211,7 +203,7 @@ export default {
 }
 
 .preview-display{
-    height: 100%;
+    height: 320px;
     padding: 1em 0.5em;
 }
 

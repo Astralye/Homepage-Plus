@@ -150,10 +150,6 @@ export class LayoutDataClass{
 // Instance methods
 // --------------------------------------------------------------------------------------------------------------------------
 
-    getIsDisplayBorder(id){ 
-        // return LayoutDataClass.getLevelData(layout.allData, containerData.level - 1, parentID);
-    }
-
     // Load data from localStorage
     initializeData(importData){ 
         if(!importData) return;
