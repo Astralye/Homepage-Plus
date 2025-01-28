@@ -35,8 +35,14 @@
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportAll()">
-                                All data
+                                @click="profileHandler.exportEverything()">
+                                Export Everything
+                            </SingleButton>
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="profileHandler.exportProfile(profileHandler.selectedProfile)">
+                                Current Profile
                             </SingleButton>
                         </div>
                         <br>
@@ -45,26 +51,26 @@
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportThemes()">
+                                @click="profileHandler.exportThemes(profileHandler.selectedProfile)">
                                 Themes
                             </SingleButton>
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportAppearance()">
+                                @click="profileHandler.exportAppearance(profileHandler.selectedProfile)">
                                 Appearance
                             </SingleButton>
 
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportimportSVGs()">
+                                @click="profileHandler.exportimportSVGs(profileHandler.selectedProfile)">
                                 Imported Icons
                             </SingleButton> 
 
                             <SingleButton
                                 m_IconString="Download"
-                                @click="exportLayout()">
+                                @click="profileHandler.exportLayout(profileHandler.selectedProfile)">
                                 Layout
                             </SingleButton> 
 
@@ -202,75 +208,89 @@
         <WindowContainerDivider>
             <template #header>
                 <h1>
-                    Importing 
+                    Import
                 </h1>
             </template>
             
             <template #content>
 
-                <template v-if="importHasDataProperty(localStorageVarNames.importSVGs)">
+                <template v-if="isFullImport">
+                    Multiple imports!
+                </template>
 
-                    <div v-if="importHasDataProperty(localStorageVarNames.importSVGs)">
-                        <h3> 
-                            Icons
-                        </h3>
-                        <div class="flex iconDisplay">
-                            <div v-for="(item, index) in m_ImportData.importSVGs" :key="index">
-                                <SVGHandler
-                                    :height="getSize"
-                                    :width="getSize"
-                                    :path_Value="item[1].pathData"
-                                    fill_Colour="#ffffff"
-                                    :view_Box="item[1].viewBox"
-                                />
+                
+                <template v-for="(profile, index) in m_ImportData.storedProfiles" :key="index">
+                
+                    <h2>
+                        {{ index }}
+                    </h2>
+
+                    <template v-if="importHasDataProperty(profile, profileHandler.storageNames.importSVGs)">
+    
+                        <div>
+                            <h3> 
+                                Icons
+                            </h3>
+
+                            <div class="flex iconDisplay">
+                                <div v-for="(item, index) in profile.importSVGs" :key="index">
+                                    <SVGHandler
+                                        :height="getSize(profile.importSVGs)"
+                                        :width="getSize(profile.importSVGs)"
+                                        :path_Value="item[1].pathData"
+                                        fill_Colour="#ffffff"
+                                        :view_Box="item[1].viewBox"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <br>
-
-                </template>
-
-                <template v-if="importHasDataProperty(localStorageVarNames.containerDisplayData)">
-                    <div>
-                        <h3> 
-                            Layout
-                        </h3>
-                        How do we represent this data?
-                    </div>
-
-                    <br>
-                </template>
-                
-                <div v-if="importHasDataProperty(localStorageVarNames.savedTheme)">
-                    <h3>
-                        Themes
-                    </h3>
-
-                    <div v-for="(item, index) in m_ImportData.customThemes" :key="index">
-
-                        {{  item.alias }}
                         
-                        <div class="colour-display flex">
-                            <div class="colour-item left-colour"
-                            :style="{
-                                'background-color': item.primary
-                            }"/>
-        
-                            <div class="colour-item"
-                            :style="{
-                                'background-color': item.secondary
-                            }"/>
-        
-                            <div class="colour-item right-colour"
-                            :style="{
-                                'background-color': item.tertiary
-                            }"/>
+                        <br>
+    
+                    </template>
+    
+                    <template v-if="importHasDataProperty(profile, profileHandler.storageNames.containerDisplayData)">
+                        <div>
+                            <h3> 
+                                Layout
+                            </h3>
+                            How do we represent this data?
                         </div>
-                    </div>
+    
+                        <br>
+                    </template>
+                    
+                    <div v-if="importHasDataProperty(profile, profileHandler.storageNames.themeImports)">
+                        <h3>
+                            Themes
+                        </h3>
+    
+                        <div v-for="(item, index) in profile.themeImports" :key="index">
+    
+                            {{  item.alias }}
+                            
+                            <div class="colour-display flex">
+                                <div class="colour-item left-colour"
+                                :style="{
+                                    'background-color': item.primary
+                                }"/>
+            
+                                <div class="colour-item"
+                                :style="{
+                                    'background-color': item.secondary
+                                }"/>
+            
+                                <div class="colour-item right-colour"
+                                :style="{
+                                    'background-color': item.tertiary
+                                }"/>
+                            </div>
+                        </div>
+    
+                        <br>
+                    </div> 
+                </template>
 
-                    <br>
-                </div>
                 
                 <!-- Show a list of the things importing -->
                 Any unsaved changes will be overwritten.
@@ -287,9 +307,10 @@
                 <div class="split-button">
                     <SingleButton
                         m_IconString="Tick"
-                        @click="importAll()">
+                        @click="profileHandler.importAll(m_ImportData); disableModal()">
                         Confirm
                     </SingleButton>
+                    <!--  disableModal() -->
                     <SingleButton
                         m_IconString="Cross"
                         @click="cancelImport()">
@@ -316,10 +337,8 @@ import FileUpload from '../Input Components/FileUpload.vue';
 import Modal from '../Main/Modal.vue';
 
 import { editVariables } from '../../Data/SettingVariables';
-import { layout } from '../../Data/layoutData';
-import { containerData } from '../../Data/containerData';
-import { iconData } from '../../Data/iconData';
 import { themeStorage } from '../../Data/themeStorage';
+import { profileHandler } from '../../Data/profileHandler';
 
 export default {
     components:{
@@ -335,6 +354,7 @@ export default {
     data(){
         return{
             iconImageStorage,
+            profileHandler,
             editVariables,
             themeStorage,
 
@@ -342,23 +362,6 @@ export default {
                 { id: "Windows" , selected: false },
                 { id: "Sidebar" , selected: false },
             ],
-
-            // For Downloading
-            localStorageVarNames: {
-                
-                // Variable are the same name as the string
-                // For object lookups for validation
-                layoutData: "layoutData",
-                containerDisplayData: "containerDisplayData",
-                iconData: "iconData",
-                
-                iconStorage: "iconStorage",
-                importSVGs: "importSVGs",
-
-                savedTheme: 'savedTheme',
-                customThemes: 'customThemes',
-                userAppearanceSettings: 'userAppearanceSettings',
-            },
 
             isModalDisplay: false,
             m_ImportData: null,
@@ -370,96 +373,24 @@ export default {
         disableModal(){ this.isModalDisplay = false;},
 
         // Boolean
-        importHasDataProperty(prop){
-            return (this.m_ImportData.hasOwnProperty(prop));
-        },
+        importHasDataProperty(profile, prop){
 
-// Data
-// -------------------------------------------------------------------------------------------------------
+            // Should only be a length of 1.
+            let keys = Object.keys(profile);
 
-    // Exports
+            for(let i = 0; i < keys.length; i++){
+                if(keys[i] === prop){
 
-        // If given a parameter, add it to an object
-        // if not, just export itself
+                    let propData = profile[prop];
 
-        exportAll(){
-
-            var dataToSave = {};
-
-            dataToSave = this.exportLayout(dataToSave);
-            dataToSave = this.exportThemes(dataToSave);
-            dataToSave = this.exportimportSVGs(dataToSave);
-            dataToSave = this.exportAppearance(dataToSave);
-
-            this.downloadData(dataToSave);
-        },
-
-        exportAppearance(dataToSave = null){
-            let data = {};
-
-            // Property is the same name as the main string variable 
-            data[this.localStorageVarNames.userAppearanceSettings] = JSON.parse(localStorage.getItem(this.localStorageVarNames.userAppearanceSettings));
-            
-            // If parameter contained data, merge
-            if(dataToSave) return {...dataToSave, ...data};
-
-            this.downloadData(data); 
-        },
-
-        // Not implemented yet
-        exportThemes(dataToSave = null){
-
-            let data = {};
-
-            // Property is the same name as the main string variable 
-            data[this.localStorageVarNames.savedTheme] = JSON.parse(localStorage.getItem(this.localStorageVarNames.savedTheme));
-            data[this.localStorageVarNames.customThemes] = JSON.parse(localStorage.getItem(this.localStorageVarNames.customThemes));
-
-            // If parameter contained data, merge
-            if(dataToSave) return {...dataToSave, ...data};
-
-            this.downloadData(data); 
-        },
-
-        exportimportSVGs(dataToSave = null){
-
-            let data = {};
-            
-            console.log(localStorage.getItem(this.localStorageVarNames.importSVGs), "a");
-            console.log(localStorage.getItem('importSVGs'), "b");
-
-            // Property is the same name as the main string variable 
-            data[this.localStorageVarNames.importSVGs] = JSON.parse(localStorage.getItem(this.localStorageVarNames.importSVGs));
-             
-            // If parameter contained data, merge
-            if(dataToSave) return {...dataToSave, ...data};
-
-            this.downloadData(data); 
-        },
-
-        exportLayout(dataToSave = null){
-
-            var data = {};
-
-            // Property is the same name as the main string variable 
-            data[this.localStorageVarNames.layoutData] = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutData));
-            data[this.localStorageVarNames.containerDisplayData] = JSON.parse(localStorage.getItem(this.localStorageVarNames.containerDisplayData));
-            data[this.localStorageVarNames.iconData] = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
-            
-            // If parameter contained data, merge
-            if(dataToSave) return {...dataToSave, ...data};
-
-            this.downloadData(data); 
-        },
-
-        downloadData(dataToSave){
-            var data = JSON.stringify(dataToSave , null, 4);
-
-            var hiddenElement = document.createElement('a');
-            hiddenElement.href = 'data:attachment/text,' + encodeURIComponent(data);
-            hiddenElement.target = '_blank';
-            hiddenElement.download = 'HomepageLayoutSave.json'; // Generate a name ...
-            hiddenElement.click();
+                    if(!propData) return false; // null
+                    if(Object.keys(propData).length == 0) return false; // empty object
+                    if(propData.length == 0) return false; // empty array
+                     
+                    return true;
+                }
+            }
+            return false;
         },
 
 // Imports
@@ -470,24 +401,10 @@ export default {
             this.disableModal();
         },
 
-        // Boolean
-        validateImport(data){
-
-            if(typeof(data) != "object") return false;
-
-            // Check for valid property
-            for (var key in data) {
-
-                if(!this.localStorageVarNames.hasOwnProperty(key)) return false;
-            }
-
-            return true;
-        },
-
         importModal(data){
 
             // Check if valid data first.
-            let validImport = this.validateImport(data); 
+            let validImport = profileHandler.validateImport(data); 
             if(!validImport){
 
                 // Display some message for invalid import
@@ -508,68 +425,13 @@ export default {
             // }
             
             this.m_ImportData = data;
-            // console.log(this.m_ImportData);
+
             this.enableModal();
         },
 
-        importAll(){
-
-            var data = this.m_ImportData;
-
-            this.importLayout(data);
-            this.importStoredIcons(data);
-            this.importThemes(data);
-
-            // Reset selection
-            editVariables.enableResetSelect();
-            editVariables.enableResetFlag();
-
-            this.disableModal();
-        },
-
-        // Not implemented
-        importThemes(data){
-
-            // Check if has data
-            if(!data.hasOwnProperty(`${this.localStorageVarNames.customThemes}`)) return;
-            
-            themeStorage.setImportThemes(data);
-        },
-
-        importStoredIcons(data){
-            
-            // Check if has property first
-            if(!data.hasOwnProperty(`${this.localStorageVarNames.importSVGs}`)) return;
-
-            iconImageStorage.setImportedSVGs(data.importSVGs);
-        },
-
-        importLayout(data){
-
-            // Check for any unsaved changes before importing
-            // Perhaps show a modal first before any unsaved changes.
-
-            // Check if has property first
-            if(!(data.hasOwnProperty(`${this.localStorageVarNames.layoutData}`) || 
-                 data.hasOwnProperty(`${this.localStorageVarNames.containerDisplayData}`) ||
-                 data.hasOwnProperty(`${this.localStorageVarNames.iconData}`))) return;
-
-
-            // Load all the data
-            // Any null data will not do anything
-            layout.initializeData(data.layoutData);
-            containerData.intializeData(data.containerDisplayData);
-            iconData.initializeData(data.iconData);
-        },
-        
-        // ------------------------------------------------------------------------------------------------------
-    },
-    computed:{
-
         // Changes import icon size depending on number shown.
-        getSize(){
-            
-            let size = this.m_ImportData.importSVGs.length;
+        getSize(iconArray){
+            let size = iconArray.length;
 
             if(size <= 5) return "5em";
             if(size <= 10) return "4em";
@@ -577,6 +439,11 @@ export default {
 
             return "1em";
         }
+    },
+    computed:{
+
+        // Single imports will only have a single stored profile.
+        isFullImport(){ return (Object.keys(this.m_ImportData.storedProfiles).length > 1) },
     }
 }
 </script>

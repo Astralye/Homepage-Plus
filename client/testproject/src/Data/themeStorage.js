@@ -59,10 +59,14 @@ export class ThemeStorage {
     // Get both import themes and selected themes
     initData(){
 
-        this.data.displayArray = this.data.displayArray.concat(this.importThemeObj); // add to display themes
-
-        // import selected Theme
-        this.data.importThemes = this.importThemeObj; // in the event of adding more themes
+        // only load if imports has data
+        if(this.importThemeObj)
+        {
+            this.data.displayArray = this.data.displayArray.concat(this.importThemeObj); // add to display themes
+    
+            // import selected Theme
+            this.data.importThemes = this.importThemeObj; // in the event of adding more themes
+        }
         
         // Check if it exists before setting it
         this.data.selectedTheme = (this.storageSavedTheme) ? this.storageSavedTheme : "Default";
@@ -109,12 +113,15 @@ export class ThemeStorage {
         this.changeSelected(item.name);
     }
 
-    setImportThemes(data){
+    setImportThemes(selected, themeImports){
 
-        this.data.displayArray = this.data.displayArray.concat(data.customThemes); // add to display themes
-        this.data.selectedTheme = data.savedTheme;
+        if(themeImports){
+            this.data.displayArray = this.data.displayArray.concat(themeImports); // add to display themes
+        }
+
+        this.data.selectedTheme = selected;
     
-        this.changeSelected(data.savedTheme);
+        this.changeSelected(selected);
     }
 
     // from name

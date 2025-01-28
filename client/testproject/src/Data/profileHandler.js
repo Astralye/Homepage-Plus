@@ -22,17 +22,21 @@ class ProfileHandler{
         this.storageObject = "storageObject",
 
         this.localStorageVarNames = {
-            layoutDataName: "layoutData",
-            displayData: "containerDisplayData",
+            layoutData: "layoutData",
+            containerDisplayData: "containerDisplayData",
             iconData: "iconData",
             iconStorage: "iconStorage",
             
             userSettings: "userSettings",
-            savedTheme: 'savedTheme',
             importSVGs: 'importSVGs',
             userAppearanceSettings: 'userAppearanceSettings',
+            
+            savedTheme: 'savedTheme',
+            themeImports: "themeImports",
 
-            themeImports: "themeImports"
+            // Only for checking valid imports
+            storedProfiles: "storedProfiles",
+            selectedProfile: "selectedProfile"
         }
     }
 
@@ -51,19 +55,20 @@ class ProfileHandler{
             
             // The storage of all the data
             storedProfiles: {
-                    defaultProfile: {
-                        layout: null, // How the page is displayed
-                        container: null, // Data for each container
-                        iconStorage: null, // Where icons are located
-            
-                        iconData: null,
-                        importSVGs: null,
-                        userSettings: null,
-                        userAppearanceSettings: null, 
-            
-                        savedTheme: null,
-                        themeImports: null,
-                    },
+                defaultProfile: {
+                    
+                    layoutData: null, // How the page is displayed
+                    containerDisplayData: null, // Data for each container
+                    iconStorage: null, // Where icons are located
+        
+                    iconData: null,
+                    importSVGs: null,
+                    userSettings: null,
+                    userAppearanceSettings: null, 
+        
+                    savedTheme: null,
+                    themeImports: null,
+                },
             },
 
             // Know which profile to load and save to.
@@ -81,13 +86,14 @@ class ProfileHandler{
     }
 
 // localStorage
+// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     // Save the entire object
-    saveDataToLocalStorage(){ localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
+    saveDataToLocalStorage() { localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
+    getDataFromLocalStorage(){ localStorage.getItem(this.storageObject);}
+    get allData(){ return this.data; }
 
 // Themes
-
-
 
     // Assuming iconSize is a square
     saveTheme(){
@@ -96,8 +102,9 @@ class ProfileHandler{
         // Save to the profile
         // Then set the data
         
-        let profile = this.getProfileData(this.selectedProfile);
+        let profile = this.getProfileData(this.data.selectedProfile);
         if(!profile) return 0; // no data
+
         
         this.setThemes(profile);
 
@@ -160,12 +167,12 @@ class ProfileHandler{
     // Return value is used to confirm saving values
     setProfileData(){
         
-        let profile = this.getProfileData(this.selectedProfile);
+        let profile = this.getProfileData(this.data.selectedProfile);
         if(!profile) return 0; // no data
         
         // Set all the data
-        profile.layout = layout.allData; // How the page is displayed
-        profile.container = containerData.allData; // Data for each container
+        profile.layoutData = layout.allData; // How the page is displayed
+        profile.containerDisplayData = containerData.allData; // Data for each container
         profile.iconStorage = iconStorage.allData; // Where icons are located
         profile.iconData = iconData.allData;
         profile.importSVGs = Array.from(iconImageStorage.importedSVGs.entries());
@@ -193,7 +200,6 @@ class ProfileHandler{
     // load from localStorage
     loadProfileData(){
 
-
         // Needs to pass the data from the localStorage and then load it to the initializers
         // Needs the profile data first
         
@@ -202,14 +208,16 @@ class ProfileHandler{
             this.setValues(); // Create data first.
             return;
         }
-        
-        let profile = this.getProfileData(this.selectedProfile);
+
+        let profile = this.getProfileData(this.data.selectedProfile);
+        console.log(profile)
         if(!profile) return; // no data
+
 
         // Run the respective function if contain the data within local storage
 
-        if(profile.layout  !== null) layout.initializeData(profile.layout);
-        if(profile.container !== null) containerData.intializeData(profile.container); 
+        if(profile.layoutData  !== null) layout.initializeData(profile.layoutData);
+        if(profile.containerDisplayData !== null) containerData.intializeData(profile.containerDisplayData); 
         if(profile.iconData !== null)    iconData.initializeData(profile.iconData);
 
         if(profile.iconStorage !== null) iconStorage.initDataFromStorage(profile.iconStorage);
@@ -232,6 +240,280 @@ class ProfileHandler{
 
         return JSON.parse(storedObj); }
 
+// Imports and Exports 
+// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+// Exports
+
+    /*
+        To make it easier for importing,
+        all the data exported will be saved in the same format
+        i.e the same as allData.
+
+        Any specific appearance parts will be under the name of the current theme
+        BUT will not store the actual apperance, and will load it to place into imports
+    */
+
+    // Perhaps we can declare which profile to export
+
+    // -> All profiles
+
+    // Drop down to select the profile...
+    // Current Profile
+
+    // Just loads all the data and downloads it
+    exportEverything(){
+
+        if(!this.allData) return;
+        this.downloadData(this.allData);
+    }
+
+    // Just grabs the respective profile data from the name
+    exportProfile(name){
+
+        var dataToSave = this.getProfileData(name);
+        if(!dataToSave) return;
+
+        // Create object with the name of the export
+        let dataExport = {
+            storedProfiles: {},
+            selectedProfile: name,
+        };
+
+
+        dataExport.storedProfiles[name] = {};
+
+        dataExport.storedProfiles[name] = dataToSave;
+        this.downloadData(dataExport);
+    }
+
+// Export individuals
+    exportAppearance(name){
+
+        let profile = this.getProfileData(name);
+        if(!profile) return;
+        
+        let data = {
+            storedProfiles: {},
+            selectedProfile: name,
+        };
+
+        data.storedProfiles[name] = {};
+        data.storedProfiles[name][this.localStorageVarNames.userAppearanceSettings] = profile.userAppearanceSettings
+
+        // Property is the same name as the main string variable 
+
+        this.downloadData(data); 
+    }
+
+    exportThemes(name){
+
+        let profile = this.getProfileData(name);
+        if(!profile) return;
+
+        let data = {
+            storedProfiles: {},
+            selectedProfile: name,
+        };
+
+        data.storedProfiles[name] = {};
+        data.storedProfiles[name][this.localStorageVarNames.savedTheme] = profile.savedTheme;
+        data.storedProfiles[name][this.localStorageVarNames.themeImports] = profile.themeImports;
+
+        this.downloadData(data); 
+    }
+
+    exportimportSVGs(name){
+
+        let profile = this.getProfileData(name);
+        if(!profile) return;
+        
+        let data = {
+            storedProfiles: {},
+            selectedProfile: name,
+        };
+
+        data.storedProfiles[name] = {};
+
+        // Property is the same name as the main string variable 
+        data.storedProfiles[name][this.localStorageVarNames.importSVGs] = profile.importSVGs;
+
+        this.downloadData(data); 
+    }
+
+    exportLayout(name){
+
+        let profile = this.getProfileData(name);
+        if(!profile) return;
+
+        let data = {
+            storedProfiles: {},
+            selectedProfile: name,
+        };
+
+        data.storedProfiles[name] = {};
+        // Property is the same name as the main string variable 
+        
+        data.storedProfiles[name][this.localStorageVarNames.layoutData] = profile.layout;
+        data.storedProfiles[name][this.localStorageVarNames.containerDisplayData] = profile.container;
+        data.storedProfiles[name][this.localStorageVarNames.iconData] = profile.iconData;
+
+        // Download if single click
+        this.downloadData(data); 
+    }
+
+    downloadData(dataToSave){
+
+        var data = JSON.stringify(dataToSave , null, 4);
+        // Data will be just a single group.
+
+        var hiddenElement = document.createElement('a');
+        hiddenElement.href = 'data:attachment/text,' + encodeURIComponent(data);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'HomepageLayoutSave.json'; // Generate a name ...
+        hiddenElement.click();
+    }
+
+// Imports
+
+    // Boolean
+    validateImport(data){
+
+        if(typeof(data) != "object") return false;
+    /*
+        Assuming data structure is:
+
+        {
+            storedProfiles: {
+                name: {
+                        property:
+                    }
+                
+                },
+            selectedProfile: name,
+        };
+    */
+
+        // Stored profile and selected profile
+        for (var value in data) {
+            if(!this.localStorageVarNames.hasOwnProperty(value)) return false;
+        }
+        
+        // access storedProfile
+        let profiles = data.storedProfiles;
+        if(!profiles) return false; // if empty
+        
+        // For every profile
+        for (var profile in profiles) {
+
+            // For every property in the profile
+            for(var property in data.storedProfiles[profile]){
+                // Any invalid properties inside the object will cause all to fail
+                if(!this.localStorageVarNames.hasOwnProperty(property)) return false;
+            }
+        }
+
+        // If all valid
+        return true;
+    }
+
+
+    /*
+        27/01/25
+        JS bug
+
+        this.data (Class variable)
+
+        when this.data is set to another value ie. data,
+        this temporarily overrides the value.
+        When a member function is run,
+
+        loadProfileData()
+
+        the 'override' value seems to completely disappear.
+        This happens right at the top of the parameter, first line just after
+        trying to access it via console.log()
+        I cant seem to figure out how to word it.
+
+        'JS class variable reset'?
+
+        Meaning, I dont know how to find any solutions better yet solve it.
+        the worst part is that its not API specific or anything I can really look up
+        Its so vague that its driving me crazy.
+        
+        When I copy the exact same code, it works, however still not fully functioning.
+        
+        I have no idea what the problem is.
+
+        I think the solution is to manually fill out the data instead of doing that stupid function
+
+
+    */
+    
+    importAll(data){
+        
+        // Set the profile data to the object
+
+        this.importLayout(data);
+        this.importStoredIcons(data);
+        this.importThemes(data);
+        this.importAppearance(data);
+
+        // Reset selection
+        editVariables.enableResetSelect();
+        editVariables.enableResetFlag();
+    }
+    
+    importAppearance(data){
+        
+        let prof = data.storedProfiles[data.selectedProfile];
+
+        // // Check if has data
+        if(!prof.hasOwnProperty(this.localStorageVarNames.userAppearanceSettings)) return;
+
+        editVariables.loadUserAppearance(prof.userAppearanceSettings)
+    }
+
+    importThemes(data){
+
+        let prof = data.storedProfiles[data.selectedProfile];
+
+        // Check if has data
+        if(!(prof.hasOwnProperty(this.localStorageVarNames.savedTheme) ||
+             prof.hasOwnProperty(this.localStorageVarNames.themeImports))) return;
+        
+        themeStorage.setImportThemes(prof.savedTheme, prof.themeImports);
+    }
+
+    importStoredIcons(data){
+        
+        let prof = data.storedProfiles[data.selectedProfile];
+
+        // Check if has property first
+        if(!prof.hasOwnProperty(this.localStorageVarNames.importSVGs)) return;
+
+        iconImageStorage.setImportedSVGs(prof.importSVGs);
+    }
+
+    importLayout(data){
+
+        // Check for any unsaved changes before importing
+        // Perhaps show a modal first before any unsaved changes.
+
+        let prof = data.storedProfiles[data.selectedProfile];
+
+        // Check if has property first
+        if(!(prof.hasOwnProperty(this.localStorageVarNames.layoutData) || 
+             prof.hasOwnProperty(this.localStorageVarNames.containerDisplayData) ||
+             prof.hasOwnProperty(this.localStorageVarNames.iconData))) return;
+
+        // Load all the data
+        // Any null data will not do anything
+        layout.initializeData(prof.layoutData);
+        containerData.intializeData(prof.containerDisplayData);
+        iconData.initializeData(prof.iconData);
+    }
+
 // Basic functions
 
     // By name
@@ -251,14 +533,6 @@ class ProfileHandler{
         if(!data) return; // no data
 
         delete this.data.storedProfiles[name];
-
-        // for(let i = 0; i < this.data.storedProfiles.length; i++){
-        //     // If found, remove
-        //     if(this.data.storedProfiles[i][name]) {
-        //         this.data.storedProfiles[i].splice(index, 1)
-        //         return;
-        //     }
-        // }
     }
     
     // By name
@@ -279,18 +553,12 @@ class ProfileHandler{
         if(!data) return; // no data
 
         delete Object.assign(this.data.storedProfiles, {[newName]: this.data.storedProfiles[oldName] })[oldName];
-        
-        
-        // for(let i = 0; i < this.data.storedProfiles.length; i++){
-        //     if(this.data.storedProfiles[i][oldName]){ // if the name exist, return
-        //         delete Object.assign(this.data, {[newName]: this.data[oldName] })[oldName];
-        //     }
-        // }
     }
     
     setSelectedProfile(val){ this.data.selectedProfile = val; }
 
     get selectedProfile(){ return this.data.selectedProfile; }
+    get storageNames(){ return this.localStorageVarNames; }
 }
 
 const profileHandlerInstance = new ProfileHandler;
