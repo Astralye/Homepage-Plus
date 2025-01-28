@@ -6,7 +6,7 @@
         <template #content>
             <TabWrapper
                 :default_Tab="0"
-                :tab_Buttons="m_ThemeTabButttons"
+                :tab_Buttons="m_ThemeTabButtons"
             >
 
     <!-- 
@@ -209,7 +209,8 @@
                 />
 
                 <SingleButton
-                    @click="editVariables.resetAppearance_Grid()">
+                    @click="editVariables.resetAppearance_Grid()"
+                    :m_IconString="'Restart-alt'">
                     Reset grid settings
                 </SingleButton>
                 <br>
@@ -264,7 +265,8 @@
                 />
 
                 <SingleButton
-                    @click="editVariables.resetAppearance_List()">
+                    @click="editVariables.resetAppearance_List()"
+                    :m_IconString="'Restart-alt'">
                     Reset list Settings
                 </SingleButton>
 
@@ -374,7 +376,8 @@
                 </div>
 
                 <SingleButton
-                    @click="editVariables.resetAppearance_Font()">
+                    @click="editVariables.resetAppearance_Font()"
+                    :m_IconString="'Restart-alt'">
                     Reset Font
                 </SingleButton>
             </template>
@@ -415,7 +418,8 @@
                 <br>
 
                 <SingleButton
-                    @click="editVariables.resetAppearance_Icon()">
+                    @click="editVariables.resetAppearance_Icon()"
+                    :m_IconString="'Restart-alt'">
                     Reset grids
                 </SingleButton>
             </template>
@@ -494,7 +498,8 @@
 
                 <br>
                 <SingleButton
-                    @click="editVariables.resetAppearance_Header()">
+                    @click="editVariables.resetAppearance_Header()"
+                    :m_IconString="'Restart-alt'">
                     Reset Header
                 </SingleButton>
 
@@ -573,6 +578,7 @@ import { editVariables } from '../../Data/SettingVariables';
 import { themeStorage } from '../../Data/themeStorage';
 import { layout, LayoutDataClass } from '../../Data/layoutData';
 import { profileHandler } from '../../Data/profileHandler';
+import { iconImageStorage } from '../../Data/iconImages';
 
 export default {
     components:{
@@ -588,6 +594,7 @@ export default {
     },
     data(){
         return{
+            iconImageStorage,
             LayoutDataClass,
             profileHandler,
             editVariables,
@@ -600,12 +607,12 @@ export default {
             m_SelectedTheme: {},
 
             // Tabs
-            m_ThemeTabButttons: [
-                { text: 'Themes', icon_Image: "Dotted_Square" },
-                { text: 'Grids, Lists', icon_Image: "Dotted_Square"},
-                { text: 'Text', icon_Image: "Dotted_Square"},
-                { text: 'Icons', icon_Image: "Dotted_Square"},
-                { text: 'Container', icon_Image: "Dotted_Square"},
+            m_ThemeTabButtons: [
+                { text: 'Themes', icon_Image: "Contrast" },
+                { text: 'Grids, Lists', icon_Image: "View-Sidebar"},
+                { text: 'Text', icon_Image: "Abc"},
+                { text: 'Icons', icon_Image: "Image"},
+                { text: 'Container', icon_Image: "Window"},
             ],
 
             // Range Sliders

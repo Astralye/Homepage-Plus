@@ -218,7 +218,7 @@ export default {
 			tabIndex: -1,
 			tab_Data: [
 				{ text:'Grid', icon_Image: "Grid"},
-				{ text:'List', icon_Image: "List"},
+				{ text:'List', icon_Image: "Row_Column"},
 			],
 
 			isSelected: false,
