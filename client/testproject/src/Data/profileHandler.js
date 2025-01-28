@@ -54,26 +54,14 @@ class ProfileHandler{
         this.data = {
             
             // The storage of all the data
-            storedProfiles: {
-                defaultProfile: {
-                    
-                    layoutData: null, // How the page is displayed
-                    containerDisplayData: null, // Data for each container
-                    iconStorage: null, // Where icons are located
-        
-                    iconData: null,
-                    importSVGs: null,
-                    userSettings: null,
-                    userAppearanceSettings: null, 
-        
-                    savedTheme: null,
-                    themeImports: null,
-                },
-            },
+            storedProfiles: {},
 
             // Know which profile to load and save to.
             selectedProfile: "defaultProfile",
         }
+        
+        // Set it via function to standardize
+        this.data.storedProfiles[this.data.selectedProfile] = this.createEmptyProfile();
     }
 
     // All but the default profile
@@ -89,7 +77,9 @@ class ProfileHandler{
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     // Save the entire object
-    saveDataToLocalStorage() { localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
+    saveDataToLocalStorage() {
+        console.log(this.data)
+        localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
     getDataFromLocalStorage(){ localStorage.getItem(this.storageObject);}
     get allData(){ return this.data; }
 
@@ -168,6 +158,7 @@ class ProfileHandler{
     setProfileData(){
         
         let profile = this.getProfileData(this.data.selectedProfile);
+        console.log("setProfileData", profile, this.data.selectedProfile);
         if(!profile) return 0; // no data
         
         // Set all the data
@@ -514,6 +505,33 @@ class ProfileHandler{
         iconData.initializeData(prof.iconData);
     }
 
+// Profile specifics 
+
+    createEmptyProfile(){
+        return {
+            layoutData: null, // How the page is displayed
+            containerDisplayData: null, // Data for each container
+            iconStorage: null, // Where icons are located
+
+            iconData: null,
+            importSVGs: null,
+            userSettings: null,
+            userAppearanceSettings: null, 
+
+            savedTheme: null,
+            themeImports: null,
+        };
+    }
+
+
+    changeSelectedProfile(newProfile){
+
+        // Check if exist first
+        if(!this.getProfileData(newProfile)) return;
+        
+        this.data.selectedProfile = newProfile;
+    }
+
 // Basic functions
 
     // By name
@@ -530,18 +548,23 @@ class ProfileHandler{
         if(!name) return; // no value parameter
 
         let data = this.data.storedProfiles[name];
+        
         if(!data) return; // no data
 
         delete this.data.storedProfiles[name];
     }
     
     // By name
-    addProfile(name, data){
-        if(!data) return;
+    addProfile(name, data = null){
 
         // Need to check if name already exists
 
-        this.data.storedProfiles[name] = data;
+        if(data){
+            this.data.storedProfiles[name] = data;
+        }
+        else{
+            this.data.storedProfiles[name] = this.createEmptyProfile();
+        }
     }
 
     // Rename the object key
@@ -554,11 +577,16 @@ class ProfileHandler{
 
         delete Object.assign(this.data.storedProfiles, {[newName]: this.data.storedProfiles[oldName] })[oldName];
     }
-    
+
+    isSelectedProfile(key){ return (this.data.selectedProfile == key); }
+
     setSelectedProfile(val){ this.data.selectedProfile = val; }
 
     get selectedProfile(){ return this.data.selectedProfile; }
-    get storageNames(){ return this.localStorageVarNames; }
+    get noProfiles()     { return Object.keys(this.data.storedProfiles).length}
+    get storedProfiles() { return this.data.storedProfiles;}
+
+    get storageNames()   { return this.localStorageVarNames; }
 }
 
 const profileHandlerInstance = new ProfileHandler;

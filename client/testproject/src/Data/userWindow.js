@@ -16,6 +16,7 @@ class WindowHandler{
             
             { name: "widgets",    toggle: false },
             { name: "appearance",     toggle: false },
+            { name: "profiles",     toggle: false },
         ],
 
         windowStack: []

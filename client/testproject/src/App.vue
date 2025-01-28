@@ -22,6 +22,7 @@ import PageSubDivision from './components/Windows/PageSubDivision.vue'
 import ContainerContent from './components/Windows/ContainerContent.vue'
 import Settings from './components/Windows/Settings.vue'
 import ThemeMenu from './components/Windows/ThemeMenu.vue'
+import Profiles from './components/Windows/Profiles.vue'
 
 export default{
     name: "App",
@@ -36,6 +37,7 @@ export default{
         Multidrag,
         ThemeMenu,
         LinkMaker,
+        Profiles,
         Settings,
         Storage,
         Window,
@@ -59,7 +61,8 @@ export default{
                 "Link Maker",
                 
                 "Appearance",
-                "Widgets",
+                // "Widgets",
+                "Profiles"
             ],
 
             containerData: {
@@ -288,6 +291,29 @@ export default{
                 </template>
             </Window>
         </Transition>
+
+        <!-- Profiles -->
+        <Transition name="fade">
+            <Window
+                v-if="windowHandler.getEditValue('Profiles')"
+                title="Profiles"
+                :width="500">
+                <template v-slot:window-icon>
+                    <SVGHandler
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
+                        view_Box="0 -960 960 960"
+                        :fill_Colour="themeStorage.highContrastColour"
+                        :path_Value="iconImageStorage.getPathData('Paint_Bucket')"
+                    />
+                </template>
+                <template v-slot:window-content>
+                    <Profiles/>
+                </template>
+            </Window>
+        </Transition>
+
     </teleport>
 
     <!-- Saving -->
