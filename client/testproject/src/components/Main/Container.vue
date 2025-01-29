@@ -36,10 +36,10 @@
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
 
-                    <!-- The display variable will propagate to all the component children -->
                     <Container 
                         v-for="n in m_LayoutData.NoChildren" 
-                        :profileDisplayName="profileDisplayName" 
+                        :profileDisplayName="profileDisplayName"
+                        :isDisplayWindow="isDisplayWindow"
                         :nest_level="nest_level+1"
                         :parent_ID="m_LayoutData.id"
                         :child_Instance="n-1"
@@ -49,14 +49,14 @@
                 </template>
 
                 <!-- If no children, display the grid layout -->
-                <div v-else-if="m_LayoutData.NoChildren === 0"
+                <div v-if="m_LayoutData.NoChildren === 0"
                     class="container-wrapper"
                     @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null"
                     @mouseover="m_isHover = editVariables.containerSelectionMode"
                     @mouseout="m_isHover=false"
                 >
 
-                        <div v-if="containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).containerHeader.toggle"
+                        <div v-if="containerData.getObjectFromIDData(containerDataOrigin, m_LayoutData.id).containerHeader.toggle"
                             ref="header"> 
                             <div class="container-header"
                                 :style="{
@@ -64,16 +64,17 @@
                                     'padding' : containerPadding,
                                 }"
                             >
-                                {{ containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).containerHeader.text }}                        
+                                {{ containerData.getObjectFromIDData(containerDataOrigin, m_LayoutData.id).containerHeader.text }}                        
                             </div>
                             <hr :class="{
                                 'extend-length' : isProfileDisplay
                             }">
                         </div>
     
-                        <template v-if="containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).layoutType === 'Grid'">
+                        <template v-if="containerData.getObjectFromIDData(containerDataOrigin, m_LayoutData.id).layoutType === 'Grid'">
                             <Gridlayout
-                                :profileDisplayName="profileDisplayName" 
+                                :profileDisplayName="profileDisplayName"
+                                :isDisplayWindow="isDisplayWindow"
                                 :component_ID="m_LayoutData.id"
                                 :update_Grid_Flag="m_updateGrid"
                             />
@@ -83,6 +84,7 @@
                             <div>
                                 <ListLayout 
                                     :profileDisplayName="profileDisplayName"
+                                    :isDisplayWindow="isDisplayWindow"
                                     :component_ID="m_LayoutData.id"
                                 />
                             </div>
@@ -142,6 +144,7 @@ export default {
         /*
             profileDisplayName, used for displaying the profile in Profiles.vue tab.
 
+            isDisplayWindow is for CSS to be changed on the preview window
             ensures only displaying is visible, prevent normal container functions to work.
             This will also make sure to override all global data, and only apply values passed in via profile
         */
@@ -260,8 +263,6 @@ export default {
     // Sets variables from props
     created(){
         this.containerCreation();
-        console.log("created:", this.profileDisplayName);
-        console.log("profike:", profileHandler.selectedProfile)
     },
     mounted(){
         this.setComponentDOMValues();
@@ -289,7 +290,7 @@ export default {
             let tmpID = (this.nest_level === 0) ? layout.allData.id : this.parent_ID.concat(LayoutDataClass.generateID(this.nest_level, this.child_Instance));
 
             // Changes search location if profile display
-            var dataSearchObj = this.dataOrigin;
+            var dataSearchObj = this.layoutDataOrigin;
 
             let tmpContainer = LayoutDataClass.getLevelData(dataSearchObj, this.nest_level, tmpID);
             
@@ -303,9 +304,15 @@ export default {
             this.loadFractionalData();
             this.renderLastContainer();
 
+            
             if(!LayoutDataClass.isBaseContainer(this.m_LayoutData.id)){
-                console.log("base container", LayoutDataClass.getParentObj(this.m_LayoutData));
-                this.m_isVertical = (LayoutDataClass.getParentObj(this.m_LayoutData).divisionType === "Vertical"); 
+                
+                // code breaks here for profiles.
+                console.log("id:", this.m_LayoutData.id)
+                
+                
+                
+                this.m_isVertical = (LayoutDataClass.getParentObj(dataSearchObj, this.m_LayoutData).divisionType === "Vertical"); 
                 // console.log("after base")
             }
         },
@@ -345,7 +352,8 @@ export default {
         getHeaderSize(){
             let headerRef = this.$refs["header"];
 
-            let isList = (containerData.getObjectFromIDData(this.containerSearchObj,this.m_LayoutData.id).layoutType == "List");
+            console.log("header");
+            let isList = (containerData.getObjectFromIDData(this.containerDataOrigin,this.m_LayoutData.id).layoutType == "List");
 
             // No header or grid layout
             if(!headerRef || !isList){ this.m_headerOffset = "0px"; return; }
@@ -428,8 +436,7 @@ export default {
 
         // If drag passes threshold, update parent row/column data
         drag_MouseMove(){
-
-            let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
+            let parentObj = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
 
             const difference = ContainerDividerClass.calculateMouseDifference( parentObj.divisionType, 
@@ -469,7 +476,7 @@ export default {
             // If not inside drag, find the difference.
             if(!isInside){ isPositive = (difference > 0); }
 
-            let parent = LayoutDataClass.getParentObj(this.m_LayoutData);
+            let parent = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
 
             // value to nothing to reset it.
             this.$refs["next-divider"].style.transform = null;
@@ -527,7 +534,7 @@ export default {
         // Sets the config data on creation
         setContainerConfigData(){
 
-            let index = containerData.getIndexFromIDData(this.containerSearchObj, this.m_LayoutData.id);
+            let index = containerData.getIndexFromIDData(this.containerDataOrigin, this.m_LayoutData.id);
 
             if(index !== null) {  this.disableConfigOnNonLeaf(); return; }
 
@@ -552,7 +559,7 @@ export default {
 
         // Reset only after last sibling.
         updateContainerGrid(){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ editVariables.resetParentID(); }
+            if(LayoutDataClass.isLastSibling(this.layoutDataOrigin, this.m_LayoutData)){ editVariables.resetParentID(); }
 
             this.m_updateGrid = true;
 
@@ -608,7 +615,8 @@ export default {
     },
     computed:{
 
-        dataOrigin(){
+        // for 
+        layoutDataOrigin(){
             if(this.isProfileDisplay || this.profileDisplayName){ return profileHandler.getProfileData(this.profileDisplayName).layoutData; }
             return layout.allData;
         },
@@ -626,7 +634,7 @@ export default {
             Vertical -> Extra at the start
             Horizontal -> Extra at the end
         */
-        m_DisplayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
+        m_DisplayDivider(){ return LayoutDataClass.isExtraContainer(this.layoutDataOrigin, this.m_LayoutData, this.m_isVertical)},
 
         headerColour(){
             if(!editVariables.appearanceHeader.isApplyGlobal){ themeStorage.getResettedColour(); return; }
@@ -645,10 +653,8 @@ export default {
                1px = 0.25em;
         */
 
-        containerSearchObj(){ 
-            if(!this.isProfileDisplay) return containerData.allData;
-
-            let data = profileHandler.getProfileData(this.isProfileDisplay);
+        containerDataOrigin(){ 
+            let data = profileHandler.getProfileData(this.profileDisplayName);
 
             // if null data, just return the current container data
             return (data) ? data.containerDisplayData : containerData.allData;
@@ -697,7 +703,7 @@ export default {
             if(p_ID === null) { return; }
 
             // console.log("parentID");
-            let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
+            let parentObj = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
             // console.log("after");
             if(parentObj === null) { return; }
             else if(parentObj.id === p_ID){ this.updateContainerGrid(); }
@@ -705,7 +711,7 @@ export default {
 
         // update grid layout
         'm_LayoutData.siblings'(){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
+            if(LayoutDataClass.isLastSibling(this.layoutDataOrigin, this.m_LayoutData)){ this.$parent.p_storeParentID(); }
         },
 
         'm_LayoutData.unevenFRData'(){ this.p_storeParentID(); },

@@ -45,15 +45,10 @@ export default {
         SVGHandler
     },
     props:{
-        /*
-            profileDisplayName, used for displaying the profile in Profiles.vue tab.
 
-            ensures only displaying is visible, prevent normal container functions to work.
-            This will also make sure to override all global data, and only apply values passed in via profile
-        */
-        profileDisplayName:{ 
-            type: String,
-            default: null,
+        isDisplayWindow:{
+            type: Boolean,
+            default: false,
         },
 
         icon_data: {
@@ -152,7 +147,7 @@ export default {
         },
 
         // Boolean flag to redirect code from normal function to only display
-        isProfileDisplay(){ return (this.profileDisplayName)  },
+        isProfileDisplay(){ return (this.isDisplayWindow)  },
 
         textSize(){
 

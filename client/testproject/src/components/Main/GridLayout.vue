@@ -32,7 +32,7 @@
                 <Transition name="fade">
                     <IconHandler v-show="renderIcon(index)"
                         :key="getIconData(index)"
-                        :profileDisplayName="profileDisplayName"
+                        :isDisplayWindow="isDisplayWindow"
                         class="icon"
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
@@ -96,6 +96,7 @@ export default {
         /*
             profileDisplayName, used for displaying the profile in Profiles.vue tab.
 
+            isDisplayWindow is for CSS to be changed on the preview window
             ensures only displaying is visible, prevent normal container functions to work.
             This will also make sure to override all global data, and only apply values passed in via profile
         */
@@ -103,6 +104,12 @@ export default {
             type: String,
             default: null,
         },
+
+        isDisplayWindow:{
+            type: Boolean,
+            default: false,
+        },
+        
 
         component_ID: {
             type: String,
@@ -173,9 +180,8 @@ export default {
             this.m_containerData = containerData.getObjectFromID(this.component_ID);
             this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
             
-            if(this.m_GroupData === null){ 
-                iconData.createGroup(this.m_containerData.ID);
-            } // group data does not exist
+            // group data does not exist
+            if(this.m_GroupData === null){  iconData.createGroup(this.m_containerData.ID); }
 
             this.m_GroupData = iconData.getGroup(this.component_ID);
         },
@@ -583,7 +589,7 @@ export default {
     computed:{
         
         // Boolean flag to redirect code from normal function to only display
-        isProfileDisplay(){ return (this.profileDisplayName)  },
+        isProfileDisplay(){ return (this.isDisplayWindow)  },
 
         gridItemThickness(){ return (this.isProfileDisplay) ? '2px' : '3px'; },
         gridItemRadius(){ return (this.isProfileDisplay) ? "5px" : "10px"; }, 

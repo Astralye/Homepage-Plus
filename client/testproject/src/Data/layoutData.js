@@ -111,9 +111,11 @@ export class LayoutDataClass{
         return LastValue.charCodeAt(0) - 97;
     };
 
-    static getParentObj(containerData){
+    // dataOrigin is found in Container.
+    static getParentObj(dataOrigin, containerData){
         let parentID = LayoutDataClass.getLevel(containerData.id);
-        return LayoutDataClass.getLevelData(layout.allData, containerData.level - 1, parentID);
+
+        return LayoutDataClass.getLevelData(dataOrigin, containerData.level - 1, parentID);
     }
 
     static getChildrenObj(containerData){
@@ -130,9 +132,14 @@ export class LayoutDataClass{
     }
 
     static isFirstSibling(id){ return (LayoutDataClass.getSiblingNumber(id) === 0) };
-    static isLastSibling(containerData){ return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(containerData).NoChildren - 1) };
+    static isLastSibling(dataOrigin, containerData){ 
+        
+        console.log("last sib")
+        return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(dataOrigin, containerData).NoChildren - 1) };
     static isBaseContainer(id){ return id === "0A" };
-    static isExtraContainer(containerData, verticalData){ return !verticalData ? !LayoutDataClass.isLastSibling(containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
+    static isExtraContainer(dataOrigin, containerData, verticalData){
+        console.log("isExtra")
+        return !verticalData ? !LayoutDataClass.isLastSibling(dataOrigin, containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
 
     // Gets the index of the childContainers array of a given id;
     static getChildIndex(parent, childID){
@@ -201,7 +208,7 @@ export class LayoutDataClass{
     static removeChildByID(layoutData, id, level){
 
         let dataToBeDeleted = LayoutDataClass.getLevelData(layoutData, level, id);
-        let parentData = LayoutDataClass.getParentObj(dataToBeDeleted);
+        let parentData = LayoutDataClass.getParentObj(layoutData, dataToBeDeleted);
         // delete data;
         let index = LayoutDataClass.getChildIndex(parentData, id);
 

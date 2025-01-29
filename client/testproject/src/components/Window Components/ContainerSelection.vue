@@ -104,7 +104,7 @@ export default {
 
             if(!this.isDeleteButtonActive) return; // Return in the event of somehow being active. 
 
-            LayoutDataClass.removeChildByID(layout.data, this.selected_Container.id, this.selected_Container.level );
+            LayoutDataClass.removeChildByID(dataOrigin, this.selected_Container.id, this.selected_Container.level );
             this.resetSelected()
         },
 
@@ -119,6 +119,12 @@ export default {
         }
     },
     computed:{
+
+        dataOrigin(){
+            if(this.isProfileDisplay || this.profileDisplayName){ return profileHandler.getProfileData(this.profileDisplayName).layoutData; }
+            return layout.allData;
+        },
+
         displayID(){
             return (this.m_SelectedID) ? this.m_SelectedID : "Not selected"
         },

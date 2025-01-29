@@ -91,6 +91,7 @@ import { dragAndDrop } from '../../Data/dragDrop';
 import { iconStorage } from '../../Data/iconData';
 import { mouseData } from '../../Data/mouseData';
 import { themeStorage } from '../../Data/themeStorage';
+import { profileHandler } from '../../Data/profileHandler';
 
 import { toRaw } from 'vue';
 
@@ -112,6 +113,11 @@ export default {
             default: null,
         },
 
+        isDisplayWindow:{
+            type: Boolean,
+            default: false,
+        },
+
 
         component_ID: {
             type: String,
@@ -126,6 +132,7 @@ export default {
     data(){
         return{
             iconImageStorage,
+            profileHandler,
             containerData,
             editVariables,
             themeStorage,
@@ -159,12 +166,25 @@ export default {
     methods:{
         initData(){
 
+            if(this.isProfileDisplay){
+                this.m_containerData = containerData.getObjectFromIDData(profileHandler.getProfileData(this.profileDisplayName).containerDisplayData, this.component_ID);
+
+                // group data does not exist
+                if(!profileHandler.getProfileData(this.profileDisplayName).iconData){ 
+                    iconData.createGroup(this.m_containerData.ID);
+                    this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+                    return;
+                }
+                
+                this.m_GroupData = iconData.getGroupFromData(profileHandler.getProfileData(this.profileDisplayName).iconData, this.m_containerData.ID);
+                return;
+            }
+
             this.m_containerData = containerData.getObjectFromID(this.component_ID);
             this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
 
             if(this.m_GroupData === null){ 
                 iconData.createGroup(this.m_containerData.ID);
-                this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
                 return
             } // group data does not exist
 
@@ -533,7 +553,7 @@ export default {
     computed:{
 
         // Boolean flag to redirect code from normal function to only display
-        isProfileDisplay(){ return (this.profileDisplayName)  },
+        isProfileDisplay(){ return (this.isDisplayWindow)  },
                 
         textSize(){
 

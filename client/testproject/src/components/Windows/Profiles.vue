@@ -16,10 +16,10 @@
                         <div v-for="(value, key) in profileHandler.storedProfiles" :key="key"
                             class="profile-item"
                             :class="{
-                                'selected-profile'             :  profileHandler.isSelectedProfile(key),
-                                'unselected-profile clickable' : !profileHandler.isSelectedProfile(key),
+                                'selected-profile'             :  isSelected(key),
+                                'unselected-profile clickable' : !isSelected(key),
                             }"
-                            @click="profileHandler.changeSelectedProfile(key)">
+                            @click="clickSelected = key">
                             
                             <div class="profile-name icon-center">
                                 <h3>
@@ -35,11 +35,11 @@
                                 Disable for now
                             -->
                             <div class="preview-display">
-                                <!-- <Container
+                                <Container
                                     :nest_level="0"
                                     :profileDisplayName="key"
                                     :isDisplayWindow="true"
-                                /> -->
+                                />
                             </div>
                         
                         </div>
@@ -92,12 +92,6 @@
                     </SingleButton>
 
                 </div>
-
-
-                <!-- <SingleButton
-                    @click="console.log('button')">
-                    Modify profile
-                </SingleButton> -->
             </template>
         </WindowContainerDivider>
     </div>
@@ -120,10 +114,7 @@ export default {
         return{
             profileHandler,
             
-
-            tempData: {
-
-            },
+            clickSelected: null,
         }
     },
     methods:{
@@ -133,6 +124,7 @@ export default {
 
 
         selectProfile(){
+            profileHandler.changeSelectedProfile(this.clickSelected);
             profileHandler.saveDataToLocalStorage();
             profileHandler.loadProfileData();
         },
@@ -150,10 +142,8 @@ export default {
             profileHandler.setSelectedProfile('defaultProfile') // temporary
         },
 
-        // Modify profile
-
-        // Set profile
-
+        // For display selection
+        isSelected(val){ return (val === this.clickSelected) }
     }
 }
 </script>
@@ -202,11 +192,6 @@ export default {
     flex-direction: column;
 }
 
-/*
-
-Add back later
-
-*/
 .preview-display{
     height: 320px;
 
