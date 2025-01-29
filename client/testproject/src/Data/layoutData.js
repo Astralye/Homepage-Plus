@@ -156,9 +156,8 @@ export class LayoutDataClass{
         this.data = importData;
     };
 
-    // Reset data on deletion
-    resetData(){
-        this.data = {
+    defaultData(){
+        return {
             level: 0,
             divisionType: "Vertical",
             id: "0A",
@@ -173,8 +172,11 @@ export class LayoutDataClass{
                 radius: "4px",
                 thickness: "2px",
             }
-        };
-    };
+        }
+    }
+
+    // Reset data on deletion
+    resetData(){ this.data = this.defaultData(); };
 
     // Add or remove children depending on the number of divisions
     modifyContainer(divisions, level, id){
@@ -209,7 +211,6 @@ export class LayoutDataClass{
         parentData.childContainers.forEach(child => {
             child.siblings -= 1;
         });
-        console.log("after:", parentData.childContainers);
 
         // Because of the ID, it may break the entire system.
 

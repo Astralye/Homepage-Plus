@@ -31,6 +31,8 @@
                                 Preview display 
                                 Get the aspect ratio of the current screen.
                                 For now, static size.    
+
+                                Disable for now
                             -->
                             <div class="preview-display">
                                 <Container
@@ -202,8 +204,14 @@ export default {
     flex-direction: column;
 }
 
+/*
+
+Add back later
+
+*/
 .preview-display{
     height: 320px;
+
     padding: 1em 0.5em;
 }
 

@@ -95,6 +95,65 @@ export class EditVariables{
         this.resetAppearance_Cont()
     }
 
+    // For new profiles
+    get defaultUserSettings(){
+        return {
+            enabledSiteContextMenu: true,
+        
+            modalToggle:{
+                delete: true,
+                cancel: true,
+            }
+        }
+    }
+
+    get defaultAppearanceData(){
+        return {
+            grids: {
+                isApplyGlobal: true,
+                isDisableIconLabels: true,
+                globalIconSize: "75px",
+                globalGridItemSize: 125,
+            },
+            list:{
+                isApplyGlobal: true,
+                isDisableIcons: true,
+                globalDisplayListDivider: true,
+                globalitemHeight: "auto",
+                globalPadding: "1em",
+            },
+            font:{
+                isApplyGlobal: true,
+                isDisableIcons: true,
+                globalDisplayListDivider: true,
+                globalitemHeight: "auto",
+                globalPadding: "1em",
+            },
+            icons:{
+                isApplyGlobal: true,
+                isUseTertiary: true,
+                colour: "#000000",    
+            },
+            containerHeader:{
+                isApplyGlobal: true,
+                font:{
+                    type: "arial",
+                    size: "24px",                    
+                    isOverrideAutoColour: false,
+        
+                    colour: "#000000",
+                }
+            },
+            containerAll:{
+                isApplyGlobal: true,
+                isDisplayContainerBorder: false,
+        
+                borderThickness: "2px",
+                borderRadius: "4px",
+            }
+        }
+    }
+
     // Resetters
     resetAppearance_Grid(){
         this.values.userAppearanceSettings.grids = {

@@ -6,6 +6,7 @@ import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import ContainerSelection from '../Window Components/ContainerSelection.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
+import { profileHandler } from '../../Data/profileHandler';
 
 import { editVariables } from '../../Data/SettingVariables.js';
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
@@ -22,6 +23,7 @@ export default {
     data() {
         return{
             LayoutDataClass,
+            profileHandler,
             editVariables,
             layout,
             
@@ -117,14 +119,17 @@ export default {
         // Function for determining user click behaviour on a container
         updateNoDivisions(number){ 
             if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
+
             let cont = this.selectedContainer;
 
             // Reset all and enable specific item
             this.resetAll(this.ContainerDivision);
             this.itemEnable(this.ContainerDivision, number)
 
+            // let dataOrigin = profileHandler
+
             // Set layout value data
-            layout.modifyContainer(this.stringToNum(number), cont.level, cont.id);
+            layout.modifyContainer(this.stringToNum(number), cont.level, cont.id,);
         },
 
         // Update division type of container on click.

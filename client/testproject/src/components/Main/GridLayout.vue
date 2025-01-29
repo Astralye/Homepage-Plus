@@ -157,8 +157,15 @@ export default {
         initGrid(){
 
             if(this.isProfileDisplay){
-                console.log("here");
                 this.m_containerData = containerData.getObjectFromIDData(profileHandler.getProfileData(this.profileDisplayName).containerDisplayData, this.component_ID);
+
+                // group data does not exist
+                if(!profileHandler.getProfileData(this.profileDisplayName).iconData){ 
+                    iconData.createGroup(this.m_containerData.ID);
+                    this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+                    return;
+                }
+                
                 this.m_GroupData = iconData.getGroupFromData(profileHandler.getProfileData(this.profileDisplayName).iconData, this.m_containerData.ID);
                 return;
             }
@@ -168,7 +175,6 @@ export default {
             
             if(this.m_GroupData === null){ 
                 iconData.createGroup(this.m_containerData.ID);
-                this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
             } // group data does not exist
 
             this.m_GroupData = iconData.getGroup(this.component_ID);
@@ -349,7 +355,13 @@ export default {
 
         // Checks if the icon can be swapped, only works if compact
         checkRearrange(iconID, groupID, index_A, isFree){
+
+            // console.log("re-arrange",this.m_GroupData)
+
+
             let data    = iconData.getIconDataFromIndex(this.m_GroupData, index_A);
+
+
             let group   = iconData.getGroup(groupID);
             let index_B = iconData.getIconIndexOfGroup(group, iconID);
 
@@ -438,6 +450,9 @@ export default {
         },
 
         renderCompact(index){
+
+            
+            // console.log("compact",this.m_GroupData)
             let tmpIconData = iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index));
             
             if(!tmpIconData) return false; // Contains no value
@@ -498,6 +513,9 @@ export default {
         },
 
         getCompactIconData(index){
+            
+            // console.log("getcompact",this.m_GroupData)
+
             return iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index));
         },
 
@@ -532,8 +550,6 @@ export default {
                 let height = dimensions[0].contentRect.height;
 
                 let size = this.gridItemWidth;
-
-                console.log(size, "size");
 
                 let dimension = GridModificationClass.calculateGridDimension(width, height, size);
                 this.setRowColData(dimension.rows, dimension.columns);

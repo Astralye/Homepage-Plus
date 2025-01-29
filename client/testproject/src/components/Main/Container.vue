@@ -55,9 +55,7 @@
                     @mouseover="m_isHover = editVariables.containerSelectionMode"
                     @mouseout="m_isHover=false"
                 >
-    <!-- Deletion of the data causes this to bug out really bad -->
 
-                    <!-- Container header -->
                         <div v-if="containerData.getObjectFromIDData(containerSearchObj, m_LayoutData.id).containerHeader.toggle"
                             ref="header"> 
                             <div class="container-header"
@@ -81,14 +79,14 @@
                             />
                         </template>
 
-                        <template v-else>
+                        <!-- <template v-else>
                             <div>
                                 <ListLayout 
                                     :profileDisplayName="profileDisplayName"
                                     :component_ID="m_LayoutData.id"
                                 />
                             </div>
-                            </template>
+                        </template> -->
 
                 </div>
             </div>
@@ -333,7 +331,8 @@ export default {
         // Provides offset in px when using lists, to correctly place scrollable div.
         getHeaderSize(){
             let headerRef = this.$refs["header"];
-            let isList = (containerData.getObjectFromID(this.m_LayoutData.id).layoutType == "List");
+
+            let isList = (containerData.getObjectFromIDData(this.containerSearchObj,this.m_LayoutData.id).layoutType == "List");
 
             // No header or grid layout
             if(!headerRef || !isList){ this.m_headerOffset = "0px"; return; }
@@ -514,7 +513,9 @@ export default {
 
         // Sets the config data on creation
         setContainerConfigData(){
-            let index = containerData.getIndexFromID(this.m_LayoutData.id);
+
+            let index = containerData.getIndexFromIDData(this.containerSearchObj, this.m_LayoutData.id);
+
             if(index !== null) {  this.disableConfigOnNonLeaf(); return; }
 
             // Calculate new grid value.
@@ -596,6 +597,7 @@ export default {
         
         // Updates if the container is the current selected
         m_isStoredClick(){
+            console.log(editVariables.containerSelected, this.m_LayoutData.id);
             return (editVariables.containerSelected === this.m_LayoutData.id);
         },
         // Level 0
@@ -628,7 +630,15 @@ export default {
                1px = 0.25em;
         */
 
-        containerSearchObj(){ return (this.profileDisplayName) ? profileHandler.getProfileData(this.profileDisplayName).containerDisplayData : containerData.allData; },
+        containerSearchObj(){ 
+            if(!this.profileDisplayName) return containerData.allData;
+
+            let data = profileHandler.getProfileData(this.profileDisplayName);
+
+            // if null data, just return the current container data
+            return (data) ? data.containerDisplayData : containerData.allData;
+        
+        },
 
         gridPadding(){ return (this.profileDisplayName) ? '6px' : '1em'; },
 

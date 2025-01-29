@@ -45,7 +45,7 @@ class ContainerDataClass{
   getObjectFromIndex(index) { return this.data[index]; };
   getIndexFromID(inputID){
       if(inputID === null) { return null;}
-      
+
       for(let i = 0; i < this.data.length; i++){
         if(this.data[i].ID === inputID) { return i;}
       }
@@ -55,10 +55,9 @@ class ContainerDataClass{
   // Given profile data
 
   getObjectFromIDData(data, objectID) {  return data[this.getIndexFromIDData(data,objectID)]; };
-  // // getObjectFromIndex(index) { return this.data[index]; };
   getIndexFromIDData(data, inputID){
       if(inputID === null) { return null;}
-      
+
       for(let i = 0; i < data.length; i++){
         if(data[i].ID === inputID) { return i;}
       }
@@ -69,8 +68,10 @@ class ContainerDataClass{
 
   // Misc functions
 
-  generateDefaultLayout(idGenerated){
-      return {
+  defaultData(){ return [this.defaultContainer('0A')] }
+
+  defaultContainer(idGenerated){
+    return {
       ID: idGenerated,
       layoutType: "Grid",
       iconSize: "150",
@@ -85,12 +86,14 @@ class ContainerDataClass{
           xAxisDirection: "Left",
           yAxisDirection: "Top",
       },
-      ListData: {
-        textDirection: "Left",
-        displayIcon: true,
-      },
-      };
-  };
+        ListData: {
+          textDirection: "Left",
+          displayIcon: true,
+      }
+    }
+  }
+
+  generateDefaultLayout(idGenerated){ return this.defaultContainer(idGenerated); };
 
   /*
   I need to remove grid dimensions as this causes bugs 

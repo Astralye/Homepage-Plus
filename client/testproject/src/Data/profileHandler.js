@@ -557,10 +557,25 @@ class ProfileHandler{
 
         if(data){
             this.data.storedProfiles[name] = data;
+            return;
         }
-        else{
-            this.data.storedProfiles[name] = this.createEmptyProfile();
-        }
+
+        // no data on addition
+
+        this.data.storedProfiles[name] = this.createEmptyProfile();
+
+        // Just to avoid repeating the long name
+        let alias = this.data.storedProfiles[name];
+
+        alias.layoutData = layout.defaultData();
+        alias.containerDisplayData = containerData.defaultData();
+        alias.iconStorage = [];
+        alias.iconData = null;
+
+        alias.importSVGs = [];
+        alias.savedTheme = "Default";
+        alias.userAppearanceSettings = editVariables.defaultAppearanceData;
+        alias.userSettings = editVariables.defaultUserSettings;
     }
 
     // Rename the object key
