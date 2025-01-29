@@ -35,10 +35,11 @@
                                 Disable for now
                             -->
                             <div class="preview-display">
-                                <Container
+                                <!-- <Container
                                     :nest_level="0"
                                     :profileDisplayName="key"
-                                />
+                                    :isDisplayWindow="true"
+                                /> -->
                             </div>
                         
                         </div>
@@ -85,7 +86,7 @@
                     </SingleButton>
     
                     <SingleButton
-                        @click="console.log('Select')"
+                        @click="selectProfile"
                         :m_IconString="'Left_Select'">
                         Select
                     </SingleButton>
@@ -125,21 +126,18 @@ export default {
             },
         }
     },
-    beforeMount(){
-        console.log("start");
-    },
     methods:{
 
         // Have a preview mode, displays everything but does not set it.
         // Have a timer to automatically reset.
 
 
-        selectProfile(item){
-            console.log(item);
+        selectProfile(){
+            profileHandler.saveDataToLocalStorage();
+            profileHandler.loadProfileData();
         },
         
         addProfile(){
-            console.log('add')
 
             let name = `Profile ${profileHandler.noProfiles}`;
 

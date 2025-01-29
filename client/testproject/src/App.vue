@@ -11,6 +11,7 @@ import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
 import { contextMenu } from './Data/multiSelect'
 import { themeStorage } from './Data/themeStorage'
+import { profileHandler } from './Data/profileHandler'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
 import Multidrag from './components/Main/Multidrag.vue'
@@ -47,6 +48,7 @@ export default{
     data() {
         return{
             iconImageStorage,
+            profileHandler,
             editVariables,
             windowHandler,
             themeStorage,
@@ -68,7 +70,7 @@ export default{
             containerData: {
                 isSelectionContainer: false,
                 containerData: null
-            }
+            },
         }
     },
     created(){
@@ -327,7 +329,10 @@ export default{
     <div class="main-body"
         @contextmenu="contextHandler($event)"
         @click="disableContext()">
-        <PageContainer :nest_level="0"/>
+        <PageContainer 
+            :nest_level="0"
+            :profileDisplayName="profileHandler.selectedProfile"
+        />
     </div>
 
     <Teleport to="body">

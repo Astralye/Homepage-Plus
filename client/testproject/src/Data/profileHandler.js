@@ -11,8 +11,7 @@ import { themeStorage } from './themeStorage';
 
 class ProfileHandler{
     constructor(){
-        this.newData();
-
+        
         /*
             variable names to find the data from local storage
             These objects would be used after the profile object has been
@@ -38,11 +37,21 @@ class ProfileHandler{
             storedProfiles: "storedProfiles",
             selectedProfile: "selectedProfile"
         }
+
+        this.newData();
     }
 
     // On creation
-    // Ideally this should only run once.
+    // This should only run once.
     newData(){
+
+        // load profile
+        let storage = this.localStorageProfileData;
+
+        if(storage){
+            this.data = storage;
+            return; 
+        }
 
         /*
             Currently an object.
@@ -128,7 +137,7 @@ class ProfileHandler{
         const allProfileData = this.localStorageProfileData;
 
         if(!allProfileData) return 0;
-    
+
         this.setSelectedProfile(allProfileData.selectedProfile); // Set selected profile 
         this.initLoadProfiles(allProfileData.storedProfiles);    // Set all profiles 
 
@@ -186,19 +195,40 @@ class ProfileHandler{
         this.saveDataToLocalStorage();
     }
 
+
+    /*
+        29/01/25
+        This function is cursed...
+
+        Logging this.data.selectedProfile
+        magically changes within the function.
+
+        It does not go within the if statement,
+
+        After the if statement ( that it does not run)
+        it somehow magically changes value... ????
+
+        Edit (5 minutes later):
+
+        I needed to store the profile in a variable.
+        Apparently using the value directly is not a good thing
+    */
+
     // load from localStorage
     loadProfileData(){
 
         // Needs to pass the data from the localStorage and then load it to the initializers
         // Needs the profile data first
-        
+
+        let selected = this.data.selectedProfile;
+
         // If no data in localStorage
         if(!this.initProfileData()){
             this.setValues(); // Create data first.
             return;
         }
 
-        let profile = this.getProfileData(this.data.selectedProfile);
+        let profile = this.getProfileData(selected);
         if(!profile) return; // no data
 
         // Run the respective function if contain the data within local storage
@@ -224,8 +254,8 @@ class ProfileHandler{
         
         let storedObj = localStorage.getItem(this.storageObject);
         if(!storedObj) return null;
-
-        return JSON.parse(storedObj); }
+        return JSON.parse(storedObj); 
+    }
 
 // Imports and Exports 
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -240,13 +270,6 @@ class ProfileHandler{
         Any specific appearance parts will be under the name of the current theme
         BUT will not store the actual apperance, and will load it to place into imports
     */
-
-    // Perhaps we can declare which profile to export
-
-    // -> All profiles
-
-    // Drop down to select the profile...
-    // Current Profile
 
     // Just loads all the data and downloads it
     exportEverything(){
@@ -524,7 +547,7 @@ class ProfileHandler{
 
         // Check if exist first
         if(!this.getProfileData(newProfile)) return;
-        
+
         this.data.selectedProfile = newProfile;
     }
 

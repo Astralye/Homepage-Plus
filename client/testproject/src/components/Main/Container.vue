@@ -32,7 +32,7 @@
 
             >
 
-
+            
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
 
@@ -79,14 +79,14 @@
                             />
                         </template>
 
-                        <!-- <template v-else>
+                        <template v-else>
                             <div>
                                 <ListLayout 
                                     :profileDisplayName="profileDisplayName"
                                     :component_ID="m_LayoutData.id"
                                 />
                             </div>
-                        </template> -->
+                        </template>
 
                 </div>
             </div>
@@ -149,6 +149,11 @@ export default {
         profileDisplayName:{ 
             type: String,
             default: null,
+        },
+
+        isDisplayWindow:{
+            type: Boolean,
+            default: false,
         },
 
         nest_level: {
@@ -254,10 +259,9 @@ export default {
     // Initializer
     // Sets variables from props
     created(){
-
-        this.updateContainerData();
-        this.recalculateThreshold();
-        this.setContainerConfigData();
+        this.containerCreation();
+        console.log("created:", this.profileDisplayName);
+        console.log("profike:", profileHandler.selectedProfile)
     },
     mounted(){
         this.setComponentDOMValues();
@@ -274,14 +278,21 @@ export default {
 // General Container Functions
 // --------------------------------------------------------------------------------------------------------
 
+        containerCreation(){
+
+            this.updateContainerData();
+            this.recalculateThreshold();
+            this.setContainerConfigData();
+        },
+
         updateContainerData(){
             let tmpID = (this.nest_level === 0) ? layout.allData.id : this.parent_ID.concat(LayoutDataClass.generateID(this.nest_level, this.child_Instance));
-            
-            // Changes search location if profile display 
-            var dataSearchObj = (this.isProfileDisplay) ? profileHandler.getProfileData(this.profileDisplayName).layoutData : layout.allData;
-            
-            let tmpContainer = LayoutDataClass.getLevelData(dataSearchObj, this.nest_level, tmpID);
 
+            // Changes search location if profile display
+            var dataSearchObj = this.dataOrigin;
+
+            let tmpContainer = LayoutDataClass.getLevelData(dataSearchObj, this.nest_level, tmpID);
+            
             if(tmpContainer === null){
                 this.printLayoutInfo();
                 console.error(`ERROR: Container not found. Level: ${this.m_LayoutData.level}, ID: ${tmpID}`);
@@ -293,7 +304,9 @@ export default {
             this.renderLastContainer();
 
             if(!LayoutDataClass.isBaseContainer(this.m_LayoutData.id)){
+                console.log("base container", LayoutDataClass.getParentObj(this.m_LayoutData));
                 this.m_isVertical = (LayoutDataClass.getParentObj(this.m_LayoutData).divisionType === "Vertical"); 
+                // console.log("after base")
             }
         },
         
@@ -594,10 +607,15 @@ export default {
 
     },
     computed:{
-        
+
+        dataOrigin(){
+            if(this.isProfileDisplay || this.profileDisplayName){ return profileHandler.getProfileData(this.profileDisplayName).layoutData; }
+            return layout.allData;
+        },
+
         // Updates if the container is the current selected
         m_isStoredClick(){
-            console.log(editVariables.containerSelected, this.m_LayoutData.id);
+            // console.log(editVariables.containerSelected, this.m_LayoutData.id);
             return (editVariables.containerSelected === this.m_LayoutData.id);
         },
         // Level 0
@@ -613,10 +631,7 @@ export default {
         headerColour(){
             if(!editVariables.appearanceHeader.isApplyGlobal){ themeStorage.getResettedColour(); return; }
             return (editVariables.appearanceHeader.font.isOverrideAutoColour) ? editVariables.appearanceHeader.font.colour : editVariables.appearanceFont.colour;
-        }
-    },
-
-    computed:{
+        },
 
         /*
             Most of these are css values,
@@ -631,30 +646,30 @@ export default {
         */
 
         containerSearchObj(){ 
-            if(!this.profileDisplayName) return containerData.allData;
+            if(!this.isProfileDisplay) return containerData.allData;
 
-            let data = profileHandler.getProfileData(this.profileDisplayName);
+            let data = profileHandler.getProfileData(this.isProfileDisplay);
 
             // if null data, just return the current container data
             return (data) ? data.containerDisplayData : containerData.allData;
         
         },
 
-        gridPadding(){ return (this.profileDisplayName) ? '6px' : '1em'; },
+        gridPadding(){ return (this.isProfileDisplay) ? '6px' : '1em'; },
 
-        containerPadding(){ return (this.profileDisplayName) ? '3px 7px 1px 7px' : '0.75em 1.25em 0.25em 1.25em';},
+        containerPadding(){ return (this.isProfileDisplay) ? '3px 7px 1px 7px' : '0.75em 1.25em 0.25em 1.25em';},
 
         containerFontSize(){
          
             // If on profile display
-            if(this.profileDisplayName){ return "8px"; }
+            if(this.isProfileDisplay){ return "8px"; }
 
             // Else, be the set font size or default value
             return (editVariables.appearanceHeader.isApplyGlobal) ? editVariables.appearanceHeader.font.size : '24px';
         },
 
         // Boolean flag to redirect code from normal function to only display
-        isProfileDisplay(){ return (this.profileDisplayName)  },
+        isProfileDisplay(){ return (this.isDisplayWindow)  },
 
     },
 
@@ -680,7 +695,10 @@ export default {
         // All containers run this watcher, but only the parent of the selected gets ran.
         'editVariables.parentID'(p_ID){
             if(p_ID === null) { return; }
+
+            // console.log("parentID");
             let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
+            // console.log("after");
             if(parentObj === null) { return; }
             else if(parentObj.id === p_ID){ this.updateContainerGrid(); }
         },
