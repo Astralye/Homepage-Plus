@@ -81,11 +81,14 @@
                             />
                         </template>
 
-                        <!-- <template v-else>
+                        <template v-else>
                             <div>
-                                <ListLayout :component_ID="m_LayoutData.id"/>
+                                <ListLayout 
+                                    :profileDisplayName="profileDisplayName"
+                                    :component_ID="m_LayoutData.id"
+                                />
                             </div>
-                            </template> -->
+                            </template>
 
                 </div>
             </div>

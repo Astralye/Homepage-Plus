@@ -22,7 +22,7 @@
             <div v-for="(item, index) in m_GroupData"
             :key="item.iconID"
             @mousemove="dragAndDrop.enabled ? hoveringIndex(index) : null"
-            @click="kbShortcut($event); setSelectedIcon(index, true, true)"
+            @click="listItemClick($event, index)"
             >
                 <div
                     ref="list-item"         
@@ -32,9 +32,12 @@
                     }"
                     :style="{
                         'border-color': themeStorage.getIconColourOpacity( isSelectedIcon(index) ? 0.8 : 0.15 ),
+                        'border-width': borderWidth,
+                        'border-radius': borderRadius,
                         'height': editVariables.appearanceList.globalitemHeight,
-                        'margin-top' : editVariables.appearanceList.globalPadding,
-                        'margin-bottom': editVariables.appearanceList.globalPadding,
+                        'margin-top' : topBottomMargin,
+                        'margin-bottom': topBottomMargin,
+                        'padding' : itemPadding,
                     }"
                     @dblclick="(editVariables.isEnabled) ? null : openLink(index)"
                     @mousedown.left="(editVariables.isEnabled) ? iconHandlerDataMove($event, index) : null"
@@ -45,8 +48,8 @@
                         class="icon-spacing icon-center"
                         >
                         <SVGHandler
-                            width="2em"
-                            height="2em"
+                            :width="svgSize"
+                            :height="svgSize"
                             :path_Value="iconImageStorage.getPathData(item.iconImage)"
                             :view_Box="iconImageStorage.getViewBox(item.iconImage)"
                             :fill_Colour="colourIcon(item)"
@@ -60,7 +63,7 @@
                             'center-text' : (isCenter && m_containerData.ListData.displayIcon && !(editVariables.appearanceList.isApplyGlobal && !editVariables.appearanceList.isDisableIcons)),
                         }"
                         :style="{
-                            'font-size' : (editVariables.appearanceFont.isApplyGlobal) ? editVariables.appearanceFont.size : item.iconStringSize,
+                            'font-size' : textSize,
                             'text-align': layoutCSSDirection,
                         }">
                         {{ item.iconString }}
@@ -98,6 +101,18 @@ import IconDragHandler from './IconDragHandler.vue';
 
 export default {
     props:{
+        /*
+            profileDisplayName, used for displaying the profile in Profiles.vue tab.
+
+            ensures only displaying is visible, prevent normal container functions to work.
+            This will also make sure to override all global data, and only apply values passed in via profile
+        */
+        profileDisplayName:{ 
+            type: String,
+            default: null,
+        },
+
+
         component_ID: {
             type: String,
             default: "",
@@ -158,6 +173,17 @@ export default {
 
         openLink(item){
             window.open(item.link, '_blank');
+        },
+
+// Profile functions
+// -------------------------------------------------------------------------------------------
+
+        listItemClick(event, index){
+
+            if(this.isProfileDisplay)  return;
+
+            this.kbShortcut(event);
+            this.setSelectedIcon(index, true, true)
         },
 
 // AABB collision detection
@@ -505,12 +531,28 @@ export default {
         isLastPosition(index){ return (this.m_GroupData.length-1 === index); },
     },
     computed:{
-        layoutCSSDirection(){
-            return containerData.getTextLayout(this.component_ID)
+
+        // Boolean flag to redirect code from normal function to only display
+        isProfileDisplay(){ return (this.profileDisplayName)  },
+                
+        textSize(){
+
+            if(this.isProfileDisplay) return "4px";
+
+            return (editVariables.appearanceFont.isApplyGlobal) ? editVariables.appearanceFont.size : item.iconStringSize;
         },
-        isCenter(){
-            return (this.layoutCSSDirection === "Center");
-        },
+
+        borderWidth() { return (this.isProfileDisplay) ? "2px" : "3px" },
+        borderRadius(){ return (this.isProfileDisplay) ? "5px" : "10px"},
+
+        svgSize(){ return (this.isProfileDisplay) ? "6px" : "2em";  },
+        
+        topBottomMargin(){ return (this.isProfileDisplay) ? "5px" : editVariables.appearanceList.globalPadding; },
+        itemPadding(){ return (this.isProfileDisplay) ? '1px 2px' : '0.25em 0.5em'; },
+
+
+        layoutCSSDirection(){ return containerData.getTextLayout(this.component_ID) },
+        isCenter(){ return (this.layoutCSSDirection === "Center"); },
     },
     watch:{
         'editVariables.iconDragData.storedContainer'(val,oldVal){
@@ -583,7 +625,7 @@ export default {
 }
 
 .icon-Selection{
-    border: 3px solid;
+    border-style: solid;
     border-radius: 10px;
     
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
@@ -593,7 +635,8 @@ export default {
 }
 
 .unselect-icon{
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border:rgba(255, 255, 255, 0.1);
+    border-style: solid;
     border-radius: 10px;
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
