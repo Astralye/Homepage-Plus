@@ -66,7 +66,7 @@ class ProfileHandler{
             storedProfiles: {},
 
             // Know which profile to load and save to.
-            selectedProfile: "defaultProfile",
+            selectedProfile: "Profile 1",
         }
         
         // Set it via function to standardize
@@ -577,21 +577,33 @@ class ProfileHandler{
 
         // check if there is nothing left
         if(this.noProfiles === 0){
-            this.addProfile('Profile 0')
+            this.addProfile()
         }
         
     }
     
     // By name
-    addProfile(name, data = null){
+    addProfile(data = null){
 
         // Need to check if name already exists
+
+        var name = `Profile ${this.noProfiles}`;
 
         if(data){
             this.data.storedProfiles[name] = data;
             return;
         }
 
+        // Check if there is non of the same name
+        if(this.data.storedProfiles[name]){
+            let num = 1;
+            do{
+                name = `Profile ${num}`;
+                num++;
+            }
+            while(this.data.storedProfiles[name] )
+        }
+    
         // no data on addition
 
         this.data.storedProfiles[name] = this.createEmptyProfile();
@@ -625,6 +637,11 @@ class ProfileHandler{
 
     setSelectedProfile(val){ 
         
+        if(!val){
+            this.data.selectedProfile = ""
+            return     
+        }
+
         // Needs validation
         this.data.selectedProfile = val;
     }
