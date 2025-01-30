@@ -118,7 +118,6 @@ export default {
         }
     },
     methods:{
-
         // Have a preview mode, displays everything but does not set it.
         // Have a timer to automatically reset.
 
@@ -139,7 +138,10 @@ export default {
         //
         deleteProfile(){            
             profileHandler.deleteProfile(profileHandler.selectedProfile);
-            profileHandler.setSelectedProfile('defaultProfile') // temporary
+            profileHandler.resetSelectedProfile();
+            
+            profileHandler.saveDataToLocalStorage();
+            profileHandler.loadProfileData();
         },
 
         // For display selection

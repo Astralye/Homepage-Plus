@@ -17,7 +17,7 @@ class ProfileHandler{
             These objects would be used after the profile object has been
             taken
         */
-       
+    
         this.storageObject = "storageObject",
 
         this.localStorageVarNames = {
@@ -154,7 +154,6 @@ class ProfileHandler{
         // Any new themes added
         // length would be 4+
         if(size <= 3) return; 
-        
         let newObjects = themeStorage.storedThemes.slice(3, size);
 
         profile.themeImports = newObjects;
@@ -364,8 +363,8 @@ class ProfileHandler{
         data.storedProfiles[name] = {};
         // Property is the same name as the main string variable 
         
-        data.storedProfiles[name][this.localStorageVarNames.layoutData] = profile.layout;
-        data.storedProfiles[name][this.localStorageVarNames.containerDisplayData] = profile.container;
+        data.storedProfiles[name][this.localStorageVarNames.layoutData] = profile.layoutData;
+        data.storedProfiles[name][this.localStorageVarNames.containerDisplayData] = profile.containerDisplayData;
         data.storedProfiles[name][this.localStorageVarNames.iconData] = profile.iconData;
 
         // Download if single click
@@ -472,6 +471,8 @@ class ProfileHandler{
         // Reset selection
         editVariables.enableResetSelect();
         editVariables.enableResetFlag();
+
+        editVariables.enableLoadimport();
     }
     
     importAppearance(data){
@@ -555,9 +556,13 @@ class ProfileHandler{
 
     // By name
     getProfileData(name){
-        if(!name) return;
+        if(!name) return null;
+
+        // console.log("get", name)
 
         let data = this.data.storedProfiles[name];
+
+        // console.log("data:", data)
         return data; // If not found, should return null
     }
 
@@ -571,6 +576,12 @@ class ProfileHandler{
         if(!data) return; // no data
 
         delete this.data.storedProfiles[name];
+
+        // check if there is nothing left
+        if(this.noProfiles === 0){
+            this.addProfile('Profile 0')
+        }
+        
     }
     
     // By name
@@ -618,6 +629,11 @@ class ProfileHandler{
         
         // Needs validation
         this.data.selectedProfile = val;
+    }
+
+    resetSelectedProfile(){
+        console.log(Object.keys(this.data.storedProfiles));
+        this.setSelectedProfile(Object.keys(this.data.storedProfiles)[0])
     }
 
     get selectedProfile(){ return this.data.selectedProfile; }

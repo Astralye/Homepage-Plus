@@ -27,6 +27,8 @@ export class EditVariables{
         // For a single frame, it turns on to be detected by watchers
         resetFlag: false,
 
+        isReloadImport: false,
+
         // Variables that can be modified within the settings.
         userSettings:{
             enabledSiteContextMenu: true,
@@ -264,6 +266,9 @@ export class EditVariables{
     enableContainerSelection() { this.values.containerSelectionMode = true; }
     disableContainerSelection(){ this.values.containerSelectionMode = false; }
 
+    enableLoadimport() { this.values.isReloadImport = true; }
+    disableLoadimport(){ this.values.isReloadImport = false; }
+
     enableResetFlag(){ this.values.resetFlag = true; }
     disableResetFlag(){ this.values.resetFlag = false; }
 
@@ -340,6 +345,8 @@ export class EditVariables{
 
     get isEnabledSiteContextMenu(){ return this.values.userSettings.enabledSiteContextMenu; }
     get isContainerSelectionValid(){ return this.values.activeContainerSelection; }
+
+    get isReloadImport(){ return this.values.isReloadImport; }
 
 }
 
