@@ -306,14 +306,7 @@ export default {
 
             
             if(!LayoutDataClass.isBaseContainer(this.m_LayoutData.id)){
-                
-                // code breaks here for profiles.
-                console.log("id:", this.m_LayoutData.id)
-                
-                
-                
                 this.m_isVertical = (LayoutDataClass.getParentObj(dataSearchObj, this.m_LayoutData).divisionType === "Vertical"); 
-                // console.log("after base")
             }
         },
         
@@ -351,8 +344,6 @@ export default {
         // Provides offset in px when using lists, to correctly place scrollable div.
         getHeaderSize(){
             let headerRef = this.$refs["header"];
-
-            console.log("header");
             let isList = (containerData.getObjectFromIDData(this.containerDataOrigin,this.m_LayoutData.id).layoutType == "List");
 
             // No header or grid layout
@@ -623,7 +614,6 @@ export default {
 
         // Updates if the container is the current selected
         m_isStoredClick(){
-            // console.log(editVariables.containerSelected, this.m_LayoutData.id);
             return (editVariables.containerSelected === this.m_LayoutData.id);
         },
         // Level 0
@@ -683,7 +673,6 @@ export default {
 // --------------------------------------------------------------------------------------------------------------
 
     watch: {
-
         'editVariables.dragStepSize'(){ this.recalculateThreshold(); },
 
         // Updates recalculates the layout when the flag changes
@@ -702,9 +691,8 @@ export default {
         'editVariables.parentID'(p_ID){
             if(p_ID === null) { return; }
 
-            // console.log("parentID");
             let parentObj = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
-            // console.log("after");
+            
             if(parentObj === null) { return; }
             else if(parentObj.id === p_ID){ this.updateContainerGrid(); }
         },

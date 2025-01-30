@@ -129,10 +129,7 @@ export default {
         },
         
         addProfile(){
-
-            let name = `Profile ${profileHandler.noProfiles}`;
-
-            profileHandler.addProfile(name);
+            profileHandler.addProfile();
         },
 
         //

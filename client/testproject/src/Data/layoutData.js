@@ -132,14 +132,9 @@ export class LayoutDataClass{
     }
 
     static isFirstSibling(id){ return (LayoutDataClass.getSiblingNumber(id) === 0) };
-    static isLastSibling(dataOrigin, containerData){ 
-        
-        console.log("last sib")
-        return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(dataOrigin, containerData).NoChildren - 1) };
+    static isLastSibling(dataOrigin, containerData){  return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(dataOrigin, containerData).NoChildren - 1) };
     static isBaseContainer(id){ return id === "0A" };
-    static isExtraContainer(dataOrigin, containerData, verticalData){
-        console.log("isExtra")
-        return !verticalData ? !LayoutDataClass.isLastSibling(dataOrigin, containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
+    static isExtraContainer(dataOrigin, containerData, verticalData){ return !verticalData ? !LayoutDataClass.isLastSibling(dataOrigin, containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
 
     // Gets the index of the childContainers array of a given id;
     static getChildIndex(parent, childID){
