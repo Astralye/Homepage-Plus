@@ -103,14 +103,10 @@ export class ThemeStorage {
         item[type] = value; // set value
 
         // update value
-        console.log("rgb")
         this.changeSelected(item.name);
     }
 
     setImportThemes(selected, themeImports){
-
-
-        console.log(themeImports)
         // Need to make sure the import isn't already exist
 
         if(themeImports){
@@ -118,8 +114,6 @@ export class ThemeStorage {
         }
 
         this.data.selectedTheme = selected;
-    
-        console.log("import")
         this.changeSelected(selected);
     }
 
@@ -145,13 +139,10 @@ export class ThemeStorage {
 
     clickChange(name){
         this.data.selectedTheme = name;
-        console.log("clickchange")
         this.changeSelected(name);
     }
 
     resetColour(){
-        console.log("reset")
-
         this.changeSelected(this.selectedTheme);
     }
 
@@ -165,11 +156,8 @@ export class ThemeStorage {
 
     changeSelected(name){
 
-        console.log(name, "fire")
         let object = this.getObject(name);
         if(!object) return; // no data
-
-        console.log(object)
 
         document.documentElement.style.setProperty("--ThemeA-Primary",   object.primary);
         document.documentElement.style.setProperty("--ThemeA-Secondary", object.secondary);
@@ -190,8 +178,6 @@ export class ThemeStorage {
 
         // high contrast values like icon or texts
         this.data.iconColour = this.getContrastYIQ(object.secondary);
-
-        console.log("here")
     }
     
     // Pass in float, between 0 and 1
@@ -222,9 +208,6 @@ export class ThemeStorage {
 
     // Reset to the value stored in localstorage
     resetTheme(){
-
-        console.log("reset")
-        
         if(!this.storageSavedTheme) return;
         
 

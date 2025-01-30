@@ -135,8 +135,6 @@ class ProfileHandler{
 
         if(!allProfileData) return 0;
 
-        console.log("init", allProfileData)
-
         this.setSelectedProfile(allProfileData.selectedProfile); // Set selected profile 
         this.initLoadProfiles(allProfileData.storedProfiles);    // Set all profiles 
 
@@ -228,8 +226,6 @@ class ProfileHandler{
         let profile = this.getProfileData(selected);
         if(!profile) return; // no data
 
-        console.log("propfile", profile)
-
         // Run the respective function if contain the data within local storage
 
         if(profile.layoutData) layout.initializeData(profile.layoutData);
@@ -245,7 +241,6 @@ class ProfileHandler{
         // has both theme imports and user settings
         if(profile.themeImports) themeStorage.initStoredthemes(profile.themeImports);
 
-        console.log("before initselect")
         themeStorage.initSelectTheme(profile.savedTheme) 
 
         if(profile.userAppearanceSettings) editVariables.loadUserAppearance(profile.userAppearanceSettings);
@@ -562,11 +557,8 @@ class ProfileHandler{
     getProfileData(name){
         if(!name) return null;
 
-        // console.log("get", name)
-
         let data = this.data.storedProfiles[name];
 
-        // console.log("data:", data)
         return data; // If not found, should return null
     }
 
@@ -652,10 +644,7 @@ class ProfileHandler{
         this.data.selectedProfile = val;
     }
 
-    resetSelectedProfile(){
-        console.log(Object.keys(this.data.storedProfiles));
-        this.setSelectedProfile(Object.keys(this.data.storedProfiles)[0])
-    }
+    resetSelectedProfile(){ this.setSelectedProfile(Object.keys(this.data.storedProfiles)[0]) }
 
     get selectedProfile(){ return this.data.selectedProfile; }
     get noProfiles()     { return Object.keys(this.data.storedProfiles).length}
