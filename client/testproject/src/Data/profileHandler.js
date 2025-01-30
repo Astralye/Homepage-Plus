@@ -471,6 +471,8 @@ class ProfileHandler{
         // Reset selection
         editVariables.enableResetSelect();
         editVariables.enableResetFlag();
+
+        this.setProfileData();
     }
     
     importAppearance(data){
