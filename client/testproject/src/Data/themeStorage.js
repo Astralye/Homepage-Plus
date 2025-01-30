@@ -79,20 +79,30 @@ export class ThemeStorage {
 
     storageObject(name){
         if(!name) return;
-        return JSON.parse(localStorage.getItem("storageObject"))['storedProfiles'][name];
+
+        let profiles = localStorage.getItem("storageObject")['storedProfiles'];
+        if(!profiles) return null;
+
+        return profiles[name];
     }
 
     get storageSavedTheme(){
 
         // Change later
         let defaultVal = "defaultProfile"
-        return this.storageObject(defaultVal)['savedTheme'];
+        let obj = this.storageObject(defaultVal);
+
+        if(!obj) return null;
+        return obj['savedTheme'];
     }
 
     get importThemeObj(){
 
         let defaultVal = "defaultProfile"
-        return this.storageObject(defaultVal)['themeImports'];
+        let obj = this.storageObject(defaultVal);
+
+        if(!obj) return null;
+        return obj['themeImports'];
     }
 
 // object functions 
@@ -114,6 +124,10 @@ export class ThemeStorage {
     }
 
     setImportThemes(selected, themeImports){
+
+
+        console.log(themeImports)
+        // Need to make sure the import isn't already exist
 
         if(themeImports){
             this.data.displayArray = this.data.displayArray.concat(themeImports); // add to display themes
