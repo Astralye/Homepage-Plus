@@ -76,8 +76,6 @@ class ProfileHandler{
     // All but the default profile
     initLoadProfiles(data){
         if(!data) return;
-        // Need a way to remove the default profile before adding?
-        // Or maybe it doesnt matter because I am overriding
 
         this.data.storedProfiles = data;
     }
@@ -87,7 +85,6 @@ class ProfileHandler{
 
     // Save the entire object
     saveDataToLocalStorage() { localStorage.setItem(this.storageObject, JSON.stringify(this.data)); }
-    getDataFromLocalStorage(){ localStorage.getItem(this.storageObject);}
     get allData(){ return this.data; }
 
 // Themes
@@ -137,6 +134,8 @@ class ProfileHandler{
         const allProfileData = this.localStorageProfileData;
 
         if(!allProfileData) return 0;
+
+        console.log("init", allProfileData)
 
         this.setSelectedProfile(allProfileData.selectedProfile); // Set selected profile 
         this.initLoadProfiles(allProfileData.storedProfiles);    // Set all profiles 
@@ -188,7 +187,6 @@ class ProfileHandler{
     */
     setValues(){
 
-
         if(!this.setProfileData()) return // Check for data
 
         this.saveDataToLocalStorage();
@@ -230,21 +228,27 @@ class ProfileHandler{
         let profile = this.getProfileData(selected);
         if(!profile) return; // no data
 
+        console.log("propfile", profile)
+
         // Run the respective function if contain the data within local storage
 
-        if(profile.layoutData  !== null) layout.initializeData(profile.layoutData);
-        if(profile.containerDisplayData !== null) containerData.intializeData(profile.containerDisplayData); 
-        if(profile.iconData !== null)    iconData.initializeData(profile.iconData);
+        if(profile.layoutData) layout.initializeData(profile.layoutData);
+        if(profile.containerDisplayData) containerData.intializeData(profile.containerDisplayData); 
+        if(profile.iconData)    iconData.initializeData(profile.iconData);
 
-        if(profile.iconStorage !== null) iconStorage.initDataFromStorage(profile.iconStorage);
+        if(profile.iconStorage) iconStorage.initDataFromStorage(profile.iconStorage);
 
-        if(profile.importSVGs !== null) iconImageStorage.setImportedSVGs(profile.importSVGs);
+        if(profile.importSVGs) iconImageStorage.setImportedSVGs(profile.importSVGs);
 
-        if(profile.userSettings !== null)    editVariables.loadUserSettings(profile.userSettings);
+        if(profile.userSettings) editVariables.loadUserSettings(profile.userSettings);
 
-        if(profile.themeStorage !== null)    themeStorage.initData();
+        // has both theme imports and user settings
+        if(profile.themeImports) themeStorage.initStoredthemes(profile.themeImports);
 
-        if(profile.userAppearanceSettings !== null)  editVariables.loadUserAppearance(profile.userAppearanceSettings);
+        console.log("before initselect")
+        themeStorage.initSelectTheme(profile.savedTheme) 
+
+        if(profile.userAppearanceSettings) editVariables.loadUserAppearance(profile.userAppearanceSettings);
 
         editVariables.enableRenderFinalNode();
     }

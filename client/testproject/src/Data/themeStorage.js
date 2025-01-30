@@ -53,57 +53,40 @@ export class ThemeStorage {
         // If no value, set to default
         this.data.selectedTheme = (this.data.selectedTheme) ? this.data.selectedTheme : "Default";
         
+        console.log("resetlocal")
         this.changeSelected(this.data.selectedTheme);
     }
 
-    // Get both import themes and selected themes
-    initData(){
-
+    initStoredthemes(themes){
         // only load if imports has data
-        if(this.importThemeObj)
-        {
-            this.data.displayArray = this.data.displayArray.concat(this.importThemeObj); // add to display themes
+        if(themes) {
+            this.data.displayArray = this.data.displayArray.concat(themes); // add to display themes
     
             // import selected Theme
-            this.data.importThemes = this.importThemeObj; // in the event of adding more themes
+            this.data.importThemes = themes;
         }
-        
-        // Check if it exists before setting it
-        this.data.selectedTheme = (this.storageSavedTheme) ? this.storageSavedTheme : "Default";
+    }
 
+    initSelectTheme(selectedTheme){
+
+        // Check if it exists before setting it
+        this.data.selectedTheme = (selectedTheme) ? selectedTheme : "Default";
+        
+        console.log(this.data.selectedTheme)
         this.resetTheme();
     }
 
-    // They do not modify the values
-    // Can remain in here rather than profileHandler.js
-
-    storageObject(name){
-        if(!name) return;
-
-        let profiles = localStorage.getItem("storageObject")['storedProfiles'];
-        if(!profiles) return null;
-
-        return profiles[name];
-    }
-
+    // need to change the default val
     get storageSavedTheme(){
 
         // Change later
-        let defaultVal = "defaultProfile"
-        let obj = this.storageObject(defaultVal);
+        let mainObj = JSON.parse(localStorage.getItem("storageObject"));
+        let name = mainObj['selectedProfile'];
 
-        if(!obj) return null;
-        return obj['savedTheme'];
+        if(!mainObj) return null;
+        return mainObj['storedProfiles'][name]['savedTheme'];
     }
 
-    get importThemeObj(){
-
-        let defaultVal = "defaultProfile"
-        let obj = this.storageObject(defaultVal);
-
-        if(!obj) return null;
-        return obj['themeImports'];
-    }
 
 // object functions 
 // -------------------------------------------------------------------------------
@@ -120,6 +103,7 @@ export class ThemeStorage {
         item[type] = value; // set value
 
         // update value
+        console.log("rgb")
         this.changeSelected(item.name);
     }
 
@@ -135,6 +119,7 @@ export class ThemeStorage {
 
         this.data.selectedTheme = selected;
     
+        console.log("import")
         this.changeSelected(selected);
     }
 
@@ -160,10 +145,13 @@ export class ThemeStorage {
 
     clickChange(name){
         this.data.selectedTheme = name;
+        console.log("clickchange")
         this.changeSelected(name);
     }
 
     resetColour(){
+        console.log("reset")
+
         this.changeSelected(this.selectedTheme);
     }
 
@@ -177,8 +165,11 @@ export class ThemeStorage {
 
     changeSelected(name){
 
+        console.log(name, "fire")
         let object = this.getObject(name);
         if(!object) return; // no data
+
+        console.log(object)
 
         document.documentElement.style.setProperty("--ThemeA-Primary",   object.primary);
         document.documentElement.style.setProperty("--ThemeA-Secondary", object.secondary);
@@ -199,6 +190,8 @@ export class ThemeStorage {
 
         // high contrast values like icon or texts
         this.data.iconColour = this.getContrastYIQ(object.secondary);
+
+        console.log("here")
     }
     
     // Pass in float, between 0 and 1
@@ -229,8 +222,12 @@ export class ThemeStorage {
 
     // Reset to the value stored in localstorage
     resetTheme(){
+
+        console.log("reset")
+        
         if(!this.storageSavedTheme) return;
         
+
         this.data.selectedTheme = this.storageSavedTheme;
         this.changeSelected(this.storageSavedTheme);
     }
