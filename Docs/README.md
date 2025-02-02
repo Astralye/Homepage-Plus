@@ -52,7 +52,6 @@ As such, this project has a specific audience. Those who use the internet fairly
 ## Built with
 
 * [![Vue][Vue.js]][Vue-url]
-* 
 
 [Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
 [Vue-url]: https://vuejs.org/
@@ -64,131 +63,192 @@ As such, this project has a specific audience. Those who use the internet fairly
   ```sh
   npm install npm@latest -g
   ```
-
 ### Installation
 1. Clone the repo
    ```sh
    git clone https://github.com/Astralye/Homepage-Plus.git
    ```
-3. Install NPM packages
+2. Install NPM packages
    ```sh
    npm install
    ```
-5. Change git remote url to avoid accidental pushes to base project
+3. Change git remote url to avoid accidental pushes to base project
    ```sh
    git remote set-url origin Astralye/Homepage-Plus
    git remote -v # confirm the changes
    ```
+4. Change directory*
+   ```sh
+   cd Homepage-plus/client/testproject
+   ```
 
-## Usage
-### Initial start
-The website will be empty, only containing the two buttons, Edit and Settings at the top right.
+This was initially built with the idea of using a daemon server and service to run the page. I found out later that I can deploy to github pages, and so will need to change directory to get to working files.
 
-Click the Edit, to open the Editing window.
-### Edit
-The edit window will toggle the edit mode. In this mode, icon links will not fire, and can be dragged. You will be able to save, delete and cancel any changes.
+# Usage
+## Initial Start
+On load, the page will be empty with two buttons at the top right:
+1. Edit
+2. Settings
+Clicking will open a window of the respective button.
+## Edit
+When the edit button is clicked, it will toggle edit mode.
 
-The edit window will contain 4 different options:
-- Layout
-- Containers
-- Widgets
-- Link Maker
+While in this mode, the user is able to modify any appearance, layout, etc as they see fit. 
 
-Layout is used for subdividing the page.
-Containers modify how each subdivision displays the content.
-Widgets has not been implemented but kept in.
-Link Maker is used for creating and modifying icons and links
+To exit the edit mode, click the x or re-click the edit button.
+A window will appear giving 5 options to change:
+1. Layout
+2. Containers
+3. Appearance
+4. Profiles
+### Edit Mode
+In edit mode, clicking on the icons will not trigger the link to operate.
+The user will able to select icons to drag and move around via drag and drop functionality.
+
+Multi-select is implemented. Click and drag over an area ( Not starting on an icon ), to display a selection box. This uses collision detection to determine if an item, grid icon or list icon was selected. Clicking anywhere in the space will cancel the multi-select.
+
+**Note:** A context menu is available on right click, however, this is non-functional and only for display.
+
+Ctrl + Click to add to multiselection
+Shift + Click to add all from last selection to multiselection.
 ### Layout
-Subdivisions divide the page up by creating more containers, these containers are therefore recursive, allowing you to add as many as you will like. However, going beyond 3 or 4 nests depending on screen size, can cause bugs.
+The layout window is used to divide the page up into sections, or **containers**.
 
-To select a container, click the 'Select Container' button.
+The user is able to select a container by initializing a select, and clicking the container. If the user does not want to select anymore, they cant deselect.
 
-Because the nature of the containers, the division type **only** affect the children. If you wish to modify the main page, you must click the container surrounding the edges.
+**Note:** Implementation for deletion was partially added, but contains bugs. Using this will crash the page.
 
-**Division type** modifies how the child containers will be split up. E.g Vertical means that it will form vertical columns, and horizontal will form horizontal rows. 
+The page starts off with a base container, 0A, and the user can create as many containers within containers. These can range from 1-4 divisions, with each container being able to divide vertical or horizontally.
 
-**No. Container Division** modifies how many children the container will have.
-**Note**: I have limited this to a max of four, due to the nature of nesting and screensize.
+**Note:** Past 3 or 4 recursive containers, it may be impractical to use due to the size getting smaller per container added. 
 
+Normally, the divisions are calculated via fraction units, ( fr values) spaced evenly between one other. The user can change the ratio / fraction a container takes space, allowing the change of how much the ratio changes.
+
+To change the ratio, drag the sides of the container (left/right for vertical and up/down for horizontal divisions) to the next position.
+
+**Note:** If the ratios are unchanged, they will cause re-render bugs. Toggle even spacing to reset / when needing even spacing.
 ### Containers
-Similar to Layout, you can select a container to modify. This does, modify the selected container and not affect the children.
+The Container tab refers to how a specific container displays content within it.
 
-**Container Name** is currently nonfunctional, and was left within.
-**Display Type** refers to how the web links are displayed on the page. Grid only works.
+Like layout, the user can choose which container to modify.
 
-The content past **Display type** should only correspond to the selected input, like a tab. Currently not implemented, and only have grids.
+Users are able to disaplay a caption or name for the container selected.
+This has to be enabled first, and the user can type it out.
 
-**Grid Content Align** changes how the icons in the grid to be rendered:
-- Compact, all icons should bundle at the specified direction, Default, Top Left.
-- Free, Icons can be placed anywhere in the container
+A container can display content in two ways. These are changed via clicking the respective tab.
+5. Grids
+6. Lists
+#### Grids
+Grids dimensions are calculated item sizes. 
+Items put into grids will be automatically placed left to right, top to bottom.
 
-**Note:** Icon positions in Free align, are absolute. If screen size changes (Mainly smaller), it will not display the icons, because the coordinate is not present on screen.
+The user can override this via changing directions or changing to free mode.
 
-**Container Dimensions** modifies Direction of compact alignment. This should only display on compact align.
+Free mode allows icons to be placed anywhere.
+**Note:** If the dimensions are changed, the position of the icon will stay in the same axes.
+#### Lists
+Lists will display items top to bottom, with each spanning the whole width. Any excess items within the list will overflow via scrolling content of that container.
 
+Position of text can be modified.
 ### Link Maker
-The link maker is used to create, modify and delete icons and links.
+Icons can be created within the link maker.
+The user can add, select and delete icons.
+All saved icons within link maker will be stored and wont be deleted on page refresh.
 
-By default, there should be no saved icons.
+Icons can be modified if they are selected, either via link maker or clicked in the edit area.
 
-To create a new icon, click 'New'.
-To delete an icon, select the icon to be deleted, and click 'delete'.
+**Note:** If multi-selection, the first icon will be modified
+#### Display Icon
+This tab will affect the appearance of the icon.
 
-A selected icon will have a highlighted border.
-Modification of icons require an icon to be selected.
+**Note:** Changes to colour, size, text size will not be modified if the setting is set to global in appearance. It will also only affect the selected icon.
 
-#### Customize
-To change icon, click on the large icon in the **Displayed icon** box.
-This will open a menu of static svg data.
-The selected icon will be highlighted.
-Click on a new icon to change it.
+The user can choose icons that are pre-downloaded, or alternatively can import their own SVGs.
 
-You are also able to change the colour of an svg icon. Click the pallet at the bottom right of the icon to open a colour picker window.
+Importing SVGs will need to be saved to ensure data to be remained on reload, profiles, imports and exports.
+#### Functionality
+**Note:** Folder is not implemented.
+**Note:** Links always open on new windows.
 
-To modify the colours, you have three options:
-1. Slide and drag the Hue, Saturation, and Light values.
-2. Paste Hex data
-3. Paste HSL data
+The user is able to set the URL of the page they choose when the icon is clicked on, in normal mode.
 
-To save the colour, click the **save colour** button.
-**Note:** This saves the colour to the icon. This does not save any changes in page data.
+The URL can be directly inputted in, or the individual parts of the page can be put in.
+### Appearance
+Appearance affects the CSS of the page. The user can customize how their page looks.
 
-Below the calculated colour, is the last 10 saved colours. Click to retrieve the colour data. Saving the same colour does not add to the saved colour list.
+The options, except themes can be toggled to apply global settings, i.e sitewide changes than specific areas. This applies the data to the component.
+#### Themes
+The site is loaded with the default theme. The site also provides two other themes that aren't modifiable. Clicking on a theme gives a preview, but is not saved.
 
-**Name** is the displayed text below the icon. This can be disabled via the checkbox.
-**Icon size** changes the size of the icon in the menu, in px.
+The site uses three main colours to display content.
+Primary is used for the main background.
+Secondary is the colour of the windows
+Tertiary / accent is used for contrast ie for icons or dividers.
 
-#### Function
-You can set the link via:
-1. Automatic parsing
-2. Manual parsing
+Themes can be added, deleted and renamed.
+To change the colour of a new theme, click on the specific colour to select and open the colour window at the bottom.
 
-Copy and paste the URL into the text box.
-This will fill out the hostname and subdirectory.
+The theme **MUST** be saved here on this menu. If the window closes or refreshed, the theme is not saved.
+#### Grids and Lists
+Here the user can modify
+- Toggle icon text on grids
+- Icon size
+- Grid size ( Affects dimension of the grid layout )
 
-**Note:** Subdirectory does not include any search query data.
+- Toggle icon image on lists
+- Toggle list divider
+- Modify item height
+- Modify margin between items
 
-You can manually parse the URL via hostname and subdirectory.
+To revert any changes click the reset button.
+#### Text
+This tab affects the text of the entire page, with colour affecting windows too.
 
-**New window** toggle does not function, and will always open a new window.
-To save the link to the icon, click the 'Save' button at the bottom right.
+**Note:** Font type does not change.
+**Note:** text background does not function
 
-### Exiting Edit mode
-Closing the edit window or clicking the edit button causes it to toggle off the edit mode. This does not save any changes (A warning should be here in the future), if you decide to leave or refresh the page. 
+Font colour contrast is calculated based on secondary colour. This can be disabled to use a different colour. 
+**Note:** This will not change when changing themes. It may make text unreadable if not changed.
+#### Icons
+Icon colour can be set globally as a tertiary colour ( default ) or can be overrided with a different colour.
+**Note:** Just like colour text, this may make the icon hard to see if themes change.
+#### Container
+This tab affects container header and borders
+#### Header
+**Note:** Changing font is not implemented.
 
-To use the link, just double click the icon, and it will open a new tab to the selected page.
+The user can modify header size, and colour. Overriding the colour will take precedence after text colour. When disabled, it will revert back. 
+#### Borders
+The user is able to select a container to apply borders.
+In edit mode, the outline of the container is present but does not show outside of edit menu.
+The border thickness and radius is able to be adjusted.
+### Profiles
+A profile consists of the entire data used for a specified layout, including any icons, positions, appearance settings, layouts and containers.
 
-### Misc
-If you use website that require an account to use, you will need to be logged in, such that the page will be able to load.
+The user is given a default, empty profile to use. The user can add, select, add and rename profiles. Each profile will provide a small preview window.
 
-This page stores data using localstorage. Therefore, the page is only local to the specific browser used to save on. 
+The selected profile is what is currently rendered.
+**Note:** When deleting profiles, it has to be selected, shown via the profiles selected, not the border, as it has to be loaded.
+**Note:** Deleting profiles will be saved immediately, to trigger a re-render.
+## Settings
+**Note:** Window will be automatically enabled for larger windows, and sidebars for tablet sizes and fullscreen for mobile devices.
+### Imports
+Imports will be read from a JSON file.
+A parser will check for correct data type.
+On success, it will preview any data that is rendered, and will ask for confirmation to load the data.
 
-A feature to export and import the data will be considered in the future.
+This data is not saved locally, and must be saved if wanted to save changes.
+![[importing.png]]
+### Exports
+The user is able to export data.
+This is saved on the users device as a JSON file.
+**Note:** It is not recommended to modify any of the data in the export file as it may become unreadable to the import parser.
 
 ## Screenshots
-![[Base.png]](Base.png)
-![[Link maker.png]](Linkmaker.png)
+![[theme.png]]
 
+![[theme2.png]]
+![[Theme3.png]]
 ## License
 This project is licensed under the GNU General Public License v3.0. See the [License](LICENSE.md) file for details.
 
