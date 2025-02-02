@@ -39,6 +39,9 @@
 
 ## About the Project
 
+![image](theme.png)
+
+
 The internet is unfathomably huge. However, It can be hard to keep track of important websites needed as well as all useful and relevant pages we might need. The idea came from a disorganised bookmarks and also non-customizable homepages that search engines use. In Firefox and Chrome (others I haven't confirmed) you are able to set a website to a homepage. However, I cannot seem to find any extensions or websites that can help personalize and organize internet usage.
 
 The reasoning behind this project is more personal than anything. I find that it is tedious having to scour the internet for certain things and then get sub-par results. Having the user be able to create and organize their own personal 'page' to then surf the internet will help me (and perhaps others), to have a more streamlined internet usage.
@@ -245,10 +248,8 @@ This is saved on the users device as a JSON file.
 **Note:** It is not recommended to modify any of the data in the export file as it may become unreadable to the import parser.
 
 ## Screenshots
-![[theme.png]]
-
-![[theme2.png]]
-![[Theme3.png]]
+![](theme2.png)
+![](Theme3.png)
 ## License
 This project is licensed under the GNU General Public License v3.0. See the [License](LICENSE.md) file for details.
 
