@@ -12,8 +12,8 @@
             <SingleButton
                 class="flex"
                 @click="generateIcon" 
-                button_toggle="true"
-                m_IconString="Dotted_Square"
+                :button_toggle="true"
+                m_IconString="Add"
             >
                 New
             </SingleButton>
@@ -21,7 +21,7 @@
             <SingleButton
                 class="flex"
                 m_IconString="Delete"
-                :enabled="(iconSelect.dataValue.iconID != '')"
+                :enabled="(iconSelect.array.length != 0)"
                 @click="deleteIcon"
             >
                 Delete
@@ -42,9 +42,14 @@
                     :class="{ 'icon-Selection' : isSelectedIcon(index), 
                                 'grid-item' : !isSelectedIcon(index),
                                 'mouse-pointer': renderIcon(index)}"
+                    :style="{
+                        'border-color': themeStorage.getIconColourOpacity(
+                            isSelectedIcon(index) ? 0.8 : 0.15     
+                        )
+                    }"
 
                     @mouseup="checkDropIcon(index)"
-                    @click="(editVariables.isIconSelector) ? setSelectData(index) : null"
+                    @click="(editVariables.isIconSelector) ? setSelectData(index, true) : null"
                 >
                     <div class="icon-container flex">
 
@@ -61,13 +66,13 @@
                                 
                                 :path_Value="iconImageStorage.getPathData(getIconData(index).iconImage)"
                                 :fill_Colour="getIconData(index).iconColour"
-                                :view_Box="iconImageStorage.getViewBoxName(getIconData(index).iconImage)"
+                                :view_Box="iconImageStorage.getViewBox(getIconData(index).iconImage)"
                                 class="center icon-center"
                                 :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, m_STORAGE)),
                                          'opacity-full' : !dragAndDrop.isDraggingEvent }"
 
                                 @mousedown="$refs['icon-drag-handler'].dragDropSetup($event, index, this.getIconData(index), this.m_STORAGE)"
-                                />
+                            />
                         </Transition>
                     </div>
                 </div>
@@ -129,6 +134,7 @@
                                     <!-- Colour -->
                                     <div class="modification-button">
                                         <ColourPicker
+                                            :isDisplayIcon="true"
                                             :loaded_Data="m_SelectedObject.iconColour"
                                             @setColour="(hex) => setColourData(hex)"
                                             :enabled="isCurrentlySelected"
@@ -185,7 +191,7 @@
                                                 width="80%"
                                                 :fill_Colour="m_SelectedObject.iconColour"
                                                 :path_Value="iconImageStorage.getPathData(m_SelectedObject.iconImage)"
-                                                :view_Box="iconImageStorage.getViewBoxName(m_SelectedObject.iconImage)"
+                                                :view_Box="iconImageStorage.getViewBox(m_SelectedObject.iconImage)"
                                             />
                                         </div>
                                     </template>
@@ -198,7 +204,7 @@
                                                 height="80%"
                                                 width="80%"
                                                 :path_Value="iconImageStorage.getPathData('Cross')"
-                                                :view_Box="iconImageStorage.getViewBoxName('Cross')"
+                                                :view_Box="iconImageStorage.getViewBox('Cross')"
                                             />
                                         </div>
                                     </template>
@@ -220,7 +226,10 @@
                     </template>
             
                     <template #content>
-                        <!-- Template for Icon size -->
+                        <!-- 
+                            Icon size 
+                            ///////////////////////////////////////////////////////////////////////////////    
+                        -->
                         <template v-if="isIconMenuSelected('Icon Size')">
                             <RangeSlider
                                 :no_Items="m_iconSizes.length"
@@ -229,6 +238,11 @@
                                 v-model="m_SelectedObject.iconSize"
                             />
                         </template>
+
+                        <!--
+                            Icon Text
+                            ///////////////////////////////////////////////////////////////////////////////
+                        -->
                         <template v-else-if="isIconMenuSelected('Icon Text')">
                             <Checkbox
                                 @onChange="check => m_SelectedObject.displayText = check"
@@ -254,25 +268,48 @@
                                 v-model="m_SelectedObject.iconStringSize"
                             />
                         </template>
+
+                        <!--
+                            Icon type
+                            ///////////////////////////////////////////////////////////////////////////
+                        -->
                         <template v-else-if="isIconMenuSelected('Icon Type')">
                             <div class="icon-selection-menu width-full flex">
                                 <template v-for="(item, index) in 50" :key="index">
                                     
                                     <div class="saved-icons icon-wrapper"
                                         :class="{ 'icon-Selection' : selectedIconMenu(index), 'grid-item' : !selectedIconMenu(index) }"
+                                        :style="{
+                                            'border-color': themeStorage.getIconColourOpacity(
+                                                selectedIconMenu(index) ? 0.8 : 0.15   
+                                            )
+                                        }"
                                         >
                                         <SVGHandler v-if="iconImageStorage.isValidIndex(index)"
                                             width="100%"
                                             height="100%"
-                                            :fill_Colour="m_localIconColourHex"
-                                            :path_Value="getSVG(index)"
-                                            :view_Box="iconImageStorage.getViewBoxIndex(index)"
+                                            fill_Colour="#000000"
+                                            :path_Value="iconImageStorage.getPathData(iconImageStorage.getNameFromIndex(index))"
+                                            :view_Box="iconImageStorage.getViewBox(iconImageStorage.getNameFromIndex(index))"
                                             @click="newSelect(index)"
                                         />
                                         <!-- It needs to load the correct icon -->
                                     </div>
                                 </template>
                             </div>
+                            <h4>
+                                Import SVGs
+                            </h4>
+
+                            <br>
+                            <!-- 
+                                Any SVGs are moved to the svgParser automatically from FileUpload 
+                            -->
+                            <FileUpload
+                                fileType="svg+xml"
+                                >
+                            </FileUpload>
+                            
 
                         </template>
                     </template>
@@ -407,30 +444,30 @@
 </template>
 
 <script>
-import ToolTip from '../Window Components/ToolTip.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
-import TextInput from '../Input Components/TextInput.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
-import IconHandler from '../Main/IconHandler.vue';
-import TabWrapper from '../Window Components/TabWrapper.vue';
-import RangeSlider from '../Input Components/RangeSlider.vue';
 import ColourPicker from '../Input Components/ColourPicker.vue';
 import OptionSelect from '../Input Components/OptionSelect.vue';
+import RangeSlider from '../Input Components/RangeSlider.vue';
+import TabWrapper from '../Window Components/TabWrapper.vue';
+import TextInput from '../Input Components/TextInput.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
 import RadioBtn from '../Input Components/RadioBtn.vue';
+import ToolTip from '../Window Components/ToolTip.vue';
+import IconHandler from '../Main/IconHandler.vue';
 
+import FileUpload from '../Input Components/FileUpload.vue';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import IconDragHandler from '../Main/IconDragHandler.vue';
 import Window from '../Window Components/Window.vue';
 
-import { iconImageStorage } from '../../Data/iconImages';
 import { iconData, iconStorage, iconSelect } from '../../Data/iconData';
-import { mouseData } from '../../Data/mouseData';
-import { windowHandler } from '../../Data/userWindow';
 import { editVariables } from '../../Data/SettingVariables';
-
-import IconDragHandler from '../Main/IconDragHandler.vue';
-import SVGHandler from '../Input Components/SVGHandler.vue';
+import { iconImageStorage } from '../../Data/iconImages';
+import { windowHandler } from '../../Data/userWindow';
 import { dragAndDrop } from '../../Data/dragDrop';
-
+import { mouseData } from '../../Data/mouseData';
+import { themeStorage } from '../../Data/themeStorage';
 
 export default {
     components: {
@@ -441,6 +478,7 @@ export default {
         OptionSelect,
         RangeSlider,
         IconHandler,
+        FileUpload,
         SVGHandler,
         TabWrapper,
         TextInput,
@@ -454,6 +492,7 @@ export default {
             iconImageStorage,
             editVariables,
             windowHandler,
+            themeStorage,
             dragAndDrop,
             iconStorage,
             iconSelect,
@@ -487,8 +526,7 @@ export default {
             m_textSizes: [ "10px", "12px", "14px", "16px"],
 
             // Icon Functionality 
-            
-            m_DisplayLink: "",
+
             m_LinkInfo: {
                 protocol: "https://",
                 root: "",
@@ -511,7 +549,7 @@ export default {
     },
     created(){
         editVariables.enableIsIconSelector();
-        this.displaySelectedData(iconSelect.dataValue);
+        this.displaySelectedData(iconSelect.array);
     },
     unmounted(){
         editVariables.disableIsIconSelector();
@@ -523,14 +561,24 @@ export default {
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
         // When a new icon / none is selected, displays the link data.
-        displaySelectedData(newIconData){
+        displaySelectedData(iconArray){
 
             // Reset everything first.
 
             this.setLinkData("", "", "");
             this.m_SelectedIndex = -1;
 
-            if(newIconData.iconID === "" || newIconData.groupID === ""){  this.m_SelectedObject = {};  return; }
+            if(iconArray.length === 0){  this.m_SelectedObject = {};  return; }
+
+            /*
+                Todo, fix
+                
+                Need to do something else in the event of multi select
+                Right now, it was build with a single value in mind
+
+                Set it to the first value for now.
+            */
+            let newIconData = iconArray[0];
 
             let group = iconData.getGroup(newIconData.groupID);
             this.m_SelectedObject = iconData.getIconDataFromID(group, newIconData.iconID);
@@ -542,10 +590,10 @@ export default {
         // Changes the currently selected. Displays
         newSelect(index){
             if(!this.isCurrentlySelected){ return; } // No selection
-
-            let svg = iconImageStorage.getPathFromIndex(index);
-            this.m_SelectedObject.iconImage = svg.name;
-            this.setSVGIndex(svg.name);
+            
+            var name = iconImageStorage.getNameFromIndex(index);
+            this.m_SelectedObject.iconImage = name;
+            this.setSVGIndex(name)
         },
 
         // Check if current selected icon is the index.
@@ -556,19 +604,9 @@ export default {
 
         isIconMenuSelected(type){ return (this.m_IconTabOpen === type); },
 
-    // Getter
-
-        getSVG(index){
-            let svg = iconImageStorage.getPathFromIndex(index);
-            return svg.pathData;
-        },
-
     // Setter
 
-        setCurrentTab(type){
-            this.m_IconTabOpen = type;
-            console.log("set:",  this.m_IconTabOpen);
-        },
+        setCurrentTab(type){ this.m_IconTabOpen = type; },
 
         // From the name of the icon, get the index at which it appears in iconImages
         setSVGIndex(svgName){
@@ -629,13 +667,20 @@ export default {
 
         isSelectedIcon(index){
             if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
-            return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_STORAGE === iconSelect.data.groupID);
+
+            return iconSelect.isContainSelectedData(this.getIconData(index).iconID, this.m_STORAGE);
         },
 
-        setSelectData(index){
+        setSelectData(index, AABBcollision){
             let data = iconStorage.getIconDataFromIndex(iconStorage.allData, index);
             if(!data){ iconSelect.resetData(); return; } // no data
-            iconSelect.setData(data.iconID, this.m_STORAGE);
+
+            if(AABBcollision){
+                iconSelect.addNewData(data.iconID, this.m_STORAGE);
+            }
+            else{
+                iconSelect.removeData(data.iconID, this.m_STORAGE);
+            }
         },
 
 // Some of the functions are copied but altered from GridLayout.vue
@@ -676,7 +721,7 @@ export default {
 
         deleteIcon(){
             // If nothing, a popup shows 'nothing selected', like the storage values.
-            if(iconSelect.dataValue.groupID === "" || iconSelect.dataValue.iconID === "") { return; }
+            if(iconSelect.array.length === 0) { return; }
 
             // Perhaps popup message comes here to confirm
             // User can click a 'Stop showing me this message prompt'
@@ -694,7 +739,7 @@ export default {
     watch: {
 
         // Gets fired when selected icon changes
-        'iconSelect.dataValue': {
+        'iconSelect.array': {
             handler(val){ this.displaySelectedData(val); },
             deep: true
         },
@@ -773,6 +818,10 @@ export default {
     transition-delay: 125ms;
 }
 
+.full-width{
+    width: 100%;
+}
+
 /* 
     ----------------------------------------------------------------
 */
@@ -782,7 +831,7 @@ export default {
 }
 
 .icon-Selection{
-    border: 3px solid rgba(255, 255, 255, 0.8);
+    border: 3px solid;
     border-radius: 10px;
     
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
@@ -792,7 +841,7 @@ export default {
 }
 
 .grid-item{
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 3px solid;
     border-radius: 10px;
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */

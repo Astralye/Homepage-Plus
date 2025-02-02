@@ -5,6 +5,10 @@
   base.css was for variable initalization.
 */
 
+.help-tip{
+  font-size: 12px;
+}
+
 .prevent-overflow{
   overflow: hidden;
 }
@@ -70,15 +74,5 @@ p{
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-
-  }
-
-  #app {
-    
   }
 }

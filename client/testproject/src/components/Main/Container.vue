@@ -1,75 +1,102 @@
 <template>
+
     <!-- Container wrapper -->
     <div class="height-full">
-        
         <!-- Container -->
         <div
             class="page-content-container height-full"
             ref="refContainer"
-            >
-            
+            >            
             <!-- Edit based container functions -->
             <div 
-            :class="{'edit-mode': editVariables.isEnabled, 
-                     'normal-mode' : !editVariables.isEnabled,
+            :class="{'edit-mode'   : (editVariables.isEnabled),
+                     'normal-mode' : (!editVariables.isEnabled && !m_LayoutData.border.isDisplay),
                     'edit-hover': (editVariables.isEnabled && m_isHover && !m_isStoredClick),
-            'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.activeContainerSelection),
+            'selected-container': (m_isStoredClick && editVariables.isEnabled && editVariables.isContainerSelectionValid),
             'grid-template' : m_LayoutData.NoChildren > 0 }"
+            :style="{
+                'padding' : gridPadding,
+                'outline-color' : (m_LayoutData.border.isDisplay) ? themeStorage.tertiary : null,
+                'border-radius' : (m_LayoutData.border.isDisplay) ? m_LayoutData.border.radius : '10px',
+                'outline-width' : (m_LayoutData.border.isDisplay) ? m_LayoutData.border.thickness : '2px',
+                'outline-style' : (m_LayoutData.border.isDisplay) ? 'solid' : 'dashed',
+            }" 
+
+            
+            @mousedown.left="(m_isBase && multiSelect.isValidDrag) ? initMultiSelectDrag($event) : null"
+            @mouseup.left="(m_isBase && multiSelect.isEnabled) ? exitMultiSelectDrag() : null"
+
             @mouseover.self="m_isHover = editVariables.containerSelectionMode"
             @mouseout.self="m_isHover=false"
-            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null">
+            @click.self="(editVariables.containerSelectionMode && editVariables.isEnabled) ? storeClickedContainer() : null"
 
+            >
+
+            
                 <!-- Recurrsion, uses data to determine how many to render -->
                 <template v-if="m_LayoutData.NoChildren > 0">
+
                     <Container 
                         v-for="n in m_LayoutData.NoChildren" 
+                        :profileDisplayName="profileDisplayName"
+                        :isDisplayWindow="isDisplayWindow"
                         :nest_level="nest_level+1"
                         :parent_ID="m_LayoutData.id"
                         :child_Instance="n-1"
                         :render_divider="true"
                         @drag="p_updateColumnRow"
-                        />
+                    />
                 </template>
 
                 <!-- If no children, display the grid layout -->
-                <div v-else-if="m_LayoutData.NoChildren === 0"
+                <div v-if="m_LayoutData.NoChildren === 0"
                     class="container-wrapper"
                     @click="(editVariables.containerSelectionMode && editVariables.isEnabled ) ? storeClickedContainer() : null"
                     @mouseover="m_isHover = editVariables.containerSelectionMode"
                     @mouseout="m_isHover=false"
-                    >
+                >
 
-                    <!-- Container header -->
-                    <div v-if="containerData.getObjectFromID(m_LayoutData.id).containerHeader.toggle"
-                        ref="header"> 
-                        <div class="container-header">
-                            {{ containerData.getObjectFromID(m_LayoutData.id).containerHeader.text }}                        
+                        <div v-if="containerData.getObjectFromIDData(containerDataOrigin, m_LayoutData.id).containerHeader.toggle"
+                            ref="header"> 
+                            <div class="container-header"
+                                :style="{
+                                    'font-size' : containerFontSize,
+                                    'padding' : containerPadding,
+                                }"
+                            >
+                                {{ containerData.getObjectFromIDData(containerDataOrigin, m_LayoutData.id).containerHeader.text }}                        
+                            </div>
+                            <hr :class="{
+                                'extend-length' : isProfileDisplay
+                            }">
                         </div>
-                        <hr>
-                    </div>
+    
+                        <template v-if="containerData.getObjectFromIDData(containerDataOrigin, m_LayoutData.id).layoutType === 'Grid'">
+                            <Gridlayout
+                                :profileDisplayName="profileDisplayName"
+                                :isDisplayWindow="isDisplayWindow"
+                                :component_ID="m_LayoutData.id"
+                                :update_Grid_Flag="m_updateGrid"
+                            />
+                        </template>
 
-                    <template v-if="containerData.getObjectFromID(m_LayoutData.id).layoutType === 'Grid'">
-                        <Gridlayout
-                            :component_ID="m_LayoutData.id"
-                            :update_Grid_Flag="m_updateGrid"
-                        />
-                    </template>
-                    <!-- Container Grid -->
-                    <template v-else>
-                        <div>
-                            <ListLayout
-                                
-                                :component_ID="m_LayoutData.id"/>
-                        </div>
-                    </template>
-                     
+                        <template v-else>
+                            <div>
+                                <ListLayout 
+                                    :profileDisplayName="profileDisplayName"
+                                    :isDisplayWindow="isDisplayWindow"
+                                    :component_ID="m_LayoutData.id"
+                                />
+                            </div>
+                        </template>
+
                 </div>
             </div>
         </div>
         
         <!-- Divider -->
-        <template v-if="render_divider">
-            <div v-if="editVariables.isEnabled && displayDivider()"
+        <template v-if="render_divider && !isProfileDisplay">
+            <div v-if="editVariables.isEnabled && m_DisplayDivider"
             :class="{
                 'page-drag-Horizontal': ( !m_isVertical),
                 'page-drag-Vertical height-full': (m_isVertical)
@@ -80,7 +107,7 @@
 
             <Transition name="fade">
                 <!-- Temporary next position slider -->
-                <div v-if="editVariables.isEnabled && m_isMoveContainer && displayDivider()"
+                <div v-if="editVariables.isEnabled && m_isMoveContainer && m_DisplayDivider"
                     class="next-pos"
                     :class="{
                         'next-pos-horizontal': ( !m_isVertical),
@@ -94,14 +121,17 @@
 </template>
 
 <script>
-import { containerData } from '../../Data/containerData.js'
-import { layout, LayoutDataClass } from '../../Data/layoutData.js';
-import { mouseData } from '../../Data/mouseData.js';
 import { ContainerDividerClass } from '../Functions/containerDivider.js';
 import { GridModificationClass } from '../Functions/gridModification.js';
+import { layout, LayoutDataClass } from '../../Data/layoutData.js';
 import { editVariables } from '../../Data/SettingVariables.js';
-import ListLayout from './ListLayout.vue';
+import { containerData } from '../../Data/containerData.js'
+import { themeStorage } from '../../Data/themeStorage.js';
+import { multiSelect } from '../../Data/multiSelect.js';
+import { mouseData } from '../../Data/mouseData.js';
+import { profileHandler } from '../../Data/profileHandler.js';
 
+import ListLayout from './ListLayout.vue';
 import Gridlayout from './GridLayout.vue'
 
 export default {
@@ -110,7 +140,25 @@ export default {
         Gridlayout,
         ListLayout,
     },
-    props: {
+    props: {    
+        /*
+            profileDisplayName, used for displaying the profile in Profiles.vue tab.
+
+            isDisplayWindow is for CSS to be changed on the preview window
+            ensures only displaying is visible, prevent normal container functions to work.
+            This will also make sure to override all global data, and only apply values passed in via profile
+        */
+        
+        profileDisplayName:{ 
+            type: String,
+            default: null,
+        },
+
+        isDisplayWindow:{
+            type: Boolean,
+            default: false,
+        },
+
         nest_level: {
             type: Number,
             default: 0,
@@ -138,19 +186,21 @@ export default {
     data(){
         return{
             // Static class functionality
-            LayoutDataClass,
-            ContainerDividerClass,
             GridModificationClass,
+            ContainerDividerClass,
+            LayoutDataClass,
 
             // Objects
-            containerData,
-            layout,
-            mouseData,
-
+            profileHandler,
             editVariables,
+            containerData,
+            themeStorage,
+            multiSelect,
+            mouseData,
+            layout,
+
             // Data
 
-            
             /*
                 Each component stores data of the container.
                 This data determines how it is rendered
@@ -166,7 +216,13 @@ export default {
                 NoChildren: 0,
                 siblings: 0,
                 evenSplit: true,
-                unevenFRData: ""
+                unevenFRData: "",
+
+                border:{
+                    isDisplay: false,
+                    radius: "2px",
+                    thickness: "2px",
+                }
             },
 
             // component (HTML DOM) data NOT container
@@ -199,15 +255,14 @@ export default {
 
             m_updateGrid: false,
             m_headerOffset: "0px",
+
         }
     },
 
     // Initializer
     // Sets variables from props
     created(){
-        this.updateContainerData();
-        this.recalculateThreshold();
-        this.setContainerConfigData();
+        this.containerCreation();
     },
     mounted(){
         this.setComponentDOMValues();
@@ -224,11 +279,21 @@ export default {
 // General Container Functions
 // --------------------------------------------------------------------------------------------------------
 
-        // Applies any changed data to the container
+        containerCreation(){
+
+            this.updateContainerData();
+            this.recalculateThreshold();
+            this.setContainerConfigData();
+        },
+
         updateContainerData(){
             let tmpID = (this.nest_level === 0) ? layout.allData.id : this.parent_ID.concat(LayoutDataClass.generateID(this.nest_level, this.child_Instance));
-            let tmpContainer = LayoutDataClass.getLevelData(layout.allData, this.nest_level, tmpID);
 
+            // Changes search location if profile display
+            var dataSearchObj = this.layoutDataOrigin;
+
+            let tmpContainer = LayoutDataClass.getLevelData(dataSearchObj, this.nest_level, tmpID);
+            
             if(tmpContainer === null){
                 this.printLayoutInfo();
                 console.error(`ERROR: Container not found. Level: ${this.m_LayoutData.level}, ID: ${tmpID}`);
@@ -239,11 +304,14 @@ export default {
             this.loadFractionalData();
             this.renderLastContainer();
 
+            
             if(!LayoutDataClass.isBaseContainer(this.m_LayoutData.id)){
-                this.m_isVertical = (LayoutDataClass.getParentObj(this.m_LayoutData).divisionType === "Vertical"); 
+                this.m_isVertical = (LayoutDataClass.getParentObj(dataSearchObj, this.m_LayoutData).divisionType === "Vertical"); 
             }
         },
         
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
         // Set container component data.
         setDataValues(newData){
             this.m_LayoutData.level        = newData.level;
@@ -253,6 +321,11 @@ export default {
             this.m_LayoutData.siblings     = newData.siblings;
             this.m_LayoutData.evenSplit    = newData.evenSplit;
             this.m_LayoutData.unevenFRData = newData.unevenFRData;
+
+            // border
+            this.m_LayoutData.border.isDisplay = newData.border.isDisplay;
+            this.m_LayoutData.border.radius    = newData.border.radius;
+            this.m_LayoutData.border.thickness = newData.border.thickness;
         },
 
         // Loads the fractional data
@@ -271,7 +344,7 @@ export default {
         // Provides offset in px when using lists, to correctly place scrollable div.
         getHeaderSize(){
             let headerRef = this.$refs["header"];
-            let isList = (containerData.getObjectFromID(this.m_LayoutData.id).layoutType == "List");
+            let isList = (containerData.getObjectFromIDData(this.containerDataOrigin,this.m_LayoutData.id).layoutType == "List");
 
             // No header or grid layout
             if(!headerRef || !isList){ this.m_headerOffset = "0px"; return; }
@@ -285,6 +358,8 @@ export default {
 
         // On Unmount, remove it
         removeGlobalData(){
+            if(this.isProfileDisplay) return; // do not delete data of profile object
+
             containerData.deleteID(this.m_LayoutData.id); // Removes the object from the array
         },
 
@@ -295,15 +370,37 @@ export default {
             editVariables.disableContainerSelection();
         },
         
+
+// Mouse Actions
+// --------------------------------------------------------------------------------------------------------
+
+        initMultiSelectDrag(event){
+            multiSelect.init();
+            multiSelect.enable();
+            
+            // Mouse Functions
+            mouseData.movementFunctions( [ this.multiSelectDragMove ]);
+            mouseData.enableTracking();
+            
+            mouseData.updateCoordinate(event.x, event.y);
+            multiSelect.setStartLocation(mouseData.Coordinates.x, mouseData.Coordinates.y);
+        },
+
+        multiSelectDragMove(){
+            // Set locations
+            multiSelect.setBoxDimensions(mouseData.Coordinates.x, mouseData.Coordinates.y);
+            multiSelect.selectionBoundingBox();
+        },
+
+        exitMultiSelectDrag(){
+            mouseData.disableTracking();
+            
+            multiSelect.disable();
+        },
+
+
 // Divider drag functions
 // ---------------------------------------------------------------------------------------------------------
-
-        /*
-            Due to rendering the order of the division varies
-            Vertical -> Extra at the start
-            Horizontal -> Extra at the end
-        */
-        displayDivider(){ return LayoutDataClass.isExtraContainer(this.m_LayoutData, this.m_isVertical)},
 
         /* 
             This runs N times for N containers on window resize 
@@ -316,10 +413,12 @@ export default {
 
             // Mouse Functions
             mouseData.movementFunctions( [ this.drag_MouseMove ]);
-            mouseData.mouseUpFunctions ( [ this.drag_MouseUp   ]);
+            mouseData.mouseUpFunctions ( [ this.exitDividerDrag   ]);
             
             mouseData.enableTracking();
             mouseData.enableMouseUp();
+
+            multiSelect.setValidDrag(false);
 
             this.m_isMoveContainer = true;
             this.m_cursor = (this.$parent.$data.m_LayoutData.divisionType === "Vertical") ? "col-resize" : "row-resize";
@@ -328,8 +427,7 @@ export default {
 
         // If drag passes threshold, update parent row/column data
         drag_MouseMove(){
-
-            let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
+            let parentObj = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
             if(parentObj.evenSplit) { return; }
 
             const difference = ContainerDividerClass.calculateMouseDifference( parentObj.divisionType, 
@@ -345,10 +443,13 @@ export default {
             if(data.moveContainer){ this.$emit('drag', data.dataSend);}
         },
 
-        drag_MouseUp(){
+        // This uses the same components mouse up function
+        // Hence, cannot use @mouseup or @mousemove
+        exitDividerDrag(){
             mouseData.disableTracking();
             mouseData.disableMouseUp();
 
+            multiSelect.setValidDrag(true);
             this.m_isMoveContainer = false;
             this.m_cursor = "default";
             document.documentElement.style.setProperty("--cursor", this.m_cursor); 
@@ -366,7 +467,7 @@ export default {
             // If not inside drag, find the difference.
             if(!isInside){ isPositive = (difference > 0); }
 
-            let parent = LayoutDataClass.getParentObj(this.m_LayoutData);
+            let parent = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
 
             // value to nothing to reset it.
             this.$refs["next-divider"].style.transform = null;
@@ -423,7 +524,9 @@ export default {
 
         // Sets the config data on creation
         setContainerConfigData(){
-            let index = containerData.getIndexFromID(this.m_LayoutData.id);
+
+            let index = containerData.getIndexFromIDData(this.containerDataOrigin, this.m_LayoutData.id);
+
             if(index !== null) {  this.disableConfigOnNonLeaf(); return; }
 
             // Calculate new grid value.
@@ -447,7 +550,7 @@ export default {
 
         // Reset only after last sibling.
         updateContainerGrid(){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ editVariables.resetParentID(); }
+            if(LayoutDataClass.isLastSibling(this.layoutDataOrigin, this.m_LayoutData)){ editVariables.resetParentID(); }
 
             this.m_updateGrid = true;
 
@@ -501,21 +604,75 @@ export default {
 // -------------------------------------------------------------------------------------------------------
 
     },
-
     computed:{
-        
+
+        // for 
+        layoutDataOrigin(){
+            if(this.isProfileDisplay || this.profileDisplayName){ return profileHandler.getProfileData(this.profileDisplayName).layoutData; }
+            return layout.allData;
+        },
+
         // Updates if the container is the current selected
         m_isStoredClick(){
             return (editVariables.containerSelected === this.m_LayoutData.id);
         },
-    },
+        // Level 0
+        m_isBase(){ return (this.m_LayoutData.level === 0); },
+        
+        /*
+            Due to rendering the order of the division varies
+            Vertical -> Extra at the start
+            Horizontal -> Extra at the end
+        */
+        m_DisplayDivider(){ return LayoutDataClass.isExtraContainer(this.layoutDataOrigin, this.m_LayoutData, this.m_isVertical)},
 
+        headerColour(){
+            if(!editVariables.appearanceHeader.isApplyGlobal){ themeStorage.getResettedColour(); return; }
+            return (editVariables.appearanceHeader.font.isOverrideAutoColour) ? editVariables.appearanceHeader.font.colour : editVariables.appearanceFont.colour;
+        },
+
+        /*
+            Most of these are css values,
+
+            1. for profile display
+
+            2. Normal use / modified values
+
+            -> 6px = 1em
+               2px = 0.5em
+               1px = 0.25em;
+        */
+
+        containerDataOrigin(){ 
+            let data = profileHandler.getProfileData(this.profileDisplayName);
+
+            // if null data, just return the current container data
+            return (data) ? data.containerDisplayData : containerData.allData;
+        
+        },
+
+        gridPadding(){ return (this.isProfileDisplay) ? '6px' : '1em'; },
+
+        containerPadding(){ return (this.isProfileDisplay) ? '3px 7px 1px 7px' : '0.75em 1.25em 0.25em 1.25em';},
+
+        containerFontSize(){
+         
+            // If on profile display
+            if(this.isProfileDisplay){ return "8px"; }
+
+            // Else, be the set font size or default value
+            return (editVariables.appearanceHeader.isApplyGlobal) ? editVariables.appearanceHeader.font.size : '24px';
+        },
+
+        // Boolean flag to redirect code from normal function to only display
+        isProfileDisplay(){ return (this.isDisplayWindow)  },
+
+    },
 
 // Watchers
 // --------------------------------------------------------------------------------------------------------------
 
     watch: {
-
         'editVariables.dragStepSize'(){ this.recalculateThreshold(); },
 
         // Updates recalculates the layout when the flag changes
@@ -533,21 +690,23 @@ export default {
         // All containers run this watcher, but only the parent of the selected gets ran.
         'editVariables.parentID'(p_ID){
             if(p_ID === null) { return; }
-            let parentObj = LayoutDataClass.getParentObj(this.m_LayoutData);
+
+            let parentObj = LayoutDataClass.getParentObj(this.layoutDataOrigin, this.m_LayoutData);
+            
             if(parentObj === null) { return; }
             else if(parentObj.id === p_ID){ this.updateContainerGrid(); }
         },
 
         // update grid layout
         'm_LayoutData.siblings'(){
-            if(LayoutDataClass.isLastSibling(this.m_LayoutData)){ this.$parent.p_storeParentID(); }
+            if(LayoutDataClass.isLastSibling(this.layoutDataOrigin, this.m_LayoutData)){ this.$parent.p_storeParentID(); }
         },
 
         'm_LayoutData.unevenFRData'(){ this.p_storeParentID(); },
         'm_LayoutData.divisionType'(){ this.p_storeParentID(); },
         // When the values in the container data change
         'layout':{
-            handler(val, oldval){
+            handler(){
                 this.updateContainerData();
                 this.recalculateThreshold();
                 this.disableConfigOnNonLeaf();
@@ -610,11 +769,12 @@ hr{
 .container-header{
     height: min-content;
     width: 100%;
-
-    padding: 0.75em 1.25em 0.25em 1.25em;
     
     font-size: 24px;
     font-weight: bold;
+    
+    transition: font-size ease 200ms;
+    color: var(--Header-colour);
 }
 
 .height-full{
@@ -626,7 +786,6 @@ hr{
     grid-template-columns: v-bind("m_columnData");
     grid-template-rows: v-bind("m_rowData");
     grid-gap: 0.5em;
-    padding: 1em;
     
     max-width: 100%;
     max-height: 100%;
@@ -646,15 +805,21 @@ hr{
     transition: background-color 200ms ease;
 }
 
+.extend-length{
+    margin: 0em 5px;
+}
+
 .normal-mode{
     border-radius: 10px;
-    outline: rgba(192, 192, 192, 0) dashed 2px;
+    outline: rgba(192, 192, 192, 0);
     transition: outline 100ms ease;
 }
 
 .edit-mode{
     border-radius: 10px;
-    outline: rgba(192, 192, 192, 1) dashed 2px;
+    outline: rgba(192, 192, 192, 1);
+    outline-width: 2px;
+    outline-style: dashed;
     transition: outline 100ms ease;
 }
 

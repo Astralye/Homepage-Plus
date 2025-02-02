@@ -19,6 +19,7 @@
 				</template>
 		
 				<template #content>
+
 					<TextInput
 						placeholder_text="Container Name"
 						max_length=30
@@ -64,34 +65,27 @@
 					<!-- Content Align -->
 					
 						<WindowContainerDivider>
-							<template #header>
-								<h3> Grid Content Align </h3> 
-							</template>
-			
-							<template #tooltip>
-								<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
-							</template>
-							
 							<template #content>
-								<RadioButton
-								v-model="ContentAlign"
-								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(this.ContentAlign, 'setGridAlign',id)"
+
+								<Checkbox
+									@onChange="check => showText = check"
+									:checkValue="showText"
+									text="Display text for whole container"
 								/>
-							</template>
-						</WindowContainerDivider>
-						<!-- Dimensions -->
-						
-						<WindowContainerDivider>
-							<template #header>
+
+								<br>
+								
+								<h3> Grid Content Align </h3> 
+
+								<RadioButton
+									v-model="ContentAlign"
+									:enable_Radio="(editVariables.containerSelected) ? true : false"
+									@clickEvent="id => changeSelectedValue(ContentAlign, 'setGridAlign',id)"
+								/>
+
+								<br>
 								<h3>Container Dimensions</h3>
-							</template>
-							
-							<template #tooltip>
-								<ToolTip> Content align direction of the y axis </ToolTip>
-							</template>
-							
-							<template #content>
+								
 								<h4>
 									X Axis Direction
 								</h4>
@@ -99,8 +93,9 @@
 								<RadioButton
 								v-model="OrientationLeftRight"
 								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(this.OrientationLeftRight, 'setXDirection', id)"
+								@clickEvent="id => changeSelectedValue(OrientationLeftRight, 'setXDirection', id)"
 								/>
+								<br class="br-second">
 					
 								<h4>
 									Y Axis Direction
@@ -109,7 +104,7 @@
 								<RadioButton
 								v-model="OrientationTopBottom"
 								:enable_Radio="(editVariables.containerSelected) ? true : false"
-								@clickEvent="id => changeSelectedValue(this.OrientationTopBottom, 'setYDirection',id)"
+								@clickEvent="id => changeSelectedValue(OrientationTopBottom, 'setYDirection',id)"
 								/>
 								
 							</template>
@@ -120,15 +115,22 @@
 					<template #Tab-1>
 						<WindowContainerDivider>
 							<template #header>
-								<h3> Temporary </h3> 
-							</template>
-			
-							<template #tooltip>
-								<ToolTip> Items in the grid can be compact to align with the direction or can be put in any location </ToolTip>
+								<h3> Text Align </h3> 
 							</template>
 							
 							<template #content>
-								Some content
+								<RadioButton
+									v-model="textAlign"
+									:enable_Radio="(editVariables.containerSelected) ? true : false"
+									@clickEvent="id => changeSelectedValue(textAlign, 'setTextAlign',id)"
+								/>
+								<br>
+
+								<Checkbox
+									@onChange="check => showIcon = check"
+									:checkValue="showIcon"
+									text="Display Icons for whole container"
+								/>
 							</template>
 						</WindowContainerDivider>
 					</template>
@@ -181,6 +183,8 @@ export default {
 				{ id: "List",    selected: false},
 			],
 
+			// Grid type
+
 			ContentAlign: [
 				{ id: "Compact", selected: false},
 				{ id: "Free",    selected: false},
@@ -196,13 +200,25 @@ export default {
 				{ id: "Right",   selected: false},
 			],
 
+			// List type
+
+			textAlign: [
+				{ id: "Left", selected: false},
+				{ id: "Center", selected: false},
+				{ id: "Right", selected: false},
+			],
+
+
 			containerString: null,
 			showName: false,
+
+			showIcon: true,
+			showText: true,
 
 			tabIndex: -1,
 			tab_Data: [
 				{ text:'Grid', icon_Image: "Grid"},
-				{ text:'List', icon_Image: "List"},
+				{ text:'List', icon_Image: "Row_Column"},
 			],
 
 			isSelected: false,
@@ -221,6 +237,8 @@ export default {
 		changeSelectedValue(valueType, functionPrefix, idValue){
 
 			if(!editVariables.containerSelected) return;
+
+
 			valueType.forEach(element => {
 				element.selected = false;
 
@@ -251,6 +269,9 @@ export default {
 			this.m_CurrentID = id;
 			this.containerString = containerData.getHeaderName(id);
 			this.showName = containerData.isHeaderToggled(id);
+			this.showIcon = containerData.isShowIcon(id);
+			this.showText = containerData.isShowText(id);
+
 			this.isSelected = this.isCurrentlySelected();
 
 			if(!id){ this.tabIndex = -1; return; } // Resetted value
@@ -259,6 +280,7 @@ export default {
 			this.modifyValue(this.ContentAlign,         containerData.getGridAlign (id));
 			this.modifyValue(this.OrientationLeftRight, containerData.getXDirection(id));
 			this.modifyValue(this.OrientationTopBottom, containerData.getYDirection(id));
+			this.modifyValue(this.textAlign, 			containerData.getTextLayout(id));
 			
 			this.tabIndex = this.setTabIndex();
 		},
@@ -281,10 +303,22 @@ export default {
 		},
 		// Enables and disables show name
 		'showName'(isShow){
-			if(!this.m_CurrentID) return ;
+			if(!this.m_CurrentID) return;
 
 			(isShow) ? containerData.enableContainerText(this.m_CurrentID) : 
 				containerData.disableContainerText(this.m_CurrentID);
+		},
+		'showIcon'(isShow){
+			if(!this.m_CurrentID) return;
+
+			(isShow) ? containerData.enableListIcon(this.m_CurrentID) : 
+				containerData.disableListIcon(this.m_CurrentID);
+		},
+		'showText'(isShow){
+			if(!this.m_CurrentID) return;
+
+			(isShow) ? containerData.enableGridText(this.m_CurrentID) : 
+				containerData.disableGridText(this.m_CurrentID);
 		}
 	}
 }

@@ -2,21 +2,7 @@ import { reactive } from 'vue'
 
 // 'export' ing the class allows use of static variables.
 export class LayoutDataClass{
-    constructor(){ this.data = {
-
-        // Container metadata
-        level: 0,
-        divisionType: "Vertical",
-        id: "0A",
-        NoChildren: 0,
-        siblings: 0,
-        evenSplit: true,
-        unevenFRData: "",
-    
-        // Child container
-        childContainers: [
-        ],
-    }}
+    constructor(){ this.resetData(); }
     get allData() { return this.data; }
 
     
@@ -105,19 +91,31 @@ export class LayoutDataClass{
             siblings: inp_siblings,
             evenSplit: true,
             unevenFRData: "",
-            childContainers: []
+            childContainers: [],
+
+            border:{
+                isDisplay: false,
+                radius: "4px",
+                thickness: "2px",
+            }
         };
     }
 
+    static getLevel(id){
+        return id.substring(0, id.length - 2);
+    }
+    
     // Sibling identifier, A,B,C,D
-    static getSiblingNumber(id, ){
+    static getSiblingNumber(id){
         let LastValue = id.substring(id.length - 1).toLowerCase();
         return LastValue.charCodeAt(0) - 97;
     };
 
-    static getParentObj(containerData){
-        let parentID = containerData.id.substring(0, containerData.id.length - 2);
-        return LayoutDataClass.getLevelData(layout.allData, containerData.level - 1, parentID);
+    // dataOrigin is found in Container.
+    static getParentObj(dataOrigin, containerData){
+        let parentID = LayoutDataClass.getLevel(containerData.id);
+
+        return LayoutDataClass.getLevelData(dataOrigin, containerData.level - 1, parentID);
     }
 
     static getChildrenObj(containerData){
@@ -134,9 +132,9 @@ export class LayoutDataClass{
     }
 
     static isFirstSibling(id){ return (LayoutDataClass.getSiblingNumber(id) === 0) };
-    static isLastSibling(containerData){ return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(containerData).NoChildren - 1) };
+    static isLastSibling(dataOrigin, containerData){  return (LayoutDataClass.getSiblingNumber(containerData.id) === LayoutDataClass.getParentObj(dataOrigin, containerData).NoChildren - 1) };
     static isBaseContainer(id){ return id === "0A" };
-    static isExtraContainer(containerData, verticalData){ return !verticalData ? !LayoutDataClass.isLastSibling(containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
+    static isExtraContainer(dataOrigin, containerData, verticalData){ return !verticalData ? !LayoutDataClass.isLastSibling(dataOrigin, containerData) : !LayoutDataClass.isFirstSibling(containerData.id); }
 
     // Gets the index of the childContainers array of a given id;
     static getChildIndex(parent, childID){
@@ -155,11 +153,13 @@ export class LayoutDataClass{
 // --------------------------------------------------------------------------------------------------------------------------
 
     // Load data from localStorage
-    initializeData(importData){ this.data = importData; };
+    initializeData(importData){ 
+        if(!importData) return;
+        this.data = importData;
+    };
 
-    // Reset data on deletion
-    resetData(){
-        this.data = {
+    defaultData(){
+        return {
             level: 0,
             divisionType: "Vertical",
             id: "0A",
@@ -167,9 +167,18 @@ export class LayoutDataClass{
             siblings: 0,
             evenSplit: "true",
             unevenFRData: "",
-            childContainers: []
-        };
-    };
+            childContainers: [],
+
+            border:{
+                isDisplay: false,
+                radius: "4px",
+                thickness: "2px",
+            }
+        }
+    }
+
+    // Reset data on deletion
+    resetData(){ this.data = this.defaultData(); };
 
     // Add or remove children depending on the number of divisions
     modifyContainer(divisions, level, id){
@@ -194,7 +203,7 @@ export class LayoutDataClass{
     static removeChildByID(layoutData, id, level){
 
         let dataToBeDeleted = LayoutDataClass.getLevelData(layoutData, level, id);
-        let parentData = LayoutDataClass.getParentObj(dataToBeDeleted);
+        let parentData = LayoutDataClass.getParentObj(layoutData, dataToBeDeleted);
         // delete data;
         let index = LayoutDataClass.getChildIndex(parentData, id);
 
@@ -204,7 +213,6 @@ export class LayoutDataClass{
         parentData.childContainers.forEach(child => {
             child.siblings -= 1;
         });
-        console.log("after:", parentData.childContainers);
 
         // Because of the ID, it may break the entire system.
 

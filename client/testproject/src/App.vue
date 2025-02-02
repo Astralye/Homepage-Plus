@@ -1,22 +1,29 @@
 <script>
-
 import Window from './components/Window Components/Window.vue'
 import WindowButton from './components/Main/ListButton.vue'
 import PageContainer from './components/Main/Container.vue'
-import PageSubDivision from './components/Windows/PageSubDivision.vue'
-import ContainerContent from './components/Windows/ContainerContent.vue'
-import LinkMaker from './components/Windows/LinkMaker.vue'
 import Storage from './components/Main/Storage.vue'
 import IconButton from './components/Input Components/IconButton.vue'
-
-import { iconImageStorage } from './Data/iconImages'
 import SVGHandler from './components/Input Components/SVGHandler.vue'
 
+import { iconImageStorage } from './Data/iconImages'
 import { editVariables } from './Data/SettingVariables'
 import { windowHandler } from './Data/userWindow'
+import { contextMenu } from './Data/multiSelect'
+import { themeStorage } from './Data/themeStorage'
+import { profileHandler } from './Data/profileHandler'
 
 import WindowContainerDivider from './components/Window Components/WindowContainerDivider.vue'
+import Multidrag from './components/Main/Multidrag.vue'
+import ContextMenu from './components/Main/ContextMenu.vue'
+
+// Windows
+import LinkMaker from './components/Windows/LinkMaker.vue'
+import PageSubDivision from './components/Windows/PageSubDivision.vue'
+import ContainerContent from './components/Windows/ContainerContent.vue'
 import Settings from './components/Windows/Settings.vue'
+import ThemeMenu from './components/Windows/ThemeMenu.vue'
+import Profiles from './components/Windows/Profiles.vue'
 
 export default{
     name: "App",
@@ -26,8 +33,12 @@ export default{
         PageSubDivision,
         PageContainer,
         WindowButton,
+        ContextMenu,
         IconButton,
+        Multidrag,
+        ThemeMenu,
         LinkMaker,
+        Profiles,
         Settings,
         Storage,
         Window,
@@ -37,28 +48,48 @@ export default{
     data() {
         return{
             iconImageStorage,
+            profileHandler,
             editVariables,
             windowHandler,
+            themeStorage,
+
+            contextMenu,
 
             // This is used just for iteration. To find the values,
             // See userWindow.js
             EditBtns: [
                 "Layout",
                 "Containers",
-                "Widgets",
-                "Link Maker"
+                "Link Maker",
+                
+                "Appearance",
+                // "Widgets",
+                "Profiles"
             ],
 
             containerData: {
                 isSelectionContainer: false,
                 containerData: null
-            }
+            },
         }
     },
     created(){
         // Resize window
         window.addEventListener("resize", () => { editVariables.enableRecalculation(); });
     },
+    methods:{
+        contextHandler(event) {
+            if(!editVariables.isEnabledSiteContextMenu) return;
+            event.preventDefault();
+
+            contextMenu.enable();
+            contextMenu.setStartLocation(event.x, event.y);
+        },
+        disableContext(){
+            contextMenu.disable();
+            contextMenu.resetStartLocation();
+        }
+    }
 }
 
 </script>
@@ -76,7 +107,7 @@ export default{
                     height="3em"
                     width="3em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Pencil')"
                 />
             </IconButton>
@@ -88,7 +119,7 @@ export default{
                     height="3em"
                     width="3em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Gear')"
                 />
             </IconButton>
@@ -109,7 +140,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Pencil')"
                     />
                 </template>
@@ -139,7 +170,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Gear')"
                     />
                 </template>
@@ -163,7 +194,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Row_Column')"
                     />
                 </template>
@@ -186,7 +217,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Shelf')"
                     />
                 </template>
@@ -208,7 +239,7 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Block_TR_Tilt')"
                     />
                 </template>
@@ -231,15 +262,60 @@ export default{
                         height="2em"
                         width="2em"
                         view_Box="0 -960 960 960"
-                        fill_Colour="#CCCCCC"
+                        :fill_Colour="themeStorage.highContrastColour"
                         :path_Value="iconImageStorage.getPathData('Bookmark_Plus')"
                     />
                 </template>
                 <template v-slot:window-content>
-                    <LinkMaker> </LinkMaker>
+                    <LinkMaker/>
                 </template>
             </Window>
         </Transition>
+
+        <!-- Themes -->
+        <Transition name="fade">
+            <Window
+                v-if="windowHandler.getEditValue('Appearance')"
+                title="Appearance"
+                :width="450">
+                <template v-slot:window-icon>
+                    <SVGHandler
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
+                        view_Box="0 -960 960 960"
+                        :fill_Colour="themeStorage.highContrastColour"
+                        :path_Value="iconImageStorage.getPathData('Paint_Bucket')"
+                    />
+                </template>
+                <template v-slot:window-content>
+                    <ThemeMenu/>
+                </template>
+            </Window>
+        </Transition>
+
+        <!-- Profiles -->
+        <Transition name="fade">
+            <Window
+                v-if="windowHandler.getEditValue('Profiles')"
+                title="Profiles"
+                :width="500">
+                <template v-slot:window-icon>
+                    <SVGHandler
+                        class="icon-center"
+                        height="2em"
+                        width="2em"
+                        view_Box="0 -960 960 960"
+                        :fill_Colour="themeStorage.highContrastColour"
+                        :path_Value="iconImageStorage.getPathData('Paint_Bucket')"
+                    />
+                </template>
+                <template v-slot:window-content>
+                    <Profiles/>
+                </template>
+            </Window>
+        </Transition>
+
     </teleport>
 
     <!-- Saving -->
@@ -250,9 +326,22 @@ export default{
 
     <!-- Main body content -->
 
-    <div class="main-body">
-        <PageContainer :nest_level="0"/>
+    <div class="main-body"
+        @contextmenu="contextHandler($event)"
+        @click="disableContext()">
+        <PageContainer 
+            :nest_level="0"
+            :profileDisplayName="profileHandler.selectedProfile"
+        />
     </div>
+
+    <Teleport to="body">
+        <Multidrag/>
+    </Teleport>
+
+    <Teleport to="body">
+        <ContextMenu v-show="contextMenu.isEnabled"/>
+    </Teleport>
 </template>
 <style>
 .fade-enter-active,

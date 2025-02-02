@@ -5,7 +5,10 @@ class IconData{
     get allData(){ return this.data; };
 
     printData(){ console.log(`data:`, this.data); };
-    initializeData(importData){ this.data = importData; }
+    initializeData(importData){
+        if(!importData) return;
+        this.data = importData;
+    }
 
     // For testing purposes, delete later
     resetData(){
@@ -198,6 +201,18 @@ class IconData{
 // ----------------------------------------------------------------------------------------------------------------
 // Getters
 
+    // For Profile
+    getGroupFromData(data, inputID){
+        for(let i = 0; i < data.length; i++){
+            if(data[i].containerID === inputID){ return data[i].iconDataArray; }
+        }
+
+        // If from profile we shouldnt go past here.
+
+        // console.warn(`Error (iconData.js): '${inputID}' does not exist`);
+        return (this.isFromStorage(inputID)) ? iconStorage.allData : null;
+    }
+
     // Get group based on ID.
     getGroup(inputID){
         for(let i = 0; i < this.data.length; i++){
@@ -234,6 +249,7 @@ class IconData{
         return null;
     }
 
+    // Returns the index within the group array, not the same as the coordinates
     getIconIndexOfGroup(groupArray, iconID){
         for(let i = 0; i < groupArray.length; i++){ if(groupArray[i].iconID === iconID){ return i; } }
         console.error(`Error (iconData.js): IconID '${iconID}' does not exist`);
@@ -265,22 +281,63 @@ class IconData{
     }
 };
 
+/*
+    This object stores all the icons whether it is single or multiple selected
+*/
 class IconSelected {
-    constructor(){ this.resetData(); }
-    get dataValue(){ return this.data; };
+    constructor(){ this.iconSelectionArray = []; }
 
-    // The data object passed in is the iconData
-    setData(iconID, groupID){
-        this.data.iconID  = iconID;
-        this.data.groupID = groupID;
+    // It will be stored as a list.
+    addNewData(iconID, groupID){
+
+        // Do not add if already in.
+        if(this.isContainSelectedData(iconID, groupID)) return;
+
+        this.iconSelectionArray.push(
+            {
+                iconID: iconID,
+                groupID: groupID,
+            }
+        )
     }
 
-    resetData(){
-        this.data = {
-            iconID: "",
-            groupID: "", 
+    removeData(iconID, containerID){
+        let index = this.getIndexOfIcon(iconID, containerID);
+
+        if(index === -1) return;
+        
+        this.iconSelectionArray.splice(index, 1);
+    }
+
+    getIndexOfIcon(iconID, groupID){
+        for(let i = 0; i < this.iconSelectionArray.length; i++){
+            if(this.iconSelectionArray[i].iconID === iconID 
+                && this.iconSelectionArray[i].groupID === groupID){
+                
+                return i;
+            }
         }
+        return -1;
     }
+
+    // Check within array if it is found.
+    isContainSelectedData(inputID, inputGroup){
+        var isFound = false;
+
+        this.iconSelectionArray.forEach(iconData => {
+            if(iconData.iconID === inputID && iconData.groupID === inputGroup){
+                isFound = true;
+            }
+        });
+
+        return isFound;
+    }
+
+    resetData(){ this.iconSelectionArray = []; }
+
+    get array(){ return this.iconSelectionArray; };
+    get size(){ return this.iconSelectionArray.length}
+    get isMultiSelect(){ return (this.iconSelectionArray.length > 1);}
 }
 
 const iconDataInstance    = new IconData;

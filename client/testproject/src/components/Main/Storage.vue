@@ -20,7 +20,7 @@
                     height="4em"
                     width="4em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Save')"
                 />
             </button>
@@ -32,7 +32,7 @@
                     height="4em"
                     width="4em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Delete')"
             />
             </button>
@@ -44,7 +44,7 @@
                     height="4em"
                     width="4em"
                     view_Box="0 -960 960 960"
-                    fill_Colour="#CCCCCC"
+                    :fill_Colour="themeStorage.highContrastColour"
                     :path_Value="iconImageStorage.getPathData('Cross')"
             />
             </button>
@@ -82,11 +82,20 @@
                         </Checkbox>
 
                         <br>
-                        <SingleButton
-                            m_IconString="Tick"
-                            @click="deleteLayout() ">
-                            Confirm
-                        </SingleButton>
+
+                        <div class="split-button">
+
+                            <SingleButton
+                                m_IconString="Tick"
+                                @click="deleteLayout() ">
+                                Confirm
+                            </SingleButton>
+                            <SingleButton
+                                m_IconString="Cross"
+                                @click="disableModal()">
+                                Cancel
+                            </SingleButton>
+                        </div>
                     </template>
                 </WindowContainerDivider>
             </template>
@@ -113,11 +122,19 @@
                         </Checkbox>
 
                         <br>
-                        <SingleButton
-                            m_IconString="Tick"
-                            @click="cancelEdit()">
-                            Confirm
-                        </SingleButton>
+
+                        <div class="split-button">
+                            <SingleButton
+                                m_IconString="Tick"
+                                @click="cancelEdit()">
+                                Confirm
+                            </SingleButton>
+                            <SingleButton
+                                m_IconString="Cross"
+                                @click="disableModal()">
+                                Cancel
+                            </SingleButton>
+                        </div>
                     </template>
                 </WindowContainerDivider>
             </template>
@@ -126,19 +143,21 @@
 </template>
 
 <script>
-import Modal from './Modal.vue';
+import { iconData, iconStorage } from '../../Data/iconData.js';
 import { containerData } from '../../Data/containerData.js'
 import { layout } from '../../Data/layoutData.js';
-import { iconData, iconStorage } from '../../Data/iconData.js';
-
-import SVGHandler from '../Input Components/SVGHandler.vue';
-import { iconImageStorage } from '../../Data/iconImages';
+import { themeStorage } from '../../Data/themeStorage';
 
 import { editVariables } from '../../Data/SettingVariables';
+import { iconImageStorage } from '../../Data/iconImages';
+
+import { profileHandler } from '../../Data/profileHandler.js';
 
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
-import Checkbox from '../Input Components/Checkbox.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import SVGHandler from '../Input Components/SVGHandler.vue';
+import Checkbox from '../Input Components/Checkbox.vue';
+import Modal from './Modal.vue';
 
 export default {
     components:{
@@ -153,17 +172,12 @@ export default {
             iconImageStorage,
             containerData,
             editVariables,
+            themeStorage,
             iconStorage,
             iconData,
             layout,
 
             iconSize: "5em",
-            localStorageVarNames: {
-                layoutDataName: "layoutData",
-                displayData: "containerDisplayData",
-                iconData: "iconData",
-                iconStorage: "iconStorage"
-            },
 
             // Confirmation.
             modalType: null,
@@ -178,7 +192,7 @@ export default {
         }
     },
     created(){
-        this.loadData();
+        profileHandler.loadProfileData();
     },
     methods: {
 
@@ -195,18 +209,12 @@ export default {
                 this.isDisplayPopup = false;
             },this.popupTimer);
         },
-        // Sets localstorage values
-        setValues(){
-            localStorage.setItem(this.localStorageVarNames.layoutDataName, JSON.stringify(layout.allData));
-            localStorage.setItem(this.localStorageVarNames.displayData,    JSON.stringify(containerData.allData));
-            localStorage.setItem(this.localStorageVarNames.iconData,       JSON.stringify(iconData.allData));
-            localStorage.setItem(this.localStorageVarNames.iconStorage,    JSON.stringify(iconStorage.allData));
-        },
+
         saveLayout(){
-            this.setValues();
+            profileHandler.setValues();
+
             this.enableButtonTimer();
             this.popuptext = "Layout Saved!";
-            
         },
 
         openModal(type){
@@ -227,6 +235,15 @@ export default {
             this.toggleOffModal = false;
         },
 
+        // It is enabled for 1 tick to trigger the watchers
+        resetFlag(){
+            editVariables.enableResetFlag();
+            this.$nextTick(() => editVariables.disableResetFlag() ); 
+
+            // Reset selected
+            editVariables.enableResetSelect();
+        },
+
         // These functions should be call other functions from different areas and process them 
         deleteLayout(){
             this.disableModal();
@@ -235,26 +252,11 @@ export default {
             if(this.toggleOffModal) { editVariables.setDeleteModal(false);}
 
             // Reset data
-            containerData.resetData();
-            layout.resetData();
-            iconData.resetData();
-            iconStorage.resetData();
-
-            this.setValues();
+            profileHandler.resetData();
             this.resetFlag();
-            // Reset selected
-            editVariables.enableResetSelect();
 
             this.popuptext = "Layout Deleted!";
             this.enableButtonTimer();
-        },
-
-        // It is enabled for 1 tick to trigger the watchers
-        resetFlag(){
-            editVariables.enableResetFlag();
-            this.$nextTick(() =>{
-                editVariables.disableResetFlag();
-            });
         },
 
         // Load from localstorage
@@ -264,36 +266,11 @@ export default {
             // turns off modal for next time
             if(this.toggleOffModal) { editVariables.setCancelModal(false);}
 
-            this.loadData();
+            profileHandler.loadProfileData(); // reload the saved data
             this.resetFlag();
-            
-            // Reset selected
-            editVariables.enableResetSelect();
-
 
             this.popuptext = "Cancelled!";
             this.enableButtonTimer();
-        },
-
-        loadData(){
-            const layoutData  = JSON.parse(localStorage.getItem(this.localStorageVarNames.layoutDataName));
-            const displayData = JSON.parse(localStorage.getItem(this.localStorageVarNames.displayData));
-            const dataIcon    = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconData));
-            const storageData = JSON.parse(localStorage.getItem(this.localStorageVarNames.iconStorage));
-            
-
-            if(layoutData  === null) { console.log("No Layout Data!");  return; }
-            if(displayData === null) { console.log("No Display Data!"); return;}
-            if(dataIcon === null)    { console.log("No Icon Data!");    return;}
-            if(storageData === null) { console.log("No Icon Storage Data!");    return;}
-            
-
-            layout.initializeData(layoutData);
-            containerData.intializeData(displayData); 
-            iconData.initializeData(dataIcon);
-            iconStorage.initDataFromStorage(storageData); // Change later
-            
-            editVariables.enableRenderFinalNode();
         },
     }
 }
@@ -301,6 +278,11 @@ export default {
 
 <style scoped>
 @import '../../assets/base.css';
+
+.split-button{
+    display:flex;
+    justify-content:space-between;
+}
 
 .popup{
     

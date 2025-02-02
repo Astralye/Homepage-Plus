@@ -1,12 +1,12 @@
 
 <script>
-import SingleButton from '../Input Components/SingleButton.vue';
 import WindowContainerDivider from '../Window Components/WindowContainerDivider.vue';
 import ToolTip from '../Window Components/ToolTip.vue';
 import RadioButton from '../Input Components/RadioBtn.vue';
 import RangeSlider from '../Input Components/RangeSlider.vue';
 import ContainerSelection from '../Window Components/ContainerSelection.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
+import { profileHandler } from '../../Data/profileHandler';
 
 import { editVariables } from '../../Data/SettingVariables.js';
 import { layout, LayoutDataClass } from '../../Data/layoutData.js';
@@ -14,7 +14,6 @@ export default {
     components: {
         WindowContainerDivider,
         ContainerSelection,
-        SingleButton,
         RadioButton,
         RangeSlider,
         Checkbox,
@@ -24,6 +23,7 @@ export default {
     data() {
         return{
             LayoutDataClass,
+            profileHandler,
             editVariables,
             layout,
             
@@ -119,14 +119,17 @@ export default {
         // Function for determining user click behaviour on a container
         updateNoDivisions(number){ 
             if(this.isNoSelect()) { return; } // Do not allow button presses when no selection
+
             let cont = this.selectedContainer;
 
             // Reset all and enable specific item
             this.resetAll(this.ContainerDivision);
             this.itemEnable(this.ContainerDivision, number)
 
+            // let dataOrigin = profileHandler
+
             // Set layout value data
-            layout.modifyContainer(this.stringToNum(number), cont.level, cont.id);
+            layout.modifyContainer(this.stringToNum(number), cont.level, cont.id,);
         },
 
         // Update division type of container on click.
@@ -150,7 +153,7 @@ export default {
             const level = Number(newContainerID.charAt(newContainerID.length - 2));
             const evenSplit = LayoutDataClass.getLevelData(layout.allData, level, newContainerID).evenSplit;
 
-            this.setContainerData(level, newContainerID, evenSplit);
+            this.setContainerData(level, newContainerID, (evenSplit === 'true'));
 
             // Reset everything first before setting.
             this.resetAll(this.ContainerDivision);

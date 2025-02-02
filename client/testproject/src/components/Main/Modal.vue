@@ -51,7 +51,8 @@ export default {
   
   .modal-container {
     width: fit-content;
-    max-width: 33vw;
+    max-width: 55vw;
+    max-height: 80vh;
     margin: 0px auto;
     padding: 20px 30px;
     background-color: var(--Secondary-background-colour);

@@ -22,7 +22,10 @@ class ContainerDataClass{
 
   // Basic array functions
   resetData() { this.data = [this.generateDefaultLayout("0A")]; };
-  intializeData(inputData){ this.data = inputData; };
+  intializeData(inputData){ 
+    if(!inputData) return;
+    this.data = inputData;
+  };
 
   // Add to data
   add(object){ this.data.push(object); };
@@ -42,17 +45,33 @@ class ContainerDataClass{
   getObjectFromIndex(index) { return this.data[index]; };
   getIndexFromID(inputID){
       if(inputID === null) { return null;}
-      
+
       for(let i = 0; i < this.data.length; i++){
         if(this.data[i].ID === inputID) { return i;}
       }
       return null;
   };
+  
+  // Given profile data
+
+  getObjectFromIDData(data, objectID) {  return data[this.getIndexFromIDData(data,objectID)]; };
+  getIndexFromIDData(data, inputID){
+      if(inputID === null) { return null;}
+
+      for(let i = 0; i < data.length; i++){
+        if(data[i].ID === inputID) { return i;}
+      }
+      return null;
+  };
+
+
 
   // Misc functions
 
-  generateDefaultLayout(idGenerated){
-      return {
+  defaultData(){ return [this.defaultContainer('0A')] }
+
+  defaultContainer(idGenerated){
+    return {
       ID: idGenerated,
       layoutType: "Grid",
       iconSize: "150",
@@ -62,13 +81,19 @@ class ContainerDataClass{
         text: ""
       },
       gridData: {
+          displayText: true,
           contentAlign: "Compact",
           xAxisDirection: "Left",
-          yAxisDirection: "Top"
+          yAxisDirection: "Top",
       },
-      ListData: {},
-      };
-  };
+        ListData: {
+          textDirection: "Left",
+          displayIcon: true,
+      }
+    }
+  }
+
+  generateDefaultLayout(idGenerated){ return this.defaultContainer(idGenerated); };
 
   /*
   I need to remove grid dimensions as this causes bugs 
@@ -79,7 +104,14 @@ class ContainerDataClass{
   setContainerName(objectID, text){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.text = text; }};
 
   enableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = true; }};
-  disableContainerText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = false; }};
+  disableContainerText(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.containerHeader.toggle = false; }};
+
+  enableListIcon(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = true; }};
+  disableListIcon(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.displayIcon = false; }};
+
+  enableGridText(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.displayText = true; }};
+  disableGridText(objectID)  { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.displayText = false; }};
+
 
   setLayoutGrid(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "Grid" }};
   setLayoutList(objectID)         { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.layoutType = "List" }};
@@ -99,15 +131,25 @@ class ContainerDataClass{
   setYDirectionTop(objectID)      { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Top"}};
   setYDirectionBottom(objectID)   { let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.gridData.yAxisDirection = "Bottom"}};
 
+  setTextAlignLeft(objectID){   let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.textDirection = "Left"}; }
+  setTextAlignRight(objectID){  let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.textDirection = "Right"}; }
+  setTextAlignCenter(objectID){ let obj = this.getObjectFromID(objectID); if(obj !== undefined){obj.ListData.textDirection = "Center"}; }
+
   // Grid Getters
   
   isHeaderToggled(objectID) {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.toggle; }}
+  isShowIcon(objectID)      {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.ListData.displayIcon; }}
+  isShowText(objectID)      {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.displayText; }}
+    
+
   getHeaderName(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.containerHeader.text; }}
   getIconSize(objectID)     {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.iconSize;}}
   getLayoutType(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.layoutType;}}
   getGridAlign(objectID)    {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.contentAlign; }}
   getXDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.xAxisDirection; }}
   getYDirection(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.gridData.yAxisDirection; }}
+  getTextLayout(objectID)   {let obj = this.getObjectFromID(objectID); if(obj !== undefined) { return obj.ListData.textDirection; }}
+
 }
 
 const containerDataInstance = new ContainerDataClass;

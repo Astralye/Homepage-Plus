@@ -19,20 +19,62 @@
                         />
         
                         <br>
-        
-                        <h3> Data </h3>
-        
-                        *Nonfunctional
+
+                        <h3> Import</h3>                        
+                        <FileUpload
+                            fileType="json"
+                            @changeData="data => importModal(data)">
+                        </FileUpload>
+
+                        Any imports must be saved before cancelling or leaving page.
+                        <br><br>
+
+                        <h3> Exports </h3>
+
                         <div class="button-row-align">
+
                             <SingleButton
-                                m_IconString="Download">
-                                Import Data
+                                m_IconString="Download"
+                                @click="profileHandler.exportEverything()">
+                                Export Everything
                             </SingleButton>
-                            
+
                             <SingleButton
-                                m_IconString="Upload">
-                                Export Data
+                                m_IconString="Download"
+                                @click="profileHandler.exportProfile(profileHandler.selectedProfile)">
+                                Current Profile
                             </SingleButton>
+                        </div>
+                        <br>
+                        
+                        <div class="button-row-align">
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="profileHandler.exportThemes(profileHandler.selectedProfile)">
+                                Themes
+                            </SingleButton>
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="profileHandler.exportAppearance(profileHandler.selectedProfile)">
+                                Appearance
+                            </SingleButton>
+
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="profileHandler.exportimportSVGs(profileHandler.selectedProfile)">
+                                Imported Icons
+                            </SingleButton> 
+
+                            <SingleButton
+                                m_IconString="Download"
+                                @click="profileHandler.exportLayout(profileHandler.selectedProfile)">
+                                Layout
+                            </SingleButton> 
+
+
                         </div>
         
                         <br>
@@ -54,92 +96,16 @@
                             Reset 'Cancel' and 'Delete'
                         </SingleButton>
 
+                        <br>
+                        <Checkbox
+                            @onChange="val => editVariables.setStateContextMenu(!val)"
+                            :checkValue="!editVariables.isEnabledSiteContextMenu"
+                            text="Disable site context menu"
+                        />
 
                         <!-- Language, mention it only supports english. -->
+
                     </template>
-                </WindowContainerDivider>
-            </template>
-        </WindowContainerDivider>
-
-        <WindowContainerDivider>
-            <template #header>
-                <h2> Appearance </h2>
-            </template>
-            
-            <template #content>
-                <WindowContainerDivider>
-                    <template #header> 
-                        <h3>
-                            Grids
-                        </h3>
-                    </template>
-
-                    <template #content>
-                        <Checkbox
-                            @onChange=""
-                            :checkValue="false"
-                            text="Display Icon Labels"
-                        />
-                        Global icon size: in px
-                    </template>
-
-                </WindowContainerDivider>
-
-                <WindowContainerDivider>
-                    <template #header>
-                        <h3>
-                            Lists
-                        </h3>
-                    </template>
-
-                    <template #content>
-                        <Checkbox
-                            @onChange=""
-                            :checkValue="false"
-                            text="Display Icons"
-                        />
-                    </template>
-
-                </WindowContainerDivider>
-
-                <WindowContainerDivider>
-                    <template #header>
-                        <h3>
-                            Themes
-                        </h3>
-                    </template>
-
-                    <template #content>
-                        Some kind of theme selector.
-
-                        Maybe opens a list.
-                    </template>
-
-                </WindowContainerDivider>
-
-
-                <WindowContainerDivider>
-                    <template #header>
-                        <h3>
-                            Text
-                        </h3>
-                    </template>
-
-                    <template #content>
-                        Default fontsize:
-                        
-                        Font: Dropdown
-
-                        Import fonts,
-
-                        <Checkbox
-                            @onChange=""
-                            :checkValue="false"
-                            text="Display Text Background"
-                        />
-                        Background Colour
-                    </template>
-
                 </WindowContainerDivider>
             </template>
         </WindowContainerDivider>
@@ -205,7 +171,7 @@
                                 width="75px"
                                 height="75px"
                                 :path_Value="iconImageStorage.getPathData('Github')"
-                                :view_Box="iconImageStorage.getViewBoxName('Github')"
+                                :view_Box="iconImageStorage.getViewBox('Github')"
                                 fill_Colour="#000000"
                             />
                         </a>
@@ -215,7 +181,7 @@
                         <br>
                         Any resources, I have used goes here.
                         <br>
-                        Version v1.3.0
+                        Version v1.4.0
                         
                         <div class="flex-container">
                             <div class="button-bottom-right">
@@ -229,6 +195,133 @@
             </template>
         </WindowContainerDivider>
     </div>
+
+<!-- 
+    Import modal
+-->
+
+<Transition name="fade">
+    <Modal 
+        v-if="isModalDisplay"
+        @close="disableModal()">
+
+        <WindowContainerDivider>
+            <template #header>
+                <h1>
+                    Import
+                </h1>
+            </template>
+            
+            <template #content>
+
+                <template v-if="isFullImport">
+                    Multiple imports!
+                </template>
+
+                
+                <template v-for="(profile, index) in m_ImportData.storedProfiles" :key="index">
+                
+                    <h2>
+                        {{ index }}
+                    </h2>
+
+                    <template v-if="importHasDataProperty(profile, profileHandler.storageNames.importSVGs)">
+    
+                        <div>
+                            <h3> 
+                                Icons
+                            </h3>
+
+                            <div class="flex iconDisplay">
+                                <div v-for="(item, index) in profile.importSVGs" :key="index">
+                                    <SVGHandler
+                                        :height="getSize(profile.importSVGs)"
+                                        :width="getSize(profile.importSVGs)"
+                                        :path_Value="item[1].pathData"
+                                        fill_Colour="#ffffff"
+                                        :view_Box="item[1].viewBox"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <br>
+    
+                    </template>
+    
+                    <template v-if="importHasDataProperty(profile, profileHandler.storageNames.containerDisplayData)">
+                        <div>
+                            <h3> 
+                                Layout
+                            </h3>
+                            How do we represent this data?
+                        </div>
+    
+                        <br>
+                    </template>
+                    
+                    <div v-if="importHasDataProperty(profile, profileHandler.storageNames.themeImports)">
+                        <h3>
+                            Themes
+                        </h3>
+    
+                        <div v-for="(item, index) in profile.themeImports" :key="index">
+    
+                            {{  item.alias }}
+                            
+                            <div class="colour-display flex">
+                                <div class="colour-item left-colour"
+                                :style="{
+                                    'background-color': item.primary
+                                }"/>
+            
+                                <div class="colour-item"
+                                :style="{
+                                    'background-color': item.secondary
+                                }"/>
+            
+                                <div class="colour-item right-colour"
+                                :style="{
+                                    'background-color': item.tertiary
+                                }"/>
+                            </div>
+                        </div>
+    
+                        <br>
+                    </div> 
+                </template>
+
+                
+                <!-- Show a list of the things importing -->
+                Any unsaved changes will be overwritten.
+                Importing does not save any data.
+
+                <!-- <br>
+                <Checkbox
+                    text="Do not remind me again"
+                    @onChange="val => toggleOffModal = val">
+                </Checkbox> -->
+
+                <br>
+
+                <div class="split-button">
+                    <SingleButton
+                        m_IconString="Tick"
+                        @click="profileHandler.importAll(m_ImportData); disableModal()">
+                        Confirm
+                    </SingleButton>
+                    <!--  disableModal() -->
+                    <SingleButton
+                        m_IconString="Cross"
+                        @click="cancelImport()">
+                        Cancel
+                    </SingleButton>
+                </div>
+            </template>
+        </WindowContainerDivider>
+    </Modal>
+</Transition>
+
 </template>
 
 <script>
@@ -240,36 +333,161 @@ import SVGHandler from '../Input Components/SVGHandler.vue';
 import Checkbox from '../Input Components/Checkbox.vue';
 import RadioBtn from '../Input Components/RadioBtn.vue';
 import SingleButton from '../Input Components/SingleButton.vue';
+import FileUpload from '../Input Components/FileUpload.vue';
+import Modal from '../Main/Modal.vue';
 
 import { editVariables } from '../../Data/SettingVariables';
+import { themeStorage } from '../../Data/themeStorage';
+import { profileHandler } from '../../Data/profileHandler';
 
 export default {
     components:{
         WindowContainerDivider,
         SingleButton,
+        FileUpload,
         SVGHandler,
         Checkbox,
         RadioBtn,
         ToolTip,
+        Modal,
     },
     data(){
         return{
             iconImageStorage,
+            profileHandler,
             editVariables,
+            themeStorage,
 
             vmodelValues: [
                 { id: "Windows" , selected: false },
                 { id: "Sidebar" , selected: false },
-            ]
+            ],
+
+            isModalDisplay: false,
+            m_ImportData: null,
         }
     },
     methods: {
 
+        enableModal(){ this.isModalDisplay = true;},
+        disableModal(){ this.isModalDisplay = false;},
+
+        // Boolean
+        importHasDataProperty(profile, prop){
+
+            // Should only be a length of 1.
+            let keys = Object.keys(profile);
+
+            for(let i = 0; i < keys.length; i++){
+                if(keys[i] === prop){
+
+                    let propData = profile[prop];
+
+                    if(!propData) return false; // null
+                    if(Object.keys(propData).length == 0) return false; // empty object
+                    if(propData.length == 0) return false; // empty array
+                     
+                    return true;
+                }
+            }
+            return false;
+        },
+
+// Imports
+// ----------------------------------------------------------------------------------------------------------------------
+
+        cancelImport(){
+            this.m_ImportData = null;
+            this.disableModal();
+        },
+
+        importModal(data){
+
+            // Check if valid data first.
+            let validImport = profileHandler.validateImport(data); 
+            if(!validImport){
+
+                // Display some message for invalid import
+                return;
+            }
+
+            
+            // option to disable import modal?
+            
+            // let showModal = (type === "Delete") ? editVariables.isShowDeleteModal : editVariables.isShowCancelModal;
+            // if(!showModal){
+                
+            //     // Run the corresponding function
+            //     if(type==="Delete") this.deleteLayout();
+            //     if(type==="Cancel") this.cancelEdit();
+            
+            //     return;
+            // }
+            
+            this.m_ImportData = data;
+
+            this.enableModal();
+        },
+
+        // Changes import icon size depending on number shown.
+        getSize(iconArray){
+            let size = iconArray.length;
+
+            if(size <= 5) return "5em";
+            if(size <= 10) return "4em";
+            if(size <= 20) return "3em";
+
+            return "1em";
+        }
     },
+    computed:{
+
+        // Single imports will only have a single stored profile.
+        isFullImport(){ return (Object.keys(this.m_ImportData.storedProfiles).length > 1) },
+    }
 }
 </script>
 
 <style scoped>
+
+.colour-display{
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    
+    height: 2em;
+    justify-content: space-evenly;
+}
+
+.flex{
+    display: flex;
+}
+
+.left-colour{
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    
+}
+
+.right-colour{
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.colour-item{
+    height: 100%;
+    width: 100%;
+}
+
+
+.iconDisplay{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.split-button{
+    display:flex;
+    justify-content:space-between;
+}
 
 a:hover{
     background-color: rgba(0, 0, 0, 0);

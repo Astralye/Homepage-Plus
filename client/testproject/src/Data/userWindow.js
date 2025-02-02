@@ -11,9 +11,12 @@ class WindowHandler{
 
             { name: "layout",     toggle: false },
             { name: "containers", toggle: false },
-            { name: "widgets",    toggle: false },
             { name: "link maker", toggle: false },
             { name: "colour picker", toggle: false },
+            
+            { name: "widgets",    toggle: false },
+            { name: "appearance",     toggle: false },
+            { name: "profiles",     toggle: false },
         ],
 
         windowStack: []

@@ -14,7 +14,7 @@
                             <SingleButton
                                 class="flex"
                                 @click="activateSelectionMode" 
-                                button_toggle="true"
+                                :button_toggle="true"
                                 m_IconString="Dotted_Square"
                                 >
                                 Select
@@ -104,7 +104,7 @@ export default {
 
             if(!this.isDeleteButtonActive) return; // Return in the event of somehow being active. 
 
-            LayoutDataClass.removeChildByID(layout.data, this.selected_Container.id, this.selected_Container.level );
+            LayoutDataClass.removeChildByID(dataOrigin, this.selected_Container.id, this.selected_Container.level );
             this.resetSelected()
         },
 
@@ -119,10 +119,17 @@ export default {
         }
     },
     computed:{
+
+        dataOrigin(){
+            if(this.isProfileDisplay || this.profileDisplayName){ return profileHandler.getProfileData(this.profileDisplayName).layoutData; }
+            return layout.allData;
+        },
+
         displayID(){
             return (this.m_SelectedID) ? this.m_SelectedID : "Not selected"
         },
         displayLevel(){
+            if(this.m_SelectedLevel === 0) return this.m_SelectedLevel;
             return (this.m_SelectedLevel) ? this.m_SelectedLevel : "Not selected"
         },
         isDeleteButtonActive(){

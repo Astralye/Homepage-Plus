@@ -1,32 +1,45 @@
 <template>
     <div class="grid-wrapper border-box"
+        :style="{
+            'grid-template-columns': `repeat(auto-fit, minmax(${gridItemWidth}px, 1fr))`,
+            'grid-template-rows':    `repeat(auto-fit, minmax(${gridItemWidth}px, 1fr))`,
+        }"
         ref="container"
         @mouseup="resetSelection(); (editVariables.isEnabled) ? dragAndDrop.resetTimer() : null"
-        @mousemove="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
+        @mouseenter="dragAndDrop.enabled ? dragAndDrop.updateContainerType('GRID') : null"
         >
+        
         <!-- Draws all grids -->
         <div v-for="(item, index) in m_GridDimensions.Rows * m_GridDimensions.Columns" :key="index"
             class="grid-proper"
-            @mouseup="checkDropIcon(index);"
-            @click="(editVariables.isIconSelector) ? setSelectedIcon(index) : null"
+            @mouseup="(!this.isProfileDisplay) ? checkDropIcon(index) : null"
+            @click="iconClick($event, index)"
             >
-
             <!-- Generalized grid item -->
-            <div class="grid-item"
+            <div class="grid-item icon-selector"
                 ref="gridPosition"
                 :class="{ 'icon' : renderIcon(index),
-                'icon-Selection' : isSelectedIcon(index),
-                'unselect-icon'  : !isSelectedIcon(index)}"
-            >
+                        'pointer': renderIcon(index) && !isProfileDisplay
+                }"
+                :style="{
+                    'border-color': themeStorage.getIconColourOpacity( (isSelectedIcon(index) && !isProfileDisplay) ? 0.8 : 0.15 ),
+                    'border-width': gridItemThickness,
+                    'border-radius': gridItemRadius,
+                    'width' : `${gridItemWidth}px`,
+                }">
+
                 <!-- Loads icon data to be rendered -->
                 <Transition name="fade">
                     <IconHandler v-show="renderIcon(index)"
                         :key="getIconData(index)"
+                        :isDisplayWindow="isDisplayWindow"
                         class="icon"
                         :class="{'opacity-none' : ( dragAndDrop.isDraggingEvent && dragAndDrop.isSavedIcon(index, component_ID)) ,
                                  'opacity-full' : !dragAndDrop.isDraggingEvent }"
                         :icon_data="getIconData(index)"
-                        @mousedown="(editVariables.isEnabled) ?  $refs['icon-drag-handler'].dragDropSetup($event, index, getIconData(index), 'GRID'): null"
+                        :toggle_Container_Text="m_containerData.gridData.displayText && !(editVariables.appearanceGrid.isApplyGlobal && !editVariables.appearanceGrid.isDisableIconLabels)"
+                        :override_Size="iconOverrideSize"
+                        @mousedown.left="iconDrag($event, index)"
                     />
                 </Transition>
 
@@ -42,22 +55,10 @@
 <!-- 
     Ideas:
 
-    the icon should have different functionalities
-
     In edit mode:
-        Single click on icon -> Select
-        Single click on non icon, selection box
-
-        Right click -> custom context menu.
         Double click -> Rename
-
-        Left click hold -> Drag
-        Left click hold up -> Drop
     
     Normal:
-        Single click
-        Double click
-
         Right Click 
         
     Misc, Other notes:
@@ -65,31 +66,51 @@
     CTRL + C, CTRL + V
     -> copy paste icon. 
 
-    Mass drag + drop.
-
 -->
 
 <script>
-import { containerData } from '../../Data/containerData';
-import IconHandler from './IconHandler.vue';
-import { iconData, iconSelect } from '../../Data/iconData.js';
-import { mouseData } from '../../Data/mouseData.js';
-import { GridModificationClass } from '../Functions/gridModification.js';
-import SVGHandler from '../Input Components/SVGHandler.vue';
-import { iconImageStorage } from '../../Data/iconImages';
 
+import { GridModificationClass } from '../Functions/gridModification';
 import { editVariables } from '../../Data/SettingVariables';
+import { iconData, iconSelect } from '../../Data/iconData';
+import { containerData } from '../../Data/containerData';
+import { iconImageStorage } from '../../Data/iconImages';
+import { themeStorage } from '../../Data/themeStorage';
+import { multiSelect } from '../../Data/multiSelect';
 import { dragAndDrop } from '../../Data/dragDrop';
+import { mouseData } from '../../Data/mouseData';
 
+import { profileHandler } from '../../Data/profileHandler';
+
+import SVGHandler from '../Input Components/SVGHandler.vue';
 import IconDragHandler from './IconDragHandler.vue';
+import IconHandler from './IconHandler.vue';
 
 export default {
     components:{
+        IconDragHandler,
         IconHandler,
         SVGHandler,
-        IconDragHandler,
     },
     props:{
+        /*
+            profileDisplayName, used for displaying the profile in Profiles.vue tab.
+
+            isDisplayWindow is for CSS to be changed on the preview window
+            ensures only displaying is visible, prevent normal container functions to work.
+            This will also make sure to override all global data, and only apply values passed in via profile
+        */
+        profileDisplayName:{ 
+            type: String,
+            default: null,
+        },
+
+        isDisplayWindow:{
+            type: Boolean,
+            default: false,
+        },
+        
+
         component_ID: {
             type: String,
             default: "",
@@ -105,8 +126,11 @@ export default {
             // Imported Data
             GridModificationClass,
             iconImageStorage,
+            profileHandler,
             editVariables,
+            themeStorage,
             dragAndDrop,
+            multiSelect,
             iconSelect,
             mouseData,
             iconData,
@@ -123,6 +147,7 @@ export default {
             m_iconID: null,     // ID of currently selected icon
             m_Observer: null,
 
+            m_lastClickedIndex: -1,
         }
     },
     created(){
@@ -138,22 +163,56 @@ export default {
         
         initGrid(){
 
+            if(this.isDisplayWindow){
+                
+                this.m_containerData = containerData.getObjectFromIDData(profileHandler.getProfileData(this.profileDisplayName).containerDisplayData, this.component_ID);
+                
+                
+                // group data does not exist
+                if(!profileHandler.getProfileData(this.profileDisplayName).iconData){ 
+                    iconData.createGroup(this.m_containerData.ID);
+                    
+                    this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
+                    return;
+                }
+                this.m_GroupData = iconData.getGroupFromData(profileHandler.getProfileData(this.profileDisplayName).iconData, this.m_containerData.ID);
+                return;
+            }
+            
             this.m_containerData = containerData.getObjectFromID(this.component_ID);
             this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
-
-            if(this.m_GroupData === null){ 
-                iconData.createGroup(this.m_containerData.ID);
-                this.m_GroupData = iconData.getGroup(this.m_containerData.ID);
-            } // group data does not exist
+            
+            // group data does not exist
+            if(this.m_GroupData === null){  iconData.createGroup(this.m_containerData.ID); }
 
             this.m_GroupData = iconData.getGroup(this.component_ID);
         },
 
-
-    // Resetters
-    
+        // Resetters
+        
         resetSelection(){
             editVariables.resetIconDragData();
+        },
+
+// AABB collision detection
+// -------------------------------------------------------------------------------------------
+
+        // this.$refs['gridPosition'] would contain ALL the currently rendered icons
+        // We only want the values with data
+        initBounds(){
+            if(!this.$refs) return;
+
+            for(let i = 0; i < this.$refs['gridPosition'].length; i++ ){
+
+                // If a valid icon is in the position.
+                if(!this.renderIcon(i)) continue;
+
+                multiSelect.allIconDataSetter(
+                    this.$refs['gridPosition'][i].getBoundingClientRect(),
+                    i,
+                    this.setSelectedIcon
+                );
+            }
         },
 
 // Coordinate Index
@@ -176,6 +235,76 @@ export default {
             console.error("Error: No spaces available");
             return null;
         },
+
+// Multiselect
+// ------------------------------------------------------------------------------------------
+
+        // Sets alt and ctrl holds.
+        kbShortcut(event){
+            multiSelect.setHoldingShift(event.shiftKey);
+            multiSelect.setHoldingCtrl(event.ctrlKey);
+        },
+
+        // For holding Shift or Ctrl
+        specialKeySelection(iconID,index){
+            // Check if empty
+            if(multiSelect.isArrayEmpty){ this.initBounds(); }
+
+            // Toggle index collision value
+            if(multiSelect.isHoldingCtrl){
+
+                multiSelect.toggleGridIndexCollision(index);
+
+                (multiSelect.isGridIndexSelected(index)) ?
+                    iconSelect.addNewData(iconID, this.m_containerData.ID):
+                    iconSelect.removeData(iconID, this.m_containerData.ID);
+
+                return;
+            }
+
+            // Shift click
+
+            // // Gets min and max indexes
+            let indexA = this.m_lastClickedIndex;
+            let indexB = index;
+
+            if(indexA === -1 || indexB === -1) return; // non-valid values
+            if(indexA === indexB) return; // the same
+
+            let minIndex = (indexA > indexB) ? indexB : indexA;
+            let maxIndex = (indexA > indexB) ? indexA : indexB;
+            maxIndex += 1; // +1, it removes the current index
+
+            multiSelect.setCollisionEnableList(minIndex, maxIndex); 
+
+            // // Set all the selected values on.
+            for(let i = minIndex; i < maxIndex; i++){
+                let icon = this.m_GroupData[i];
+                iconSelect.addNewData(icon.iconID, this.m_containerData.ID);
+            }
+        },
+
+
+
+        isIconOnGrid(groupID){
+            return (containerData.getLayoutType(groupID) === "Grid");
+        },
+
+        selectionDrag(event, index){
+            // tmp
+            this.$refs['icon-drag-handler'].dragDropSetup(event, index, this.getIconData(index), 'GRID');
+        },
+
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+        mouseLeaveGrid(){
+
+            // Prevent other icons from triggering this.
+            if(editVariables.iconDragData.storedContainer !== this.component_ID) return;
+
+            (iconSelect.isMultiSelect) ? this.removeMultiSelectData() : this.removeSingleItemData();
+        },
+
 
 // Icon Displacement
 // ------------------------------------------------------------------------------------------
@@ -234,7 +363,12 @@ export default {
 
         // Checks if the icon can be swapped, only works if compact
         checkRearrange(iconID, groupID, index_A, isFree){
+
+            // console.log("re-arrange",this.m_GroupData)
+
             let data    = iconData.getIconDataFromIndex(this.m_GroupData, index_A);
+
+
             let group   = iconData.getGroup(groupID);
             let index_B = iconData.getIconIndexOfGroup(group, iconID);
 
@@ -264,10 +398,27 @@ export default {
 // Icon Functions
 // ------------------------------------------------------------------------------------------
 
+        // disable mouse button functionality if profile display
+
+        iconClick(event, index){           
+            // Prevent click events on display
+            if(this.isProfileDisplay) return;
+
+            this.kbShortcut(event);
+            this.setSelectedIcon(index, true, true)
+        },
+
+        iconDrag(event, index){            
+            if(editVariables.isEnabled && !this.isProfileDisplay){
+                this.selectionDrag(event, index)
+            } 
+        },
+
         // Click selection for linkmaker
         isSelectedIcon(index){
-            if(!this.getIconData(index) || !iconSelect ){ return false; } // No data
-            return (this.getIconData(index).iconID === iconSelect.data.iconID && this.m_containerData.ID === iconSelect.data.groupID);
+            if(!this.getIconData(index) || iconSelect.length === 0 ){ return false; } // No data
+
+            return iconSelect.isContainSelectedData(this.getIconData(index).iconID, this.m_containerData.ID);
         },
 
     // Grid Direction
@@ -301,28 +452,63 @@ export default {
     // Render Flags
 
         renderIcon(index){
-            if(this.m_GroupData === null){ return false; }
+            if(this.m_GroupData === null){ return false; } // no data
             return (this.m_containerData.gridData.contentAlign === "Compact") ? this.renderCompact(index) : this.renderFree(index);
         },
 
         renderCompact(index){
-            // Contains no value
-            if(!iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index))){ return false; }
+            
+            // console.log("compact",this.m_GroupData)
+            let tmpIconData = iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index));
+            
+            if(!tmpIconData) return false; // Contains no value
+
+            let containsIcon = iconSelect.isContainSelectedData(tmpIconData.iconID, this.m_containerData.ID);
+
+            if(containsIcon && iconSelect.isMultiSelect && dragAndDrop.enabled) return false;
+            
             return true;
         },
         
         renderFree(index){
             let coord = iconData.indexToCoord(index, this.m_GridDimensions.Rows);
-            // Contains no value
-            if(!iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y)){ return false; }
+            let tmpIconData = iconData.getIconDataFromCoordinate(this.m_GroupData, coord.x, coord.y);
+            
+            if(!tmpIconData) return false; // Contains no value
+
+            let containsIcon = iconSelect.isContainSelectedData(tmpIconData.iconID, this.m_containerData.ID);
+            
+            if(containsIcon && iconSelect.isMultiSelect && dragAndDrop.enabled) return false;
+
             return true;
         },
 
     // Setters
 
-        setSelectedIcon(index){
-            if(!this.getIconData(index)){ iconSelect.resetData(); return; } // No data
-            iconSelect.setData(this.getIconData(index).iconID, this.m_containerData.ID);
+        setSelectedIcon(index, AABBcollision, click=false){
+            if(!this.renderIcon(index)){ iconSelect.resetData(); return; } // No data
+
+            let iconID = this.getIconData(index).iconID;
+
+            if(!AABBcollision){
+                iconSelect.removeData(iconID, this.m_containerData.ID);
+                return;
+            }
+            
+            var keyHold = multiSelect.isHoldingCtrl || multiSelect.isHoldingShift;
+            
+            // No keys held
+            if(!keyHold){
+                // Standard click
+                if(click){ iconSelect.resetData(); }
+                
+                // Drag or click
+                iconSelect.addNewData(iconID, this.m_containerData.ID);
+                this.m_lastClickedIndex = index;
+                return;
+            }
+
+            this.specialKeySelection(iconID, index);
         },
 
 
@@ -333,6 +519,8 @@ export default {
         },
 
         getCompactIconData(index){
+            
+            // console.log("getcompact",this.m_GroupData)
             return iconData.getIconDataFromIndex(this.m_GroupData, this.directionalIndexHandler(index));
         },
 
@@ -357,6 +545,7 @@ export default {
             
             Watches for changes in element sizes to automatically recalculate the dimensions of the grids.
         */
+
         gridResizer(){
             let containerRef = this.$refs["container"];
             if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
@@ -365,12 +554,30 @@ export default {
                 let width  = dimensions[0].contentRect.width;
                 let height = dimensions[0].contentRect.height;
 
-                let dimension = GridModificationClass.calculateGridDimension(width, height, containerData.getIconSize(this.component_ID));
+                let size = this.gridItemWidth;
+
+                let dimension = GridModificationClass.calculateGridDimension(width, height, size);
                 this.setRowColData(dimension.rows, dimension.columns);
             });
 
             this.m_Observer.observe(containerRef);
         },
+
+        // global resizing
+        resizeGrids(){
+            let containerRef = this.$refs["container"];
+            if(!containerRef){ console.error(`Error (GridLayout.vue): container ref not defined`); return; }
+
+            console.log("reszie")
+
+            let dims = containerRef.getBoundingClientRect();
+
+            let size = this.gridItemWidth;
+
+            let dimension = GridModificationClass.calculateGridDimension(dims.width, dims.height, size );
+            this.setRowColData(dimension.rows, dimension.columns);
+        },
+
 
         // Dimension is stored as 'R , C'
         setRowColData(rows, columns){
@@ -378,17 +585,72 @@ export default {
             this.m_GridDimensions.Columns = columns
         },
     },
+    computed:{
+        
+        // Boolean flag to redirect code from normal function to only display
+        isProfileDisplay(){ return (this.isDisplayWindow)  },
+
+        gridItemThickness(){ return (this.isProfileDisplay) ? '2px' : '3px'; },
+        gridItemRadius(){ return (this.isProfileDisplay) ? "5px" : "10px"; }, 
+
+        iconOverrideSize(){
+
+            // Need to calculate this size
+            if(this.isProfileDisplay) return 20;
+
+
+            return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalIconSize : null;
+        },
+
+        
+        gridItemWidth(){
+
+            if(this.isProfileDisplay){
+
+                // do some math conversions to get the correct size
+
+                // Static for now
+                return (editVariables.appearanceGrid.isApplyGlobal) ? 35 : 35; 
+            }
+
+            return (editVariables.appearanceGrid.isApplyGlobal) ? editVariables.appearanceGrid.globalGridItemSize : 125;
+        }
+    },
     watch:{
-        'editVariables.resetFlag'(val, oldVal){
+        'editVariables.resetFlag'(val){
             if(val){
                 this.initGrid();
             }
+        },
+        // Check if started multiselect drag
+        'multiSelect.isEnabled'(val){
+            if(val){
+                this.initBounds();
+            }
+        },
+
+        // Recalculate grids when it is applied
+        'editVariables.appearanceGrid.isApplyGlobal'(){
+            this.resizeGrids();
+        },
+
+        // Watch changes in grid size.
+        'editVariables.appearanceGrid.globalGridItemSize':{
+            handler(){
+                if(!editVariables.appearanceGrid.isApplyGlobal) return;
+                this.resizeGrids();
+            },
+            deep: true,
         }
     }
 }
 </script>
 
 <style scoped>
+
+.pointer{
+    cursor: pointer;
+}
 
 .opacity-none{
     opacity: 0;
@@ -399,9 +661,11 @@ export default {
     transition-delay: 125ms;
 }
 
-.unselect-icon{
-    border: 3px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
+/* 
+    rgba(255, 255, 255, 0.15);
+*/
+.icon-selector{
+    border-style: solid; 
 
     -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
        -moz-transition: border-color 0.15s linear; /* FF3.7+ */
@@ -410,25 +674,13 @@ export default {
 }
 
 .icon{
-    cursor: pointer;
-
     display: flex;
     flex-direction: column;
     
     justify-content: center;
     align-items: center;
-}
-
-.icon-Selection{
-    border: 3px solid rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
     
-    -webkit-transition: border-color 0.15s linear; /* Saf3.2+, Chrome */
-       -moz-transition: border-color 0.15s linear; /* FF3.7+ */
-         -o-transition: border-color 0.15s linear; /* Opera 10.5 */
-            transition: border-color 0.15s linear;
 }
-
 .grid-item{
     margin: auto;
     box-sizing: border-box;
@@ -439,7 +691,8 @@ export default {
     right: 50%;
     transform: translate(50%,-50%);
 
-    width: 125px;
+    transition: width 300ms ease-out;
+
     aspect-ratio: 1;
 }
 
@@ -452,16 +705,6 @@ export default {
     height: 100%;
     
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    grid-template-rows:    repeat(auto-fit, minmax(150px, 1fr));
-}
-
-.box{
-    width: 100px;
-    height: auto;
-    aspect-ratio: 1;
-
-    background-color: white;
 }
 
 </style>
