@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
+  base: '/Homepage-plus/',
   resolve: {
     alias: {
       vue: 'vue/dist/vue.esm-bundler.js',
